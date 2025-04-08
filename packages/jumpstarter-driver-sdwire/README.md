@@ -12,8 +12,15 @@ pip install jumpstarter-driver-sdwire
 
 Example configuration:
 
-```{literalinclude} sdwire.yaml
-:language: yaml
+```yaml
+type: "jumpstarter_driver_sdwire.driver.SDWire"
+config:
+  # optional serial number of the sd-wire device
+  # the first one found would be used if unset
+  serial: "sdw-00001"
+  # optional path to the block device exposed by sd-wire
+  # automatically detected if unset
+  storage_device: "/dev/disk/by-diskseq/1"
 ```
 
 ```{doctest}

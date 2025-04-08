@@ -1,3 +1,0 @@
-type: "jumpstarter_driver_network.driver.DbusNetwork"
-config:
-  kind: "system" # which bus to connect to, system or session

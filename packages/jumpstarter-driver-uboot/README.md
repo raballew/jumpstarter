@@ -12,8 +12,24 @@ pip install jumpstarter-driver-uboot
 
 Example configuration:
 
-```{literalinclude} uboot.yaml
-:language: yaml
+```yaml
+type: "jumpstarter_driver_uboot.driver.UbootConsole"
+children:
+  power:
+    type: "jumpstarter_driver_power.driver.MockPower"
+    config: {} # omitted, power driver configuration
+  serial:
+    type: "jumpstarter_driver_pyserial.driver.PySerial"
+    config: # omitted, serial driver configuration
+      url: "loop://"
+      # instead of configuring the power and serial driver inline
+      # other drivers configured on the exporter can also be referenced
+      # power:
+      #   ref: "dutlink.power"
+      # serial:
+      #   ref: "dutlink.console"
+config:
+  prompt: "=>" # the u-boot command prompt to expect, defaults to "=>"
 ```
 
 ```{doctest}

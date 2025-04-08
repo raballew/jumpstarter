@@ -12,8 +12,14 @@ pip install jumpstarter-driver-opendal
 
 Example configuration:
 
-```{literalinclude} opendal.yaml
-:language: yaml
+```yaml
+type: "jumpstarter_driver_opendal.driver.Opendal"
+config:
+  # See https://docs.rs/opendal/latest/opendal/services/index.html
+  # for list of supported services and their configuration parameters
+  scheme: "fs"
+  kwargs:
+    root: "/tmp/jumpstarter"
 ```
 
 ## API Reference

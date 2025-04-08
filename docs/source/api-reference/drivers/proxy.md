@@ -12,8 +12,16 @@ pip install jumpstarter-driver-proxy
 
 Example configuration:
 
-```{literalinclude} proxy.yaml
-:language: yaml
+```yaml
+children:
+  proxy:
+    ref: "foo.bar.power"
+  foo:
+    children:
+      bar:
+        children:
+          power:
+            type: "jumpstarter_driver_power.driver.MockPower"
 ```
 
 ## API Reference

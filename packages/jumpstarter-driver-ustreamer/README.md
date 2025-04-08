@@ -12,8 +12,15 @@ pip install jumpstarter-driver-ustreamer
 
 Example configuration:
 
-```{literalinclude} ustreamer.yaml
-:language: yaml
+```yaml
+type: "jumpstarter_driver_ustreamer.driver.UStreamer"
+config:
+  # name or path of the ustreamer executable
+  # defaults to finding ustreamer from path
+  executable: "ustreamer"
+  args: # extra arguments to pass to ustreamer
+    brightness: auto # --brightness=auto
+    contrast: default # --contract=default
 ```
 
 ```{doctest}

@@ -12,8 +12,10 @@ pip install jumpstarter-driver-dbus
 
 Example configuration:
 
-```{literalinclude} dbus.yaml
-:language: yaml
+```yaml
+type: "jumpstarter_driver_network.driver.DbusNetwork"
+config:
+  kind: "system" # which bus to connect to, system or session
 ```
 
 ```{doctest}
