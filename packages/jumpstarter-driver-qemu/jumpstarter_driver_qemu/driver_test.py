@@ -1,5 +1,6 @@
 import sys
 import tarfile
+import platform
 from pathlib import Path
 
 import pytest
@@ -29,7 +30,12 @@ def ovmf(tmpdir_factory):
     yield tmp_path / f"{ver}-bin"
 
 
-@pytest.mark.parametrize("arch,ovmf_arch", [("x86_64", "x64"), ("aarch64", "aarch64")])
+# Get native architecture
+native_arch = platform.machine()
+arch_mapping = {"x86_64": ("x86_64", "x64"), "aarch64": ("aarch64", "aarch64")}
+
+
+@pytest.mark.parametrize("arch,ovmf_arch", [arch_mapping.get(native_arch, arch_mapping["x86_64"])])
 def test_driver_qemu(tmp_path, ovmf, arch, ovmf_arch):
     with serve(
         Qemu(
