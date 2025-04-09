@@ -1,3 +1,5 @@
-type: "jumpstarter_driver_can.CANDriver"
+type: "jumpstarter_driver_can.driver.Can"
 config:
+  channel: "can0"  # CAN channel to connect to (required)
+  interface: "socketcan"  # CAN interface to use (required)
   # Add required parameters here 
