@@ -1,0 +1,4 @@
+type: "jumpstarter_driver_pyserial.driver.PySerial"
+config:
+  url: "/dev/ttyUSB0"
+  baudrate: 115200 

@@ -12,25 +12,15 @@ pip install jumpstarter-driver-shell
 
 Example configuration:
 
-```yaml
-interfaces:
-  shell:
-    driver: jumpstarter_driver_shell.driver.Shell
-    parameters:
-      methods:
-        ls: "ls"
-        method2: "echo 'Hello World 2'"
-        #multi line method
-        method3: |
-          echo 'Hello World $1'
-          echo 'Hello World $2'
-        env_var: "echo $1,$2,$ENV_VAR"
-      # optional parameters
-      cwd: "/tmp"
-      log_level: "INFO"
-      shell:
-        - "/bin/bash"
-        - "-c"
+```{literalinclude} shell.yaml
+:language: yaml
+```
+
+```{doctest}
+:hide:
+>>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
+>>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/shell.yaml").instantiate()
+Shell(...)
 ```
 
 ## API Reference

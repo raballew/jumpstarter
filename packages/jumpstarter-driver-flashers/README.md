@@ -19,25 +19,17 @@ See the [bundle](#oci-bundles) section for more details.
 ## Driver configuration
 **driver**: `jumpstarter_driver_flashers.driver.${DRIVER}`
 
-```yaml
-export:
-  storage:
-    type: "jumpstarter_driver_flashers.driver.TIJ784S4Flasher"
-    children:
-      serial:
-        ref: "serial"
-      power:
-        ref: "power"
-  serial:
-    type: "jumpstarter_driver_pyserial.driver.PySerial"
-    config:
-      url: "/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_112214101760A-if00-port0"
-      baudrate: 115200
-  power:
-    type: jumpstarter_driver_yepkit.driver.Ykush
-    config:
-      serial: "YK112233"
-      port: "1"
+Example configuration:
+
+```{literalinclude} flashers.yaml
+:language: yaml
+```
+
+```{doctest}
+:hide:
+>>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
+>>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/flashers.yaml").instantiate()
+TIJ784S4Flasher(...)
 ```
 
 flasher drivers require four children drivers: | Child Driver | Description |

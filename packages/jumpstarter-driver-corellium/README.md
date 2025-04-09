@@ -12,17 +12,15 @@ pip install jumpstarter-driver-corellium
 
 Example configuration:
 
-```yaml
-interfaces:
-  corellium:
-    driver: jumpstarter_driver_corellium.driver.Corellium
-    parameters:
-      project_id: "778f00af-5e9b-40e6-8e7f-c4f14b632e9c"
-      device_name: "jmp-rd1ae"
-      device_flavor: "kronos"
-      # Optional parameters
-      # device_os: "1.0"
-      # device_build: "Critical Application Monitor (Baremetal)"
+```{literalinclude} corellium.yaml
+:language: yaml
+```
+
+```{doctest}
+:hide:
+>>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
+>>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/corellium.yaml").instantiate()
+Corellium(...)
 ```
 
 ## API Reference

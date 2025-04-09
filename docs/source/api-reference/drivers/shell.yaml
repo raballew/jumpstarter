@@ -1,0 +1,16 @@
+type: "jumpstarter_driver_shell.driver.Shell"
+config:
+  methods:
+    ls: "ls"
+    method2: "echo 'Hello World 2'"
+    #multi line method
+    method3: |
+      echo 'Hello World $1'
+      echo 'Hello World $2'
+    env_var: "echo $1,$2,$ENV_VAR"
+  # optional parameters
+  cwd: "/tmp"
+  log_level: "INFO"
+  shell:
+    - "/bin/bash"
+    - "-c" 

@@ -12,12 +12,15 @@ pip install jumpstarter-driver-http
 
 Example configuration:
 
-```yaml
-interfaces:
-  http:
-    driver: jumpstarter_driver_http.HTTPDriver
-    parameters:
-      # Add required parameters here
+```{literalinclude} http.yaml
+:language: yaml
+```
+
+```{doctest}
+:hide:
+>>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
+>>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/http.yaml").instantiate()
+HTTPDriver(...)
 ```
 
 ## API Reference

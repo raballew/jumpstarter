@@ -1,0 +1,4 @@
+type: "jumpstarter_driver_yepkit.driver.Ykush"
+config:
+  serial: "YK25838"
+  port: "1" 

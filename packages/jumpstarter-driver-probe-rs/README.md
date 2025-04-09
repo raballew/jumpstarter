@@ -12,16 +12,15 @@ pip install jumpstarter-driver-probe-rs
 
 Example configuration:
 
-```yaml
-interfaces:
-  probe:
-    driver: jumpstarter_driver_probe_rs.driver.ProbeRs
-    parameters:
-      probe: "2e8a:000c:5798DE5E500ACB60"
-      probe_rs_path: "/home/majopela/.cargo/bin/probe-rs"
-      chip: "RP2350"
-      protocol: "swd"
-      connect_under_reset: false
+```{literalinclude} probe-rs.yaml
+:language: yaml
+```
+
+```{doctest}
+:hide:
+>>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
+>>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/probe-rs.yaml").instantiate()
+ProbeRs(...)
 ```
 
 ### Config parameters

@@ -12,12 +12,15 @@ pip install jumpstarter-driver-can
 
 Example configuration:
 
-```yaml
-interfaces:
-  can:
-    driver: jumpstarter_driver_can.CANDriver
-    parameters:
-      # Add required parameters here
+```{literalinclude} can.yaml
+:language: yaml
+```
+
+```{doctest}
+:hide:
+>>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
+>>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/can.yaml").instantiate()
+CANDriver(...)
 ```
 
 ## API Reference

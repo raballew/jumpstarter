@@ -12,12 +12,15 @@ pip install jumpstarter-driver-raspberrypi
 
 Example configuration:
 
-```yaml
-interfaces:
-  raspberrypi:
-    driver: jumpstarter_driver_raspberrypi.RaspberryPiDriver
-    parameters:
-      # Add required parameters here
+```{literalinclude} raspberrypi.yaml
+:language: yaml
+```
+
+```{doctest}
+:hide:
+>>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
+>>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/raspberrypi.yaml").instantiate()
+RaspberryPiDriver(...)
 ```
 
 ## API Reference

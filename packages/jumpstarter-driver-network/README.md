@@ -12,12 +12,15 @@ pip install jumpstarter-driver-network
 
 Example configuration:
 
-```yaml
-interfaces:
-  network:
-    driver: jumpstarter_driver_network.NetworkDriver
-    parameters:
-      # Add required parameters here
+```{literalinclude} network.yaml
+:language: yaml
+```
+
+```{doctest}
+:hide:
+>>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
+>>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/network.yaml").instantiate()
+NetworkDriver(...)
 ```
 
 ## API Reference

@@ -1,0 +1,6 @@
+type: "jumpstarter_driver_flashers.driver.TIJ784S4Flasher"
+config:
+  flasher_bundle: "quay.io/jumpstarter-dev/jumpstarter-flasher-ti-j784s4:latest"
+  cache_dir: "/var/lib/jumpstarter/flasher"
+  tftp_dir: "/var/lib/tftpboot"
+  http_dir: "/var/www/html" 
