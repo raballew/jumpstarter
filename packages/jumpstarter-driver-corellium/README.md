@@ -10,6 +10,10 @@ pip install jumpstarter-driver-corellium
 
 ## Configuration
 
+The driver requires Corellium API credentials to be set as environment variables:
+- `CORELLIUM_API_HOST`: The Corellium API host URL
+- `CORELLIUM_API_TOKEN`: Your Corellium API authentication token
+
 Example configuration:
 
 ```{literalinclude} corellium.yaml
@@ -19,52 +23,24 @@ Example configuration:
 ```{doctest}
 :hide:
 >>> from jumpstarter.config import ExporterConfigV1Alpha1DriverInstance
->>> ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/corellium.yaml").instantiate()
-Corellium(...)
+>>> import unittest.mock
+>>> import os
+>>> # Mock environment variables required by Corellium driver
+>>> with unittest.mock.patch.dict(os.environ, {
+...     'CORELLIUM_API_HOST': 'https://example.com',
+...     'CORELLIUM_API_TOKEN': 'mock_token'
+... }):
+...     driver_config = ExporterConfigV1Alpha1DriverInstance.from_path("source/api-reference/drivers/corellium.yaml")
+...     driver = driver_config.instantiate()
+...     print(driver.__class__.__name__)
+Corellium
 ```
 
 ## API Reference
 
-For more examples, check the [examples folder](./examples).
+### Corellium Client
 
-### ExporterConfig Example
-
-You can run an exporter by running: `jmp exporter shell -c $file`:
-
-```yaml
-apiVersion: jumpstarter.dev/v1alpha1
-kind: ExporterConfig
-# endpoint and token are intentionally left empty
-metadata:
-  namespace: default
-  name: corellium-demo
-endpoint: ""
-token: ""
-export:
-  rd1ae:
-    type: jumpstarter_driver_corellium.driver.Corellium
-    config:
-      project_id: "778f00af-5e9b-40e6-8e7f-c4f14b632e9c"
-      device_name: "jmp-rd1ae"
-      device_flavor: "kronos"
-```
-
-```yaml
-apiVersion: jumpstarter.dev/v1alpha1
-kind: ExporterConfig
-# endpoint and token are intentionally left empty
-metadata:
-  namespace: default
-  name: corellium-demo
-endpoint: ""
-token: ""
-export:
-  rd1ae:
-    type: jumpstarter_driver_corellium.driver.Corellium
-    config:
-      project_id: "778f00af-5e9b-40e6-8e7f-c4f14b632e9c"
-      device_name: "jmp-rd1ae"
-      device_flavor: "kronos"
-      device_os: "1.0"
-      device_build: "Critical Application Monitor (Baremetal)"
+```{eval-rst}
+.. autoclass:: jumpstarter_driver_corellium.client.CorelliumClient()
+    :members:
 ```
