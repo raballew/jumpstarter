@@ -12,7 +12,7 @@ Drivers that control the power state and basic operation of devices:
 * **[Power](power.md)** (`jumpstarter-driver-power`) - Power control for devices
 * **[Raspberry Pi](raspberrypi.md)** (`jumpstarter-driver-raspberrypi`) - Raspberry Pi hardware control
 * **[Yepkit](yepkit.md)** (`jumpstarter-driver-yepkit`) - Yepkit hardware control
-* **[DUT Link](dutlink.md)** (`jumpstarter-driver-dutlink`) - [DUT Link Board](https://github.com/jumpstarter-dev/dutlink-board) hardware control
+* **[DUT Link](dutlink.md)** (`jumpstarter-driver-dutlink`) - DUT Link Board hardware control
 
 ### Communication Drivers
 Drivers that provide various communication interfaces:

@@ -32,14 +32,14 @@ Example configuration:
 TIJ784S4Flasher(...)
 ```
 
-flasher drivers require four children drivers: | Child Driver | Description |
-Auto-created | | ------------ |
----------------------------------------------------------------------------------
-| ------------ | | serial       | To communicate with the DUT via serial and
-drive the bootloader and busybox shell | No           | | power        | To
-power on and off the DUT                                                       |
-No           | | tftp         | To serve binaries via TFTP | Yes          | |
-http         | To serve the images via HTTP | Yes          |
+flasher drivers require four children drivers: 
+
+| Child Driver | Description                                                                       | Auto-created |
+| ------------ | --------------------------------------------------------------------------------- | ------------ |
+| serial       | To communicate with the DUT via serial and drive the bootloader and busybox shell | No           |
+| power        | To power on and off the DUT                                                       | No           |
+| tftp         | To serve binaries via TFTP                                                        | Yes          |
+| http         | To serve the images via HTTP                                                      | Yes          |
 
 In the above example we provide the serial and power children by
 [reference](./proxy.md), so those remain also available on the root of the
@@ -245,7 +245,7 @@ with flasherclient.bootloader_shell() as serial:
     print(serial.before)
 ```
 
-# oci-bundles
+## oci-bundles
 The flasher drivers require some artifacts and basic information about the
 target device to operate. To make this easy to distribute and use, we use OCI
 bundles to package the artifacts and metadata.
