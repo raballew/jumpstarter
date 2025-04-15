@@ -26,11 +26,11 @@ development.
 Jumpstarter architecture is based on the following key components:
 
 - Device Under Test (DUT) - Hardware or virtual device being tested
-- [Drivers](./drivers.md) - Interfaces for DUT communication
-- [Adapters](./adapters.md) - Convert driver connections into various formats
-- [Exporters](./exporters.md) - Expose device interfaces over network via gRPC
-- [Clients](./clients.md) - Libraries and CLI tools for device interaction
-- [Service](./service.md) - Kubernetes controller for resource management
+- [Drivers](drivers.md) - Interfaces for DUT communication
+- [Adapters](adapters.md) - Convert driver connections into various formats
+- [Exporters](exporters.md) - Expose device interfaces over network via gRPC
+- [Clients](clients.md) - Libraries and CLI tools for device interaction
+- [Service](service.md) - Kubernetes controller for resource management
 
 Component interactions include:
 
@@ -50,7 +50,7 @@ the gap between development and deployment environments.
 ## Operation Modes
 
 Building on these components, Jumpstarter implements two operation modes that
-provide flexibility for different scenarios: local and distributed modes.
+provide flexibility for different scenarios: *local* and *distributed* modes.
 
 ### Local Mode
 
@@ -189,21 +189,12 @@ labels), and finally running tests against the acquired DUT. The lease system
 ensures exclusive access to the requested resources for the duration of testing,
 preventing conflicts with other users or pipelines in the shared environment.
 
-## Next Steps
-
-Choose your path based on your needs:
-
-- [Setup a Local Client](../getting-started/setup-local-exporter.md) - For
-  individual development
-- [Setup a Remote Client](../getting-started/setup-exporter-client.md) - For
-  team environments
-
 ```{toctree}
 :maxdepth: 1
 :hidden:
-clients.md
 drivers.md
 adapters.md
 exporters.md
+clients.md
 service.md
 ```

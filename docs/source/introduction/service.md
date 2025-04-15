@@ -4,7 +4,7 @@ When building a lab with many devices under test, it quickly becomes difficult
 to keep track of devices, schedule access for automated tests, and perform
 routine maintenance such as batch updates.
 
-Jumpstarter provides a [Cloud Native](https://www.cncf.io/) service that can be
+Jumpstarter provides a [Cloud Native](https://www.cncf.io/) Service that can be
 installed in any [Kubernetes](https://kubernetes.io/) cluster to manage
 connected clients and exporters.
 
@@ -16,9 +16,9 @@ can integrate directly into your existing cloud or on-premises cluster.
 
 ## Controller
 
-The core of the Service is the Controller, which manages access to
-devices, authenticates clients/exporters, and maintains a set of labels to
-easily identify specific devices.
+The core of the Service is the Controller, which manages access to devices,
+authenticates clients/exporters, and maintains a set of labels to easily
+identify specific devices.
 
 The Controller is implemented as a Kubernetes
 [controller](https://github.com/jumpstarter-dev/jumpstarter-controller) using
@@ -46,5 +46,9 @@ interfaces via the client.
 
 Once a lease is established, all traffic between the client and the exporter
 flows through a router instance. While there may only be one controller, the
-router can be scaled with multiple instances to handle traffic between many clients
-and exporters simultaneously.
+router can be scaled with multiple instances to handle traffic between many
+clients and exporters simultaneously.
+
+Now that you understand the core components of Jumpstarter, you can proceed to
+the [Getting Started](../getting-started/index.md) section to begin using
+Jumpstarter.

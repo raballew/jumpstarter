@@ -7,8 +7,8 @@ connected to the target device for client access.
 
 ## Hosts
 
-Typically, the host will be a low-cost test system such as a Raspberry Pi or
-Mini PC with sufficient interfaces to connect to your hardware. It is also
+Typically, the host will be a low-cost test system such as a single board
+computer with sufficient interfaces to connect to your hardware. It is also
 possible to use a local high-power server (or CI runner) as the host device.
 
 A host can run multiple Exporter instances simultaneously if it needs to
@@ -71,3 +71,6 @@ $ jmp run --exporter myexporter
 Exporters can also be run in a privileged container or as a systemd daemon. It
 is recommended to run the Exporter service in the background with auto-restart
 capabilities in case something goes wrong and it needs to be restarted.
+
+We will discuss how to interact with the exported devices in the next section on
+[Clients](clients.md).

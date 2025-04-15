@@ -4,7 +4,7 @@ Jumpstarter uses a modular driver model to build abstractions around the
 interfaces used to interact with target devices, both physical hardware and
 virtual systems.
 
-An [Exporter](./exporters.md) uses Drivers to "export" these interfaces from a
+An [Exporter](exporters.md) uses Drivers to "export" these interfaces from a
 host machine to the clients via [gRPC](https://grpc.io/). Drivers can be thought
 of as a simplified API for an interface or device type.
 
@@ -18,29 +18,40 @@ Drivers in Jumpstarter follow a client/server architecture where:
 - Interface classes define the contract between implementations and clients
 
 For comprehensive documentation on the driver architecture, including detailed
-patterns and examples, see the [Driver Classes and Architecture](../api-reference/drivers.md) reference.
+patterns and examples, see the [Driver Classes and
+Architecture](../reference/drivers.md) reference.
 
-Drivers are often used with [Adapters](./adapters.md), which transform driver connections into different forms or interfaces for specific use cases.
+Drivers are often used with [Adapters](adapters.md), which transform driver
+connections into different forms or interfaces for specific use cases.
 
 ## Driver Types
 
 The API reference of the documentation provides a complete list of all drivers,
-you can find it here: [Driver API Reference](../api-reference/drivers/index.md).
+you can find it here: [Driver API
+Reference](../reference/packages/index.md#drivers).
 
 Some categories of drivers include:
-* ⚡ [System Control](../api-reference/drivers/index.md#system-control-drivers): Control power to devices, or general control.
-* 📡 [Communication](../api-reference/drivers/index.md#communication-drivers): Provide protocols for network communication, such as TCP/IP, Serial, CAN bus, etc.
-* 💾 [Storage And Data](../api-reference/drivers/index.md#storage-and-data-drivers): Control storage devices, such as SD cards or USB drives, and data.
-* 📹 [Media](../api-reference/drivers/index.md#media-drivers): Provide interfaces for media capture and playback, such as video or audio.
-* 🐞 [Debug and Programming](../api-reference/drivers/index.md#debug-and-programming-drivers): Provide interfaces for debugging and programming devices, such as JTAG or SWD, remote flashing, emulation, etc.
-* 🛠️ [Utility](../api-reference/drivers/index.md#utility-drivers): Provide utility functions, such as shell driver commands on a exporter.
+- [System Control](../reference/packages/index.md#system-control-drivers):
+  Control power to devices, or general control.
+- [Communication](../reference/packages/index.md#communication-drivers): Provide
+  protocols for network communication, such as TCP/IP, Serial, CAN bus, etc.
+- [Data](../reference/packages/index.md#data-drivers): Control storage devices,
+  such as SD cards or USB drives, and data.
+- [Media](../reference/packages/index.md#media-drivers): Provide interfaces for
+  media capture and playback, such as video or audio.
+- [Debug and
+  Programming](../reference/packages/index.md#debug-and-programming-drivers):
+  Provide interfaces for debugging and programming devices, such as JTAG or SWD,
+  remote flashing, emulation, etc.
+- [Utility](../reference/packages/index.md#utility-drivers): Provide utility
+  functions, such as shell driver commands on a exporter.
 
 ### Composite Drivers
 
-Composite drivers (`jumpstarter-driver-composite`) combine multiple lower-level
-drivers to create higher-level abstractions or specialized workflows. For
-example, a composite driver might coordinate power cycling, storage re-flashing,
-and serial communication to automate a device initialization process.
+Composite drivers combine multiple lower-level drivers to create higher-level
+abstractions or specialized workflows. For example, a composite driver might
+coordinate power cycling, storage re-flashing, and serial communication to
+automate a device initialization process.
 
 In Jumpstarter, drivers are organized in a tree structure which allows for the
 representation of complex device configurations that may be found in your
@@ -156,3 +167,6 @@ can be developed for specialized hardware interfaces, emulated environments, or
 to provide domain-specific abstractions for your use case. Custom drivers follow
 the same architecture pattern as built-in drivers and can be integrated into the
 system through the exporter configuration.
+
+We will discuss how adapters transform driver connections in the next section on
+[Adapters](adapters.md).
