@@ -101,7 +101,7 @@ CURRENT   NAME      ENDPOINT                         PATH
 
 If you need access to your hardware, e.g., because you are running the `jmp`
 command or you are following the [local-only
-workflow](../architecture.md#local-mode) (i.e., without a distributed service),
+workflow](../introduction/index.md#local-mode) (i.e., without a distributed service),
 you need to mount access to devices into the container, provide host network
 access, and run the container in privileged mode. This will probably need to be run
 as **root**.

@@ -22,41 +22,69 @@
    :alt: Weekly Meeting
 ```
 
-Jumpstarter is a free and open source testing tool that bridges the gap between development workflows and deployment environments. It enables you to test your software stack consistently across both real hardware and virtual environments using cloud native principles. By decoupling your target devices (physical or virtual) from test runners, development machines, and CI/CD pipelines, Jumpstarter allows you to use the same automation scripts everywhere - like a *Makefile* for device automation.
+Jumpstarter is a free and open source testing tool that bridges the gap between
+development workflows and deployment environments. It enables you to test your
+software stack consistently across both real hardware and virtual environments
+using cloud native principles. By decoupling your target devices (physical or
+virtual) from test runners, development machines, and CI/CD pipelines,
+Jumpstarter allows you to use the same automation scripts everywhere - like a
+*Makefile* for device automation.
 
 ```{include} ../../README.md
 :start-after: "## Highlights"
 :end-before: "##"
 ```
 
-Now that you understand what makes Jumpstarter powerful, let's explore how to get started with the tool. The following learning paths will guide you through the documentation based on your specific needs and experience level.
+Now that you understand what makes Jumpstarter powerful, let's explore how to
+get started with the tool. The following learning paths will guide you through
+the documentation based on your specific needs and experience level.
 
 ## Learning Paths
 
 ### Getting Started
-If you are new to Jumpstarter, start here to understand the core concepts and set up your environment:
-- [What is Jumpstarter?](introduction/index.md) - An overview of Jumpstarter's key concepts and components
-- [Installation Guide](installation/index.md) - Step-by-step instructions to install Jumpstarter
-- [Setting Up Your First Local Exporter](getting-started/setup-local-exporter.md) - Guide to connect your first device for testing
+
+If you are new to Jumpstarter, start here to understand the core concepts and
+set up your environment:
+- [What is Jumpstarter?](introduction/index.md) - An overview of Jumpstarter's
+  key concepts and components
+- [Installation Guide](installation/index.md) - Step-by-step instructions to
+  install Jumpstarter
+- [Setting Up Your First Local
+  Exporter](getting-started/setup-local-exporter.md) - Guide to connect your
+  first device for testing
 
 ### Using Jumpstarter for Testing
+
 For testers and developers looking to automate device testing with Jumpstarter:
-- [Setting Up Client & Exporter](getting-started/setup-exporter-client.md) - How to configure your testing environment
-- [Command Line Interface](cli/index.md) - Detailed guide on using the CLI for automation
-- [Example Projects](https://github.com/jumpstarter-dev/jumpstarter/tree/main/examples) - Real-world examples of testing with Jumpstarter
+- [Setting Up Client & Exporter](getting-started/setup-exporter-client.md) - How
+  to configure your testing environment
+- [Command Line Interface](cli/index.md) - Detailed guide on using the CLI for
+  automation
+- [Example
+  Projects](https://github.com/jumpstarter-dev/jumpstarter/tree/main/examples) -
+  Real-world examples of testing with Jumpstarter
 
 ### Extending Jumpstarter
+
 Developers and contributors interested in extending Jumpstarter's capabilities:
-- [Architecture Overview](architecture.md) - High-level overview of Jumpstarter's internal architecture
-- [Driver Development](introduction/drivers.md) - Guide to developing custom drivers for new hardware
-- [API Reference](api-reference/index.md) - Comprehensive reference for Jumpstarter's APIs
-- [Contributing Guide](contributing.md) - Guidelines and best practices for contributing to the project
+- [Architecture Overview](introduction/index.md#core-components) - High-level
+  overview of Jumpstarter's internal architecture
+- [Driver Development](introduction/drivers.md) - Guide to developing custom
+  drivers for new hardware
+- [API Reference](api-reference/index.md) - Comprehensive reference for
+  Jumpstarter's APIs
+- [Contributing Guide](contributing.md) - Guidelines and best practices for
+  contributing to the project
 
 ### Enterprise & Team Use
+
 For organizations looking to deploy Jumpstarter at scale:
-- [Distributed Mode Setup](installation/service/index.md) - Guide to deploying the Kubernetes-based controller
-- [Solution Architecture](solution-architecture.md) - Reference architectures for complex environments
-- [Managing Lab Resources](introduction/service.md) - Best practices for coordinating access to shared hardware
+- [Distributed Mode Setup](installation/service/index.md) - Guide to deploying
+  the Kubernetes-based controller
+- [Solution Architecture](solution-architecture.md) - Reference architectures
+  for complex environments
+- [Managing Lab Resources](introduction/service.md) - Best practices for
+  coordinating access to shared hardware
 
 ```{toctree}
 :maxdepth: 3
@@ -67,7 +95,6 @@ installation/index.md
 getting-started/index.md
 cli/index.md
 config/index.md
-architecture.md
 solution-architecture.md
 contributing.md
 glossary.md
