@@ -13,10 +13,6 @@ Adapters in Jumpstarter follow a transformation pattern where:
 - The transformed interface is exposed to the user in a way that's tailored for
   specific scenarios
 
-For comprehensive documentation on the adapter architecture, including detailed
-patterns and examples, see the [Adapter Classes and
-Architecture](../reference/adapters.md) reference.
-
 Unlike [Drivers](drivers.md), which establish the foundational connections to
 hardware or virtual interfaces, adapters focus on providing alternative ways to
 interact with those connections without modifying the underlying drivers.

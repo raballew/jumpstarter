@@ -7,7 +7,7 @@ the distributed service.
 
 If you have configured [a Service](../introduction/service.md) and
 you have a kubeconfig, the [`jmp admin`
-CLI](./reference/jmp-admin.md#jmp-admin-cli-reference) will attempt to use your
+CLI]reference/jmp-admin.md#jmp-admin-cli-reference) will attempt to use your
 current credentials to provision the client automatically, and produce a base
 exporter configuration file.
 

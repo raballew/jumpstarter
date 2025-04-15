@@ -114,10 +114,10 @@ flowchart TB
 
     GitRepo -- "Code changes" --> Actions
     Actions -- "Dispatch job" --> Runner1
-    
+
     Runner1 -- "Execute tests" --> JmpLocal
     JmpLocal -- "Control" --> Devices
-    
+
     Runner1 -- "Report results" --> Actions
     Actions -- "Update status" --> GitRepo
 ```
@@ -189,20 +189,20 @@ Organizations can implement usage-based billing for teams through a cost managem
 flowchart LR
     subgraph "Kubernetes"
         Controller["Controller"]
-        
+
         subgraph "Telemetry"
             Prometheus["Prometheus"]
             Grafana["Grafana"]
             AlertManager["AlertManager"]
         end
-        
+
         subgraph "Cost Management"
             UsageTracker["Usage Tracker"]
             OpenCost["OpenCost"]
             Accounting["Chargeback System"]
         end
     end
-    
+
     subgraph "Lab"
         Rack1["Exporter 1"]
         Rack2["Exporter 2"]
@@ -218,16 +218,16 @@ flowchart LR
 
     Controller -- "Connect to" --> Rack1
     Controller -- "Connect to" --> Rack2
-    
+
     Rack1 -- "Report usage\nmetrics" --> Prometheus
     Rack2 -- "Report usage\nmetrics" --> Prometheus
-    
+
     Prometheus -- "Store\nmetrics" --> Grafana
     Prometheus -- "Threshold\nalerts" --> AlertManager
     Prometheus -- "Usage\nmetrics" --> UsageTracker
-    
+
     UsageTracker -- "Monthly billing\nreport" --> Team
-    
+
     UsageTracker -- "Team resource\nusage" --> OpenCost
     OpenCost -- "Cost\nallocation" --> Accounting
 ```
@@ -262,7 +262,7 @@ flowchart TB
         RemoteExporters["Exporter"]
         LabDevices["Device Under Test"]
     end
-    
+
     TestCode --> LocalExporter
     LocalExporter --> DeviceOnDesk
 
@@ -289,34 +289,34 @@ flowchart TB
     subgraph "Web Browser"
         Dev["Developer"]
     end
-    
+
     subgraph "Kubernetes Cluster"
         subgraph "Eclipse Che"
             Workspace["Developer Workspace"]
             TestCode["Test Code"]
             PortFwd["Port Forwarding"]
         end
-        
+
         Controller["Controller"]
     end
-    
+
       subgraph "Local Environment"
           LocalExporter["Local Exporter"]
           DeviceOnDesk["Device Under Test"]
       end
-      
+
       subgraph "Lab"
           RemoteExporters["Exporter"]
           LabDevices["Device Under Test"]
       end
-    
+
     Dev -- "Access via browser" --> Workspace
     Workspace -- "Contains" --> TestCode
-    
+
     TestCode -- "Local system access" --> PortFwd
     PortFwd -- "Forward connection" --> LocalExporter
     LocalExporter -- "Control" --> DeviceOnDesk
-    
+
     TestCode -- "Request access" --> Controller
     Controller -- "Assign lease" --> TestCode
     Controller -- "Connect to" --> RemoteExporters

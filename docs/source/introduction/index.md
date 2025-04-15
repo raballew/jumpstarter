@@ -4,7 +4,7 @@ Jumpstarter is an open source framework that brings enterprise-grade testing
 capabilities to everyone. While established industries like automotive and
 manufacturing have long used HiL testing, these tools have typically been
 expensive proprietary systems. Jumpstarter democratizes this technology through
-a free, Cloud Native approach that works with both physical hardware and virtual
+a free, cloud native approach that works with both physical hardware and virtual
 devices.
 
 At its core, Jumpstarter uses a client/server architecture where a single client

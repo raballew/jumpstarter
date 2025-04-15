@@ -1,4 +1,4 @@
-# Setup a Local Exporter
+# Setup Local Mode
 
 This guide walks you through the process of using Jumpstarter with a local
 exporter (i.e., the client and the exporter running on the same host).
@@ -17,10 +17,10 @@ to debug the connection between an exporter and client without hardware.
 
 ## Create an Exporter Config
 
-First, we must create an exporter configuration to define the "shape" of the exporter
-that we are going to test locally. This configuration is identical to a regular
-exporter config; however, the `endpoint` and `token` fields may be left empty as
-we do not need to connect to the controller service.
+First, we must create an exporter configuration to define the "shape" of the
+exporter that we are going to test locally. This configuration is identical to a
+regular exporter config; however, the `endpoint` and `token` fields may be left
+empty as we do not need to connect to the controller service.
 
 Create a text file in `/etc/jumpstarter/exporters` with the following content:
 
@@ -59,8 +59,8 @@ $ jmp shell --exporter demo
 
 ### Interact with the Exporter Shell
 
-If the drivers specified in the exporter configuration provide a CLI interface, it will
-be available through the magic `j` command within the exporter shell.
+If the drivers specified in the exporter configuration provide a CLI interface,
+it will be available through the magic `j` command within the exporter shell.
 
 ```shell
 # Enter the shell
@@ -99,7 +99,8 @@ doesn't provide a client CLI.
 #### Running a Python Script
 
 The easiest way to interact with the exporter is to run a quick Python script
-directly from the command line. This is particularly useful when no CLI is available.
+directly from the command line. This is particularly useful when no CLI is
+available.
 
 ```shell
 # Enter the shell
@@ -153,8 +154,8 @@ $ exit
 
 #### Running `pytest` in the Shell
 
-If you are running multiple test cases, it may be more efficient to run a `pytest`
-suite. Jumpstarter provides a built-in testing library called
+If you are running multiple test cases, it may be more efficient to run a
+`pytest` suite. Jumpstarter provides a built-in testing library called
 `jumpstarter_testing` which provides the `JumpstarterTest` fixture.
 
 ```python

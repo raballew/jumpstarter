@@ -7,7 +7,7 @@ Kind is a tool for running local Kubernetes clusters using Podman or Docker
 container "nodes".
 
 ```{tip}
-We recommend using [minikube](./minikube-helm.md) if you cannot easily use Kind in your local environment
+We recommend using [minikube]minikube-helm.md) if you cannot easily use Kind in your local environment
 (e.g. need to use [untrusted root certificates](https://minikube.sigs.k8s.io/docs/handbook/untrusted_certs/)).
 ```
 

@@ -48,8 +48,8 @@ We use the `--unsafe` setting that configures the `drivers` section to allow any
 driver packages on the client.
 
 ```{warning}
-The drivers configuration is an important security consideration. When a client connects to an exporter, 
-the client-side Python modules for drivers are dynamically loaded. If you don't fully trust the exporter's 
+The drivers configuration is an important security consideration. When a client connects to an exporter,
+the client-side Python modules for drivers are dynamically loaded. If you don't fully trust the exporter's
 configuration, you should carefully restrict which driver packages are allowed to load on the client.
 ```
 
@@ -84,7 +84,7 @@ system is using self-signed certificates.
 3. Store these credentials securely as a CI secret or distribute them to the appropriate end user.
 
     The end user can then configure their client using the
-    [jmp](./reference/jmp.md#jmp-cli-reference) CLI:
+    [jmp]reference/jmp.md#jmp-cli-reference) CLI:
 
     ```shell
     $ jmp config client create my-client

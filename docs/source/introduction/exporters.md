@@ -14,7 +14,7 @@ possible to use a local high-power server (or CI runner) as the host device.
 A host can run multiple Exporter instances simultaneously if it needs to
 interact with several different devices at the same time.
 
-## Configuration
+## Exporter Configuration
 
 Exporters use a YAML configuration file to define which Drivers must be loaded
 and the configuration required.

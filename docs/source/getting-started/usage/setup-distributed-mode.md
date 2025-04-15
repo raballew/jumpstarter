@@ -1,4 +1,4 @@
-# Setup a Remote Exporter/Client
+# Setup Distributed Mode
 
 This guide walks you through the process of creating an exporter using the
 controller service, configuring drivers, and running the exporter.
@@ -11,9 +11,9 @@ installed](../installation/python-package.md) in your Python environment:
 - `jumpstarter-driver-opendal` - The OpenDAL storage driver
 - `jumpstarter-driver-power` - The base power driver
 
-You should also have the [Service](../introduction/service.md)
-running in a Kubernetes cluster you have admin access to. For instructions on
-how to install Jumpstarter in a cluster, refer to the [installation
+You should also have the [Service](../../introduction/service.md) running in a
+Kubernetes cluster you have admin access to. For instructions on how to install
+Jumpstarter in a cluster, refer to the [installation
 guide](../installation/service/index.md).
 
 ```{tip}
@@ -26,7 +26,8 @@ context selected.
 First, we must create an exporter using the controller service API. The `jmp
 admin` CLI provides methods to interact with the controller directly.
 
-To create an exporter and save the configuration locally, run the following command:
+To create an exporter and save the configuration locally, run the following
+command:
 
 ```shell
 # Creates an exporter called "testing" and saves the config
@@ -51,8 +52,8 @@ command:
 $ jmp config exporter edit testing
 ```
 
-Add the `storage` and `power` drivers under the `export` field in the configuration
-file. The finished configuration should look like this:
+Add the `storage` and `power` drivers under the `export` field in the
+configuration file. The finished configuration should look like this:
 
 ```yaml
 # /etc/jumpstarter/exporters/testing.yaml
@@ -73,15 +74,16 @@ export:
 
 To run the exporter locally, we can use the `jmp` CLI tool.
 
-Run the following command to start the exporter locally using the configuration file:
+Run the following command to start the exporter locally using the configuration
+file:
 
 ```shell
 # Runs the exporter "testing" locally
 $ jmp run --exporter testing
 ```
 
-The exporter will continue running until the process is terminated via `^C` or the shell
-is closed.
+The exporter will continue running until the process is terminated via `^C` or
+the shell is closed.
 
 ## Create a Client
 
