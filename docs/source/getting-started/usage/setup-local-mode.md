@@ -1,7 +1,7 @@
 # Setup Local Mode
 
-This guide shows you how to use Jumpstarter with a local exporter (client and
-exporter running on the same host).
+This guide shows you how to use Jumpstarter with a client and exporter running
+on the same host.
 
 ## Prerequisites
 
@@ -14,7 +14,9 @@ Install these packages in your Python environment:
 These driver packages include mock implementations, enabling you to test the
 connection between an exporter and client without physical hardware.
 
-## Create an Exporter Configuration
+## Instructions
+
+### Create an Exporter Configuration
 
 Create an exporter configuration to define the capabilities of your local test
 exporter. This configuration mirrors a regular exporter config but leaves the
@@ -38,7 +40,7 @@ export:
     type: jumpstarter_driver_power.driver.MockPower
 ```
 
-## Spawn an Exporter Shell
+### Spawn an Exporter Shell
 
 Interact with your local exporter using the "exporter shell" functionality in
 the `jmp` CLI. When you spawn a shell, Jumpstarter runs a local exporter
@@ -76,13 +78,15 @@ Commands:
   storage  Generic storage mux
 $ j power on
 ok
+$ j power off
+ok
 $ exit
 ```
 
 When you run the `j` command in the exporter shell, you're accessing the CLI
 interfaces exposed by the drivers configured in your exporter. In this example:
 
-- `j power on` - Activates the power interface from the MockPower driver
+- `j power` - Would access the power interface from the MockPower driver
 - `j storage` - Would access the storage interface from the MockStorageMux
   driver
 
@@ -97,22 +101,28 @@ enabling you to run any Python code that interacts with the client/exporter.
 This approach works especially well for complex operations or when a driver
 doesn't provide a CLI.
 
-#### Running a Python Script
+#### Using Python with Jumpstarter
 
-Run a quick Python script directly from the command line:
+Create a Python file for interacting with your exporter. This example
+(`example.py`) demonstrates a complete power cycle workflow:
+
+```python
+import time
+from jumpstarter.common.utils import env
+
+with env() as client:
+    client.power.on()
+    time.sleep(3)
+    client.power.off()
+```
 
 ```shell
 $ jmp shell --exporter example
-$ python - <<EOF
-from jumpstarter.common.utils import env
-with env() as client:
-    print(client.power.on())
-EOF
-ok
+$ python ./example.py
 $ exit
 ```
 
-This example demonstrates using Python to interact with the exporter:
+This example demonstrates how Python interacts with the exporter:
 
 1. The `env()` function from `jumpstarter.common.utils` automatically connects
    to the exporter configured in your shell environment.
@@ -123,59 +133,13 @@ This example demonstrates using Python to interact with the exporter:
 3. `client.power.on()` directly calls the power driver's "on" method—the same
    action that `j power on` performs in the CLI.
 
-This approach gives you programmatic access to all driver functions, allowing
-you to create automated sequences and complex control logic beyond what's
-possible with simple CLI commands.
+4. Using a Python file allows you to:
 
-#### Running a Python File
-
-For more complex scenarios, create and run the follow `example.py` file:
-
-```python
-import time
-
-from jumpstarter.common.utils import env
-
-with env() as client:
-    # Power on the device
-    print("Power on")
-    client.power.on()
-
-    # Wait three seconds
-    print("Waiting 3 seconds...")
-    time.sleep(3.0)
-
-    # Power off the device
-    print("Power off")
-    client.power.off()
-
-    print("Done!")
-```
-
-```shell
-$ jmp shell --exporter example
-$ python ./example.py
-$ exit
-```
-
-This example demonstrates a complete power cycle workflow using a Python file:
-
-1. The script creates a sequence of operations (power on → wait → power off)
-   that would be tedious to perform manually through the CLI.
-
-2. Using a separate file allows you to:
-
-   - Save and reuse complex sequences
+   - Create sequences of operations (power on → wait → power off)
+   - Save and reuse complex workflows
    - Add logic, error handling, and conditional operations
    - Import other Python libraries (like `time` in this example)
-   - Build more sophisticated automation scripts
-
-3. When you run the script in the exporter shell, it has access to the same
-   client environment as the interactive Python example, but with the advantages
-   of using a persistent file.
-
-This approach is ideal for test scripts, device initialization sequences, and
-other multi-step operations that need to be repeated consistently.
+   - Build sophisticated automation scripts
 
 #### Running `pytest` in the Shell
 
