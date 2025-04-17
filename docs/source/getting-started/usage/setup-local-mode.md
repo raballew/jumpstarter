@@ -1,44 +1,36 @@
 # Setup Local Mode
 
-This guide walks you through the process of using Jumpstarter with a local
-exporter (i.e., the client and the exporter running on the same host).
+This guide shows you how to use Jumpstarter with a local exporter (client and
+exporter running on the same host).
 
 ## Prerequisites
 
-Make sure the following packages are installed in your Python environment:
-- `jumpstarter-cli` - The core Jumpstarter CLI
-- `jumpstarter-driver-opendal` - The OpenDAL storage driver
-- `jumpstarter-driver-power` - The base power driver
+Install these packages in your Python environment:
 
-```{tip}
-Both of these driver packages provide mock implementations, making it easier
-to debug the connection between an exporter and client without hardware.
-```
+- `jumpstarter-cli` - The Jumpstarter CLI for interacting with exporters
+- `jumpstarter-driver-opendal` - The OpenDAL storage driver for file operations
+- `jumpstarter-driver-power` - The base power driver for managing power states
 
-## Create an Exporter Config
+These driver packages include mock implementations, enabling you to test the
+connection between an exporter and client without physical hardware.
 
-First, we must create an exporter configuration to define the "shape" of the
-exporter that we are going to test locally. This configuration is identical to a
-regular exporter config; however, the `endpoint` and `token` fields may be left
-empty as we do not need to connect to the controller service.
+## Create an Exporter Configuration
 
-Create a text file in `/etc/jumpstarter/exporters` with the following content:
+Create an exporter configuration to define the capabilities of your local test
+exporter. This configuration mirrors a regular exporter config but leaves the
+`endpoint` and `token` fields empty since you don't need to connect to the
+controller service.
 
-```{note}
-The name of this file is used when referring to the exporter in later steps.
-```
+Create `example.yaml` in `/etc/jumpstarter/exporters` with this content:
 
 ```yaml
-# /etc/jumpstarter/exporters/demo.yaml
 apiVersion: jumpstarter.dev/v1alpha1
 kind: ExporterConfig
 metadata:
   namespace: default
-  name: demo
-# endpoint and token are intentionally left empty
+  name: example
 endpoint: ""
 token: ""
-# mock drivers for demo purpose
 export:
   storage:
     type: jumpstarter_driver_opendal.driver.MockStorageMux
@@ -48,25 +40,29 @@ export:
 
 ## Spawn an Exporter Shell
 
-To interact locally with the exporter we created above, we can use the "exporter
-shell" functionality within the `jmp` CLI. When a shell is spawned, a local
-exporter instance runs in the background while the shell session is active.
+Interact with your local exporter using the "exporter shell" functionality in
+the `jmp` CLI. When you spawn a shell, Jumpstarter runs a local exporter
+instance in the background for the duration of your shell session.
 
 ```shell
-# Spawn a new exporter shell for "demo"
-$ jmp shell --exporter demo
+$ jmp shell --exporter example
+```
+
+### Exiting the Exporter Shell
+
+To terminate the local exporter, simply exit the shell:
+
+```shell
+$ exit
 ```
 
 ### Interact with the Exporter Shell
 
-If the drivers specified in the exporter configuration provide a CLI interface,
-it will be available through the magic `j` command within the exporter shell.
+The exporter shell provides access to driver CLI interfaces through the magic
+`j` command:
 
 ```shell
-# Enter the shell
-$ jmp shell --exporter demo
-
-# Running inside exporter shell
+$ jmp shell --exporter example
 $ j
 Usage: j [OPTIONS] COMMAND [ARGS]...
 
@@ -78,51 +74,64 @@ Options:
 Commands:
   power    Generic power
   storage  Generic storage mux
-
-# Simulate turning on the power
 $ j power on
 ok
-
-# Exit the shell
 $ exit
 ```
 
+When you run the `j` command in the exporter shell, you're accessing the CLI
+interfaces exposed by the drivers configured in your exporter. In this example:
+
+- `j power on` - Activates the power interface from the MockPower driver
+- `j storage` - Would access the storage interface from the MockStorageMux
+  driver
+
+Each driver can expose different commands through this interface, making it easy
+to interact with the mock hardware. The command structure follows `j
+<driver_type> <action>`, where available actions depend on the specific driver.
+
 ### Use the Python API in a Shell
 
-As the shell exposes the local exporter via environment variables, we can run
-any command or Python script that interacts with a client/exporter.
-
-This allows us to use the Python API directly without having to interact with
-the CLI. This is often useful for more complex scripts or if a specific driver
-doesn't provide a client CLI.
+The exporter shell exposes the local exporter via environment variables,
+enabling you to run any Python code that interacts with the client/exporter.
+This approach works especially well for complex operations or when a driver
+doesn't provide a CLI.
 
 #### Running a Python Script
 
-The easiest way to interact with the exporter is to run a quick Python script
-directly from the command line. This is particularly useful when no CLI is
-available.
+Run a quick Python script directly from the command line:
 
 ```shell
-# Enter the shell
-$ jmp shell --exporter demo
-# Running python inside exporter shell
+$ jmp shell --exporter example
 $ python - <<EOF
 from jumpstarter.common.utils import env
 with env() as client:
     print(client.power.on())
 EOF
 ok
-# Exit the shell
 $ exit
 ```
 
+This example demonstrates using Python to interact with the exporter:
+
+1. The `env()` function from `jumpstarter.common.utils` automatically connects
+   to the exporter configured in your shell environment.
+
+2. The `with env() as client:` statement creates a client connected to your
+   local exporter and handles connection setup and cleanup.
+
+3. `client.power.on()` directly calls the power driver's "on" method—the same
+   action that `j power on` performs in the CLI.
+
+This approach gives you programmatic access to all driver functions, allowing
+you to create automated sequences and complex control logic beyond what's
+possible with simple CLI commands.
+
 #### Running a Python File
 
-For more complex use cases, a Python file can also be run directly from within
-the shell.
+For more complex scenarios, create and run the follow `example.py` file:
 
 ```python
-# demo.py
 import time
 
 from jumpstarter.common.utils import env
@@ -144,19 +153,34 @@ with env() as client:
 ```
 
 ```shell
-# Enter the shell
-$ jmp shell --exporter demo
-# Running python inside exporter shell
-$ python ./demo.py
-# Exit the shell
+$ jmp shell --exporter example
+$ python ./example.py
 $ exit
 ```
 
+This example demonstrates a complete power cycle workflow using a Python file:
+
+1. The script creates a sequence of operations (power on → wait → power off)
+   that would be tedious to perform manually through the CLI.
+
+2. Using a separate file allows you to:
+
+   - Save and reuse complex sequences
+   - Add logic, error handling, and conditional operations
+   - Import other Python libraries (like `time` in this example)
+   - Build more sophisticated automation scripts
+
+3. When you run the script in the exporter shell, it has access to the same
+   client environment as the interactive Python example, but with the advantages
+   of using a persistent file.
+
+This approach is ideal for test scripts, device initialization sequences, and
+other multi-step operations that need to be repeated consistently.
+
 #### Running `pytest` in the Shell
 
-If you are running multiple test cases, it may be more efficient to run a
-`pytest` suite. Jumpstarter provides a built-in testing library called
-`jumpstarter_testing` which provides the `JumpstarterTest` fixture.
+For multiple test cases, run a `pytest` suite using Jumpstarter's built-in
+testing library:
 
 ```python
 # mytest.py
@@ -171,15 +195,30 @@ class MyTest(JumpstarterTest):
 ```
 
 ```shell
-# Enter the shell
-$ jmp shell --exporter demo
-# Running python inside exporter shell
+$ jmp shell --exporter example
 $ pytest ./mytest.py
-# Exit the shell
 $ exit
 ```
 
-### Exiting the Exporter Shell
+This example demonstrates using `pytest` for structured testing with
+Jumpstarter:
 
-Once you are done with the exporter, simply exit the exporter shell and the
-local exporter will be terminated.
+1. The `JumpstarterTest` is a `pytest` fixture that:
+
+   - Automatically establishes a connection to your exporter
+   - Provides a pre-configured `client` object to each test method
+   - Handles setup and teardown between tests
+
+2. Each test method receives the `client` parameter, giving access to all driver
+   interfaces just like in the previous examples.
+
+3. Benefits of using `pytest`:
+
+   - Organize tests into logical classes and methods
+   - Generate test reports with success/failure statuses
+   - Use `pytest`'s extensive features (parameterization, fixtures, etc.)
+   - Run selective tests based on names or tags
+
+This approach is ideal for creating test suites that verify your hardware
+behaves correctly under different conditions, allowing for systematic testing
+and validation.
