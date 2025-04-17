@@ -5,8 +5,8 @@ on the same host.
 
 ## Prerequisites
 
-Install [the following packages](../installation/python-package.md) in your
-Python environment:
+Install [the following packages](../installation/packages.md) in your Python
+environment:
 
 - `jumpstarter-cli` - The Jumpstarter CLI for interacting with exporters
 - `jumpstarter-driver-opendal` - The OpenDAL storage driver for file operations

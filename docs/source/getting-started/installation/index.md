@@ -3,6 +3,6 @@
 ```{toctree}
 :maxdepth: 1
 :hidden:
-python-package.md
+packages.md
 service.md
 ```

@@ -5,8 +5,8 @@ controller service, configuring drivers, and running the exporter.
 
 ## Prerequisites
 
-Install [the following packages](../installation/python-package.md) in your
-Python environment:
+Install [the following packages](../installation/packages.md) in your Python
+environment:
 
 - `jumpstarter-cli` - The core Jumpstarter CLI
 - `jumpstarter-driver-opendal` - The OpenDAL storage driver
