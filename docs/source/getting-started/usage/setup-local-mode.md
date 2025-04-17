@@ -112,7 +112,6 @@ from jumpstarter.common.utils import env
 
 with env() as client:
     client.power.on()
-    time.sleep(3)
     client.power.off()
 ```
 
@@ -133,7 +132,10 @@ This example demonstrates how Python interacts with the exporter:
 3. `client.power.on()` directly calls the power driver's "on" method—the same
    action that `j power on` performs in the CLI.
 
-4. Using a Python file allows you to:
+4. `client.power.off()` directly calls the power driver's "off" method—the same
+   action that `j power off` performs in the CLI.
+
+Using a Python with Jumpstarter allows you to:
 
    - Create sequences of operations (power on → wait → power off)
    - Save and reuse complex workflows
@@ -176,13 +178,9 @@ Jumpstarter:
 2. Each test method receives the `client` parameter, giving access to all driver
    interfaces just like in the previous examples.
 
-3. Benefits of using `pytest`:
+Benefits of using `pytest` with Jumpstarter are:
 
    - Organize tests into logical classes and methods
    - Generate test reports with success/failure statuses
    - Use `pytest`'s extensive features (parameterization, fixtures, etc.)
    - Run selective tests based on names or tags
-
-This approach is ideal for creating test suites that verify your hardware
-behaves correctly under different conditions, allowing for systematic testing
-and validation.
