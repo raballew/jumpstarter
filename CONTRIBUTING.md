@@ -142,10 +142,9 @@ After creating your driver skeleton:
 To test your driver during development:
 
 ```shell
-# From the project root
-make sync  # Synchronize dependencies
+make sync
 cd packages/your_driver_package
-pytest     # Run tests for your driver
+pytest
 ```
 
 #### Driver Best Practices
@@ -228,10 +227,8 @@ This is a warning admonition
 ```
 
 ```python
-# This is a code block
 def example():
-    print("Hello, world!")
-```
+    print("This is a code block")
 ```
 
 #### Documentation Style Guide

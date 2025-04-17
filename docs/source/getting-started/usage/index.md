@@ -5,4 +5,5 @@
 :hidden:
 setup-local-mode.md
 setup-distributed-mode.md
+usage-examples.md
 ```
