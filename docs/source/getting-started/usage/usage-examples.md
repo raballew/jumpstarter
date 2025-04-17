@@ -8,17 +8,17 @@ is more meant to be a pattern.
 
 Start a local exporter session:
 ```shell
-jmp shell --exporter example-local
+$ jmp shell --exporter example-local
 ```
 
 Start a distributed exporter session:
 ```shell
-jmp shell --client hello --selector example.com/board=foo
+$ jmp shell --client hello --selector example.com/board=foo
 ```
 
 When finished, simply exit the shell:
 ```shell
-exit
+$ exit
 ```
 
 ### Interact with the Exporter Shell

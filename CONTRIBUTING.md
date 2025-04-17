@@ -42,11 +42,8 @@ Please be respectful and considerate of others when contributing to the project.
 ## Development Setup
 
 ```shell
-# Install dependencies
-make sync
-
-# Run tests
-make test
+$ make sync
+$ make test
 ```
 
 ## Contribution Guidelines
@@ -87,14 +84,14 @@ Jumpstarter users.
 To create a new driver scaffold, you can use the `create_driver.sh` script:
 
 ```shell
-./__templates__/create_driver.sh vendor_name driver_name "Your Name" "your.email@example.com"
+$ ./__templates__/create_driver.sh vendor_name driver_name "Your Name" "your.email@example.com"
 ```
 
 This will create the necessary files and structure for your driver in the
 `packages/` directory. For example:
 
 ```shell
-./__templates__/create_driver.sh yepkit Ykush "Your Name" "your.email@example.com"
+$ ./__templates__/create_driver.sh yepkit Ykush "Your Name" "your.email@example.com"
 ```
 
 Creates:
@@ -142,9 +139,9 @@ After creating your driver skeleton:
 To test your driver during development:
 
 ```shell
-make sync
-cd packages/your_driver_package
-pytest
+$ make sync
+$ cd packages/your_driver_package
+$ pytest
 ```
 
 #### Driver Best Practices
@@ -179,9 +176,7 @@ environment:
 To build and preview the documentation locally:
 
 ```shell
-cd docs
-make html      # Build HTML documentation
-make docs-serve # Serve documentation locally for preview
+$ make docs-serve
 ```
 
 The documentation will be available at http://localhost:8000 in your web

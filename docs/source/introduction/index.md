@@ -90,8 +90,8 @@ drivers, create automation scripts, and test with QEMU or other virtualization
 tools.
 
 ```shell
-jmp shell --exporter my-exporter
-pytest test_device.py
+$ jmp shell --exporter my-exporter
+$ pytest test_device.py
 ```
 
 The example above shows typical local mode usage: first connecting to an
@@ -177,9 +177,9 @@ credentials, ensuring proper resource isolation in shared testing environments.
 The following example shows how to run tests in distributed mode:
 
 ```shell
-jmp config client use my-client
-jmp create lease --selector vendor=acme,model=widget-v2
-pytest test_device.py
+$ jmp config client use my-client
+$ jmp create lease --selector vendor=acme,model=widget-v2
+$ pytest test_device.py
 ```
 
 The example above demonstrates the distributed mode workflow: first configuring
