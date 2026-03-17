@@ -9,8 +9,8 @@
 ### Phase 1: Setup & Foundation
 
 - [ ] [T001] [P] Setup: Write failing test for default columns in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/test_leases.py
-- [ ] [T002] [P] Setup: Write failing test for wide output mode in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/test_leases.py
-- [ ] [T003] [P] Setup: Write failing test for remaining time calculation in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/test_datetime.py
+- [ ] [T002] [P] Setup: Write failing test for wide output mode showing all 10 columns (NAME, CLIENT, SELECTOR, EXPORTER, DURATION, STATUS, REASON, BEGIN, END, AGE) in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/test_leases.py
+- [ ] [T003] [P] Setup: Write failing test for remaining time calculation in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/datetime_test.py
 
 ### Phase 2: Time Utilities (Foundation)
 
@@ -22,7 +22,7 @@
 - [ ] [T006] [S1] Add output_mode parameter support to rich_add_columns in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/leases.py
 - [ ] [T007] [S1] Add output_mode parameter support to rich_add_rows in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/leases.py
 - [ ] [T008] [S1] Implement default column set (NAME, CLIENT, EXPORTER, REMAINING) in rich_add_columns
-- [ ] [T009] [S1] Implement wide column set (all existing columns) in rich_add_columns
+- [ ] [T009] [S1] Implement wide column set (NAME, CLIENT, SELECTOR, EXPORTER, DURATION, STATUS, REASON, BEGIN, END, AGE) in rich_add_columns
 - [ ] [T010] [S1] Update rich_add_rows to output appropriate columns based on output_mode
 - [ ] [T011] [S1] Verify default columns test passes
 
@@ -35,16 +35,16 @@
 
 ### Phase 5: CLI Integration
 
-- [ ] [T016] Add --output wide option to opt_output_all in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/opt.py
-- [ ] [T017] Update model_print to pass output_mode to rich_add_columns in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/print.py
-- [ ] [T018] Update model_print to pass output_mode to rich_add_rows in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/print.py
-- [ ] [T019] Verify get leases command shows default columns by default
-- [ ] [T020] Verify get leases -o wide shows all columns
+- [ ] [T016] [S1] Add "wide" to OutputMode class choices and opt_output_all in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/opt.py
+- [ ] [T017] [S1] [S2] Update model_print to pass output parameter to rich_add_columns via kwargs in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/print.py
+- [ ] [T018] [S1] [S2] Update model_print to pass output parameter to rich_add_rows via kwargs in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/print.py
+- [ ] [T019] [S1] Verify get leases command shows default columns by default
+- [ ] [T020] [S1] Verify get leases -o wide shows all 10 columns
 
 ### Phase 6: Edge Cases & Polish
 
-- [ ] [T021] [P] Write test for lease with no begin_time (pending state)
-- [ ] [T022] [P] Write test for lease with <1 minute remaining
+- [ ] [T021] [P] Write test for lease with no begin_time (pending state) displays "-"
+- [ ] [T022] [P] Write test for lease with <1 minute remaining displays "<1m"
 - [ ] [T023] [P] Handle edge case: lease with no begin_time displays "-" in REMAINING
 - [ ] [T024] [P] Handle edge case: lease with <1 minute remaining displays "<1m"
 - [ ] [T025] [P] Verify JSON/YAML output modes are not affected by changes
@@ -87,7 +87,9 @@ T001-T003 (tests) -> T004-T005 (foundation) -> T006-T011 (S1) -> T012-T015 (S2) 
 
 ### Parallel Work Opportunities
 - T001, T002, T003 can be written in parallel [P]
+- T004, T005 can be executed in parallel [P]
 - T021, T022 can be written in parallel [P]
+- T023, T024, T025, T026 can be implemented in parallel [P]
 - T027, T028, T030 can run in parallel [P]
 
 ### Sequential Dependencies
@@ -130,7 +132,7 @@ T001-T003 (tests) -> T004-T005 (foundation) -> T006-T011 (S1) -> T012-T015 (S2) 
 - `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/datetime.py` - Add time_remaining function
 - `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/leases.py` - Add output_mode support, REMAINING column
 - `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/test_leases.py` - Add column and time display tests
-- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/test_datetime.py` - Add time_remaining tests (create if needed)
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/datetime_test.py` - Add time_remaining tests
 - `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/opt.py` - Add "wide" to OutputMode
 - `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/print.py` - Pass output_mode to rich methods
 

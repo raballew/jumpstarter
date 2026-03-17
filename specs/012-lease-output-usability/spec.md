@@ -56,9 +56,11 @@ The REMAINING column should display time remaining in a human-friendly format li
 
 - **FR-001**: The default columns for `jmp get leases` MUST be NAME, CLIENT, EXPORTER, and REMAINING.
 - **FR-002**: The REMAINING column MUST show remaining time in human-readable relative format (e.g., "2h 15m").
-- **FR-003**: A wide output mode (`-o wide`) MUST show all available columns.
+- **FR-003**: A wide output mode (`-o wide`) MUST show all available columns: NAME, CLIENT, SELECTOR, EXPORTER, DURATION, STATUS, REASON, BEGIN, END, AGE.
 - **FR-004**: Expired leases MUST show "Expired" in the REMAINING column.
 - **FR-005**: Pending leases (no begin time) MUST show "-" in the REMAINING column.
+- **FR-006**: Leases with less than 1 minute remaining MUST show "<1m" in the REMAINING column.
+- **FR-007**: Wide output mode MUST NOT affect JSON, YAML, or NAME output modes.
 
 ### Key Entities
 
