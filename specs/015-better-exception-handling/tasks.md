@@ -62,10 +62,10 @@
 ## Phase 4: Polish & Edge Cases
 
 ### Edge Case Handling
-- [ ] [T032] [P] [S1] Write failing test for chained exceptions in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions_test.py`
-- [ ] [T033] [S1] Ensure chained exceptions display appropriately in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
-- [ ] [T034] [P] [S1] Write failing test for exceptions within BaseExceptionGroup in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions_test.py`
-- [ ] [T035] [S1] Ensure BaseExceptionGroup handling works with new mapping in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
+- [ ] [T032] [P] Write failing test for chained exceptions in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions_test.py`
+- [ ] [T033] [P] Ensure chained exceptions display appropriately in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
+- [ ] [T034] [P] Write failing test for exceptions within BaseExceptionGroup in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions_test.py`
+- [ ] [T035] [P] Ensure BaseExceptionGroup handling works with new mapping in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
 
 ### Testing & Validation
 - [ ] [T036] [P] Run package tests with `make pkg-test-jumpstarter-cli-common`
@@ -76,8 +76,8 @@
 - [ ] [T041] [P] Verify debug mode shows full tracebacks
 
 ### Documentation
-- [ ] [T042] Add docstrings to new functions in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
-- [ ] [T043] Update CLAUDE.md if needed at `/var/home/raballew/code/jumpstarter/CLAUDE.md`
+- [ ] [T042] [P] Add docstrings to new functions in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
+- [ ] [T043] [P] Update CLAUDE.md if needed at `/var/home/raballew/code/jumpstarter/CLAUDE.md`
 
 ---
 
