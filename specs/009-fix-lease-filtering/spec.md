@@ -40,6 +40,8 @@ A user filters leases using a `name=<exporter-name>` selector. The server return
 
 ### Edge Cases
 
+**Note**: Edge cases are addressed in Phase 5 (Polish) after core functionality is verified.
+
 - What happens when the user provides an invalid label selector format (e.g., `-l ===invalid`)?
 - What happens when a lease has an empty selector?
 - How does filtering behave with special characters in label values?
@@ -49,7 +51,7 @@ A user filters leases using a `name=<exporter-name>` selector. The server return
 ### Functional Requirements
 
 - **FR-001**: The CLI MUST filter leases client-side so that only leases whose selector matches the user-provided `-l` filter are displayed.
-- **FR-002**: Label matching MUST compare key-value pairs: a lease matches if its selector contains all key-value pairs specified in the filter.
+- **FR-002**: Label matching MUST use subset semantics: a lease matches if its selector matchLabels contains all key-value pairs specified in the filter (the lease selector may contain additional labels beyond those in the filter).
 - **FR-003**: Name-based selectors (`name=<value>`) MUST be matched against the lease's selector matchLabels.
 - **FR-004**: When no leases match the filter, the CLI MUST display an empty result set (not an error).
 

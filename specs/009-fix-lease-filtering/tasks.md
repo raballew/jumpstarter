@@ -38,14 +38,14 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T003 [US1] Write failing test: filtering with matching label returns only matching leases in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
-- [ ] T004 [P] [US1] Write failing test: filtering with no matches returns empty list in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
-- [ ] T005 [P] [US1] Write failing test: filtering with subset of compound selector matches in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
+- [ ] T003 [US1] Write failing test: filtering with matching label returns only matching leases (validates SC-001) in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
+- [ ] T004 [P] [US1] Write failing test: filtering with no matches returns empty list (validates FR-004, SC-003) in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
+- [ ] T005 [P] [US1] Write failing test: filtering with subset of compound selector matches (validates FR-002, SC-001) in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Fix selector_contains() to correctly match user filter against lease selector in python/packages/jumpstarter/jumpstarter/client/selectors.py
-- [ ] T007 [US1] Verify filter_by_selector() correctly uses fixed selector_contains() in python/packages/jumpstarter/jumpstarter/client/grpc.py
+- [ ] T006 [US1] Fix selector_contains() to correctly match user filter against lease selector (implements FR-001, FR-002) in python/packages/jumpstarter/jumpstarter/client/selectors.py
+- [ ] T007 [US1] Verify filter_by_selector() correctly uses fixed selector_contains() (implements FR-001) in python/packages/jumpstarter/jumpstarter/client/grpc.py
 
 **Checkpoint**: Label-based filtering works correctly.
 
@@ -59,12 +59,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T008 [US2] Write failing test: name selector matches lease targeting that exporter in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
-- [ ] T009 [P] [US2] Write failing test: name selector does not match lease targeting different exporter in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
+- [ ] T008 [US2] Write failing test: name selector matches lease targeting that exporter (validates FR-003) in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
+- [ ] T009 [P] [US2] Write failing test: name selector does not match lease targeting different exporter (validates FR-003) in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Ensure name=value selectors are parsed and matched correctly in python/packages/jumpstarter/jumpstarter/client/selectors.py
+- [ ] T010 [US2] Ensure name=value selectors are parsed and matched correctly (implements FR-003) in python/packages/jumpstarter/jumpstarter/client/selectors.py
 
 **Checkpoint**: Name-based filtering works correctly.
 
@@ -74,7 +74,8 @@
 
 - [ ] T011 Handle edge case: invalid selector format in python/packages/jumpstarter/jumpstarter/client/selectors.py
 - [ ] T012 Handle edge case: lease with empty selector in python/packages/jumpstarter/jumpstarter/client/selectors.py
-- [ ] T013 Run full test suite with `make pkg-test-jumpstarter`
+- [ ] T013 [P] Write failing test: special characters in label values in python/packages/jumpstarter/jumpstarter/client/selectors_test.py
+- [ ] T014 Run full test suite with `make pkg-test-jumpstarter` (verifies SC-002)
 
 ---
 
