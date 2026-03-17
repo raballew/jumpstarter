@@ -51,7 +51,11 @@ The Flasher driver already auto-detects compression from file extensions. Storag
 - **FR-001**: StorageMux drivers MUST auto-detect compression format from the file extension (.xz, .gz, .bz2, .zst).
 - **FR-002**: Auto-detection MUST be overridable with an explicit `--compression` flag.
 - **FR-003**: When `--compression none` is specified, auto-detection MUST be skipped.
-- **FR-004**: URL query parameters MUST be stripped before extension detection.
+- **FR-004**: URL query parameters and fragment identifiers MUST be stripped before extension detection.
+- **FR-005**: Extension matching MUST be case-insensitive (.XZ and .xz treated identically).
+- **FR-006**: For double extensions (e.g., .tar.xz), only the final extension MUST be used for compression detection.
+- **FR-007**: Unrecognized compression extensions MUST be treated as uncompressed (return None).
+- **FR-008**: URL parsing errors MUST be handled gracefully without crashing.
 
 ### Key Entities
 

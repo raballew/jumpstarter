@@ -34,11 +34,39 @@ Add compression auto-detection to StorageMux drivers (SDWire, SDMux, DUTLink) ba
 
 ```text
 python/packages/jumpstarter-driver-flashers/
-└── jumpstarter_driver_flashers/   # Existing Flasher compression detection
+├── jumpstarter_driver_flashers/
+│   ├── compression.py              # NEW: Shared compression detection utility
+│   └── driver.py                   # MODIFY: Update to use shared utility
+└── tests/
+    └── test_compression_detection.py # NEW: Tests for compression detection
+
 python/packages/jumpstarter-driver-sdwire/
-└── jumpstarter_driver_sdwire/     # Add auto-detection
-python/packages/jumpstarter-driver-sdmux/
-└── jumpstarter_driver_sdmux/      # Add auto-detection (if separate)
+├── jumpstarter_driver_sdwire/
+│   └── driver.py                   # MODIFY: Add auto-detection using shared utility
+└── tests/
+    └── test_driver.py              # MODIFY: Add auto-detection tests
 ```
 
-**Structure Decision**: Extract compression detection to a shared utility, use it in both Flasher and StorageMux drivers.
+**Structure Decision**: Extract compression detection to a shared utility in jumpstarter-driver-flashers package, use it in both Flasher and StorageMux drivers.
+
+## Architecture Details
+
+### Shared Compression Detection Utility
+
+**Location**: `python/packages/jumpstarter-driver-flashers/jumpstarter_driver_flashers/compression.py`
+
+**Function Signature**:
+```python
+def detect_compression_from_url(url: str) -> str | None:
+    """
+    Detect compression format from URL file extension.
+
+    Args:
+        url: File URL or path (may include query parameters and fragments)
+
+    Returns:
+        Compression format string ('xz', 'gz', 'bz2', 'zst') or None if uncompressed
+    """
+```
+
+**Integration Point**: StorageMux driver will call this function before setting compression parameter, only if user hasn't explicitly specified `--compression`.

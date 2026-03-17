@@ -21,8 +21,36 @@
 
 ## URL Query Parameter Handling
 
-**Decision**: Strip query parameters before extension detection using `urllib.parse.urlparse`.
+**Decision**: Strip query parameters and fragment identifiers before extension detection using `urllib.parse.urlparse`.
 
-**Rationale**: Presigned URLs (AWS S3, etc.) have parameters like `?Expires=...&Signature=...` that would break extension detection.
+**Rationale**: Presigned URLs (AWS S3, etc.) have parameters like `?Expires=...&Signature=...` that would break extension detection. Fragment identifiers (#section) could also interfere.
 
 **Alternatives considered**: None -- this is the standard approach.
+
+## Edge Case Handling
+
+### Double Extensions (.tar.xz)
+
+**Decision**: Extract only the final extension for compression detection.
+
+**Rationale**: The compression format is determined by the outermost layer. `.tar.xz` means xz-compressed tar archive, so `.xz` is the relevant compression.
+
+**Implementation**: Use `os.path.splitext()` or similar to get the final extension.
+
+### Unrecognized Extensions
+
+**Decision**: Return None for extensions not in the supported list (.xz, .gz, .bz2, .zst).
+
+**Rationale**: Graceful degradation - treat as uncompressed rather than failing.
+
+### Case Sensitivity
+
+**Decision**: Convert extensions to lowercase before matching.
+
+**Rationale**: File systems and URLs may use mixed case (.XZ, .Xz, .xz). Normalize for consistent behavior.
+
+### Malformed URLs
+
+**Decision**: Handle URL parsing errors gracefully, defaulting to None.
+
+**Rationale**: Invalid URLs should not crash the detection logic. Fall back to no compression.
