@@ -218,11 +218,16 @@ $ sudo mkdir /etc/jumpstarter
 
 To start a Jumpstarter container with all the driver packages pre-installed, run:
 
+```{note}
+The kubeconfig mount (`-v "${HOME}/.kube/config:/root/.kube/config":z`) is required for Kubernetes-dependent commands like `jmp get exporters` or `jmp lease create`. If your kubeconfig is at a non-default location (set via the `KUBECONFIG` environment variable), adjust the mount path accordingly.
+```
+
 ````{tab} Podman
 ```{code-block} console
 :substitutions:
 $ podman run --rm -it \
     -v "${HOME}/.config/jumpstarter/:/root/.config/jumpstarter":z \
+    -v "${HOME}/.kube/config:/root/.kube/config":z \
     quay.io/jumpstarter-dev/jumpstarter:{{version}} jmp
 ```
 ````
@@ -232,6 +237,7 @@ $ podman run --rm -it \
 :substitutions:
 $ docker run --rm -it \
     -v "${HOME}/.config/jumpstarter/:/root/.config/jumpstarter":z \
+    -v "${HOME}/.kube/config:/root/.kube/config":z \
     quay.io/jumpstarter-dev/jumpstarter:{{version}} jmp
 ```
 ````
@@ -247,6 +253,7 @@ We recommend adding this alias to your shell profile (`~/.bashrc` or `~/.zshrc`)
 $ alias jmp='podman run --rm -it -w /home \
     -v "$(pwd):/home":z \
     -v "${HOME}/.config/jumpstarter/:/root/.config/jumpstarter":z \
+    -v "${HOME}/.kube/config:/root/.kube/config":z \
     quay.io/jumpstarter-dev/jumpstarter:{{version}} jmp'
 ```
 ````
@@ -257,6 +264,7 @@ $ alias jmp='podman run --rm -it -w /home \
 $ alias jmp='docker run --rm -it -w /home \
     -v "$(pwd):/home":z \
     -v "${HOME}/.config/jumpstarter/:/root/.config/jumpstarter":z \
+    -v "${HOME}/.kube/config:/root/.kube/config":z \
     quay.io/jumpstarter-dev/jumpstarter:{{version}} jmp'
 ```
 ````
@@ -277,6 +285,7 @@ typically requires `root` privileges:
 :substitutions:
 $ sudo podman run --rm -it \
     -v "${HOME}/.config/jumpstarter/:/root/.config/jumpstarter":z \
+    -v "${HOME}/.kube/config:/root/.kube/config":z \
     --net=host --privileged \
     -v /run/udev:/run/udev -v /dev:/dev -v /etc/jumpstarter:/etc/jumpstarter:z \
     quay.io/jumpstarter-dev/jumpstarter:{{version}} jmp
@@ -288,6 +297,7 @@ $ sudo podman run --rm -it \
 :substitutions:
 $ sudo docker run --rm -it \
     -v "${HOME}/.config/jumpstarter/:/root/.config/jumpstarter":z \
+    -v "${HOME}/.kube/config:/root/.kube/config":z \
     --net=host --privileged \
     -v /run/udev:/run/udev -v /dev:/dev -v /etc/jumpstarter:/etc/jumpstarter:z \
     quay.io/jumpstarter-dev/jumpstarter:{{version}} jmp
