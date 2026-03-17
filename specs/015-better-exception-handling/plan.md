@@ -40,4 +40,4 @@ python/packages/jumpstarter-cli/jumpstarter_cli/
 └── jmp.py              # Wire up top-level handler
 ```
 
-**Structure Decision**: Extend existing `exceptions.py` in cli-common rather than creating a new module.
+**Structure Decision**: Extend existing `exceptions.py` in cli-common rather than creating a new module. The exception handlers are implemented as decorators that are already applied to CLI commands throughout the codebase.

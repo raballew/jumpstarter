@@ -22,9 +22,9 @@
 
 ## Debug Mode
 
-**Decision**: Use existing `--debug` or `JUMPSTARTER_DEBUG` env var to show full tracebacks.
+**Decision**: Use existing `--log-level DEBUG` flag or introduce `JUMPSTARTER_DEBUG` env var to show full tracebacks.
 
-**Rationale**: Avoids adding a new flag. The env var approach works for all commands without per-command changes.
+**Rationale**: The `--log-level DEBUG` flag already exists. The env var approach works for all commands without per-command changes.
 
 **Alternatives considered**:
 - Per-command `--verbose` flag: Would require changes to every command definition.

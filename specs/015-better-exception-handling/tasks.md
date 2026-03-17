@@ -62,18 +62,18 @@
 ## Phase 4: Polish & Edge Cases
 
 ### Edge Case Handling
-- [ ] [T032] Write failing test for chained exceptions in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions_test.py`
-- [ ] [T033] Ensure chained exceptions display appropriately in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
-- [ ] [T034] Write failing test for exceptions within BaseExceptionGroup in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions_test.py`
-- [ ] [T035] Ensure BaseExceptionGroup handling works with new mapping in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
+- [ ] [T032] [P] [S1] Write failing test for chained exceptions in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions_test.py`
+- [ ] [T033] [S1] Ensure chained exceptions display appropriately in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
+- [ ] [T034] [P] [S1] Write failing test for exceptions within BaseExceptionGroup in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions_test.py`
+- [ ] [T035] [S1] Ensure BaseExceptionGroup handling works with new mapping in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
 
 ### Testing & Validation
 - [ ] [T036] [P] Run package tests with `make pkg-test-jumpstarter-cli-common`
 - [ ] [T037] [P] Run type checking with `make pkg-ty-jumpstarter-cli-common`
 - [ ] [T038] [P] Run linting with `make lint-fix`
-- [ ] [T039] Manually test all common error scenarios from research.md
-- [ ] [T040] Verify no raw stack traces appear in normal operation
-- [ ] [T041] Verify debug mode shows full tracebacks
+- [ ] [T039] [P] Manually test all common error scenarios from research.md
+- [ ] [T040] [P] Verify no raw stack traces appear in normal operation
+- [ ] [T041] [P] Verify debug mode shows full tracebacks
 
 ### Documentation
 - [ ] [T042] Add docstrings to new functions in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli-common/jumpstarter_cli_common/exceptions.py`
