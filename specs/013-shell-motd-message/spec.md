@@ -46,9 +46,10 @@ An administrator configures custom MOTD text in the exporter configuration that 
 
 ### Edge Cases
 
-- What happens with very long MOTD messages? Print as-is; no truncation.
-- How are multi-line MOTD messages handled? Print each line as-is.
-- Should MOTD be shown when running a command (e.g., `jmp shell -- python bar.py`)? No, only for interactive shells.
+- What happens with very long MOTD messages (>10KB)? Print as-is; no truncation. (Tested in T4.1)
+- How are multi-line MOTD messages handled? Print each line as-is. (Tested in T3.4-T3.6)
+- Should MOTD be shown when running a command (e.g., `jmp shell -- python bar.py`)? No, only for interactive shells. (FR-004, tested in T2.2, T2.11, T4.5)
+- What about special characters (tabs, unicode, ANSI codes)? Print as-is. (Tested in T4.2)
 
 ## Requirements *(mandatory)*
 
@@ -70,4 +71,13 @@ An administrator configures custom MOTD text in the exporter configuration that 
 
 - **SC-001**: Users see the exporter name upon entering an interactive shell session.
 - **SC-002**: Admin-configured MOTD text appears when set in the exporter config.
-- **SC-003**: Non-interactive `jmp shell -- <command>` usage is unaffected.
+- **SC-003**: Non-interactive `jmp shell -- <command>` usage is unaffected (no MOTD, command output not polluted).
+
+## Requirements Traceability
+
+| User Story | Functional Req | Success Criteria | Notes |
+|------------|----------------|------------------|-------|
+| US1: See exporter info | FR-001: Print exporter name | SC-001: See name at start | Core feature |
+| US1: See exporter info | FR-003: Print before subprocess | SC-001: See name at start | Implementation detail |
+| US1: See exporter info | FR-004: No MOTD for commands | SC-003: Commands unaffected | Edge case |
+| US2: Admin configures MOTD | FR-002: Display admin MOTD | SC-002: Admin MOTD appears | Extension feature |

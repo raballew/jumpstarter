@@ -4,66 +4,70 @@
 
 ## Phase 1: Foundational Changes
 
-### Configuration Model
-- [ ] [T1.1] [P] Write failing test for motd field in ExporterConfigV1Alpha1 in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/config/test_exporter.py`
+### Configuration Model (FR-002)
+- [ ] [T1.1] [P] Write failing test for motd field in ExporterConfigV1Alpha1 in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/config/exporter_test.py`
 - [ ] [T1.2] [P] Add optional motd field to ExporterConfigV1Alpha1 in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/config/exporter.py`
 - [ ] [T1.3] [P] Verify test T1.1 passes
 
-### Session Metadata
-- [ ] [T1.4] [P] Write failing test for motd in session metadata in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_session_metadata.py`
+### Session Metadata (FR-002)
+- [ ] [T1.4] [P] Write failing test for motd in session metadata in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/session_test.py`
 - [ ] [T1.5] [P] Add motd field to session metadata model in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/session.py`
 - [ ] [T1.6] [P] Verify test T1.4 passes
 - [ ] [T1.7] [P] Update exporter to include motd from config in session metadata response in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/exporter.py`
 
 ## Phase 2: User Story 1 - See exporter info when entering a shell (P1)
 
-### MOTD Display Logic
-- [ ] [T2.1] [P1] [Story1] Write failing test for MOTD display in launch_shell when no command provided in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
-- [ ] [T2.2] [P1] [Story1] Write failing test for NO MOTD display when command is provided in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
-- [ ] [T2.3] [P1] [Story1] Implement MOTD printing to stdout before subprocess launch in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
-- [ ] [T2.4] [P1] [Story1] Verify tests T2.1 and T2.2 pass
+### MOTD Display Logic (FR-001, FR-003, FR-004, SC-001)
+- [ ] [T2.1] [P1] [US1] Write failing test for MOTD display in launch_shell when no command provided in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- [ ] [T2.2] [P1] [US1] Write failing test for NO MOTD display when command is provided (FR-004) in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- [ ] [T2.3] [P1] [US1] Implement MOTD printing (format per data-model.md) to stdout before subprocess launch in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
+- [ ] [T2.4] [P1] [US1] Verify tests T2.1 and T2.2 pass
 
-### Display Format
-- [ ] [T2.5] [P1] [Story1] Write failing test for exporter name display format in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
-- [ ] [T2.6] [P1] [Story1] Implement exporter name display logic in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
-- [ ] [T2.7] [P1] [Story1] Verify test T2.5 passes
+### Display Format (FR-001, SC-001)
+- [ ] [T2.5] [P1] [US1] Write failing test for exporter name display format: "Connected to exporter: <name>" in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- [ ] [T2.6] [P1] [US1] Implement exporter name display logic in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
+- [ ] [T2.7] [P1] [US1] Verify test T2.5 passes
 
-### CLI Integration
-- [ ] [T2.8] [P1] [Story1] Write failing test for session metadata passed to launch_shell in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/tests/test_shell.py`
-- [ ] [T2.9] [P1] [Story1] Update shell.py to pass session metadata (including motd) to launch_shell in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell.py`
-- [ ] [T2.10] [P1] [Story1] Verify test T2.8 passes
+### CLI Integration (SC-001)
+- [ ] [T2.8] [P1] [US1] Write failing test for session metadata (including exporter name and motd) passed to launch_shell in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell_test.py`
+- [ ] [T2.9] [P1] [US1] Update shell.py to pass session metadata (including motd) to launch_shell in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell.py`
+- [ ] [T2.10] [P1] [US1] Verify test T2.8 passes
+
+### Command Execution Verification (FR-004, SC-003)
+- [ ] [T2.11] [P1] [US1] Write failing test verifying command output is not polluted when using non-interactive shell in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- [ ] [T2.12] [P1] [US1] Verify test T2.11 passes (no implementation needed if T2.2 properly implemented)
 
 ## Phase 3: User Story 2 - Admin configures MOTD content (P2)
 
-### Custom MOTD Text
-- [ ] [T3.1] [P2] [Story2] Write failing test for custom MOTD text display in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
-- [ ] [T3.2] [P2] [Story2] Implement custom MOTD text display logic in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
-- [ ] [T3.3] [P2] [Story2] Verify test T3.1 passes
+### Custom MOTD Text (FR-002, SC-002)
+- [ ] [T3.1] [P2] [US2] Write failing test for custom MOTD text display in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- [ ] [T3.2] [P2] [US2] Implement custom MOTD text display logic in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
+- [ ] [T3.3] [P2] [US2] Verify test T3.1 passes
 
-### Multi-line MOTD
-- [ ] [T3.4] [P2] [Story2] Write failing test for multi-line MOTD handling in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
-- [ ] [T3.5] [P2] [Story2] Ensure multi-line MOTD display works correctly in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
-- [ ] [T3.6] [P2] [Story2] Verify test T3.4 passes
+### Multi-line MOTD (SC-002)
+- [ ] [T3.4] [P2] [US2] Write failing test for multi-line MOTD handling in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- [ ] [T3.5] [P2] [US2] Ensure multi-line MOTD display works correctly in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
+- [ ] [T3.6] [P2] [US2] Verify test T3.4 passes
 
-### Empty/Missing MOTD
-- [ ] [T3.7] [P2] [Story2] Write failing test for no custom text when motd is None in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
-- [ ] [T3.8] [P2] [Story2] Verify no custom text section shown when motd not configured in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
-- [ ] [T3.9] [P2] [Story2] Verify test T3.7 passes
+### Empty/Missing MOTD (SC-002)
+- [ ] [T3.7] [P2] [US2] Write failing test for no custom text when motd is None in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- [ ] [T3.8] [P2] [US2] Verify no custom text section shown when motd not configured in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils.py`
+- [ ] [T3.9] [P2] [US2] Verify test T3.7 passes
 
 ## Phase 4: Polish & Edge Cases
 
 ### Edge Cases
-- [ ] [T4.1] [P] Write test for very long MOTD messages (>1000 chars) in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
-- [ ] [T4.2] [P] Write test for MOTD with special characters (newlines, unicode) in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
+- [ ] [T4.1] [P] Write test for very long MOTD messages (>10000 chars) in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- [ ] [T4.2] [P] Write test for MOTD with special characters (tabs, unicode, ANSI codes) in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
 - [ ] [T4.3] [P] Verify edge cases handled correctly
 
-### Integration Tests
-- [ ] [T4.4] [P] Add end-to-end test for shell command with MOTD display in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/tests/test_shell_e2e.py`
-- [ ] [T4.5] [P] Add end-to-end test for non-interactive shell (with command) without MOTD in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/tests/test_shell_e2e.py`
+### Integration Tests (SC-001, SC-002, SC-003)
+- [ ] [T4.4] [P] Add end-to-end test for interactive shell command with MOTD display in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell_e2e_test.py`
+- [ ] [T4.5] [P] Add end-to-end test for non-interactive shell (with command) without MOTD in `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell_e2e_test.py`
 
 ### Documentation
 - [ ] [T4.6] [P] Update exporter configuration documentation with motd field example
-- [ ] [T4.7] [P] Add example MOTD configurations to README or user guide
+- [ ] [T4.7] [P] Add example MOTD configurations to user documentation
 
 ## Checkpoints
 
@@ -80,7 +84,7 @@ Phase 1 (sequential for proper data flow)
   └─ T1.4 -> T1.5 -> T1.6 -> T1.7
      ↓
 Phase 2 (sequential for user story)
-  ├─ T2.1, T2.2 -> T2.3 -> T2.4
+  ├─ T2.1, T2.2, T2.11 -> T2.3 -> T2.4, T2.12
   ├─ T2.5 -> T2.6 -> T2.7
   └─ T2.8 -> T2.9 -> T2.10
      ↓
@@ -124,8 +128,8 @@ Phase 4 (parallel within phase)
 - `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell.py` - Pass session metadata to launch_shell
 
 ### Test Files Created/Modified
-- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/config/test_exporter.py`
-- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_session_metadata.py`
-- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/tests/common/test_utils.py`
-- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/tests/test_shell.py`
-- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/tests/test_shell_e2e.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/config/exporter_test.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/session_test.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell_test.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell_e2e_test.py`

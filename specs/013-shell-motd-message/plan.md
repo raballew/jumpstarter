@@ -47,3 +47,21 @@ python/packages/jumpstarter-cli/jumpstarter_cli/
 ```
 
 **Structure Decision**: Modify existing files; no new modules needed.
+
+## Test File Locations
+
+Following the project's test convention (co-located `*_test.py` files):
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/config/exporter_test.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/session_test.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter/jumpstarter/common/utils_test.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell_test.py`
+- `/var/home/raballew/code/jumpstarter/python/packages/jumpstarter-cli/jumpstarter_cli/shell_e2e_test.py`
+
+## Requirements Traceability
+
+| Requirement | Success Criteria | Tasks |
+|-------------|------------------|-------|
+| FR-001: Print exporter name | SC-001: Users see exporter name | T2.5, T2.6, T2.7, T2.8, T2.9, T2.10 |
+| FR-002: Display admin MOTD | SC-002: Admin MOTD appears | T1.1-T1.7, T3.1-T3.9 |
+| FR-003: Print before subprocess | SC-001: Name shown at start | T2.1, T2.3, T2.4 |
+| FR-004: No MOTD for commands | SC-003: Commands unaffected | T2.2, T2.11, T2.12, T4.5 |
