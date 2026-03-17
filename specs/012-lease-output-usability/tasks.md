@@ -14,8 +14,8 @@
 
 ### Phase 2: Time Utilities (Foundation)
 
-- [ ] [T004] Foundation: Implement time_remaining function in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/datetime.py
-- [ ] [T005] Foundation: Verify time_remaining tests pass for various states (active >1h, <1h, <1m, expired, pending)
+- [ ] [T004] [P] Foundation: Implement time_remaining function in /var/home/raballew/code/jumpstarter/python/packages/jumpstarter-kubernetes/jumpstarter_kubernetes/datetime.py
+- [ ] [T005] [P] Foundation: Verify time_remaining tests pass for various states (active >1h, <1h, <1m, expired, pending)
 
 ### Phase 3: User Story 1 - Default Columns (P1)
 
@@ -45,10 +45,10 @@
 
 - [ ] [T021] [P] Write test for lease with no begin_time (pending state)
 - [ ] [T022] [P] Write test for lease with <1 minute remaining
-- [ ] [T023] Handle edge case: lease with no begin_time displays "-" in REMAINING
-- [ ] [T024] Handle edge case: lease with <1 minute remaining displays "<1m"
-- [ ] [T025] Verify JSON/YAML output modes are not affected by changes
-- [ ] [T026] Verify NAME output mode is not affected by changes
+- [ ] [T023] [P] Handle edge case: lease with no begin_time displays "-" in REMAINING
+- [ ] [T024] [P] Handle edge case: lease with <1 minute remaining displays "<1m"
+- [ ] [T025] [P] Verify JSON/YAML output modes are not affected by changes
+- [ ] [T026] [P] Verify NAME output mode is not affected by changes
 - [ ] [T027] Run full test suite: make pkg-test-jumpstarter-kubernetes
 - [ ] [T028] Run full test suite: make pkg-test-jumpstarter-cli-common
 - [ ] [T029] Run linting: make lint-fix
@@ -136,5 +136,5 @@ T001-T003 (tests) -> T004-T005 (foundation) -> T006-T011 (S1) -> T012-T015 (S2) 
 
 ### Success Metrics (from spec.md)
 - SC-001: Default `jmp get leases` output shows only 4 most relevant columns
-- SC-002: Users can determine lease expiration at a glance without calculation
+- SC-002: Users can determine lease remaining time at a glance without calculation
 - SC-003: Wide output mode shows all columns for users who need full details
