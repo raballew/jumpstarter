@@ -22,7 +22,6 @@ class SourcePrefixFormatter(logging.Formatter):
             formatted_msg = f"[{record.name}] {msg}"
         else:
             formatted_msg = msg
-        # Replace the message for RichHandler rendering
         record.msg = formatted_msg
         record.args = None
         return super().format(record)
@@ -30,10 +29,7 @@ class SourcePrefixFormatter(logging.Formatter):
 
 def _opt_log_level_callback(ctx, param, value):
     traceback.install()
-    # there is no way to determine if the command is invoked for jmp run or something else at this
-    # point based on ctx and params, so we just look at sys.argv
     if len(sys.argv) > 1 and sys.argv[1] == "run":
-        # on a exporter run we don't want to use RichHandler for logs, just plain logs for the system journal
         basicConfig = partial(logging.basicConfig)
     else:
         handler = RichHandler(show_path=False)
@@ -118,6 +114,7 @@ class OutputMode(str):
     YAML = "yaml"
     NAME = "name"
     PATH = "path"
+    WIDE = "wide"
 
 
 OutputType = Optional[OutputMode]
@@ -125,9 +122,9 @@ OutputType = Optional[OutputMode]
 opt_output_all = click.option(
     "-o",
     "--output",
-    type=click.Choice([OutputMode.JSON, OutputMode.YAML, OutputMode.NAME]),
+    type=click.Choice([OutputMode.JSON, OutputMode.YAML, OutputMode.NAME, OutputMode.WIDE]),
     default=None,
-    help='Output mode. Use "-o name" for shorter output (resource/name).',
+    help='Output mode. Use "-o wide" for all columns, "-o name" for shorter output.',
 )
 
 NameOutputType = Optional[Literal["name"]]
@@ -211,14 +208,11 @@ def parse_comma_separated(
     if not value:
         return []
 
-    # Handle both single string and tuple (from multiple flag usage)
     items = [value] if isinstance(value, str) else list(value)
 
-    # Process tokens through the pipeline
     all_tokens = _normalize_tokens(items, normalize_case)
     unique_tokens = _deduplicate_tokens(all_tokens)
 
-    # Validate if allowed values are specified
     if allowed_values is not None:
         _validate_tokens(unique_tokens, allowed_values, ctx, param)
 
@@ -246,7 +240,6 @@ def opt_comma_separated(
     def callback(ctx, param, value):
         return parse_comma_separated(ctx, param, value, allowed_values, normalize_case)
 
-    # Auto-generate help text if not provided
     if help_text is None:
         if allowed_values:
             allowed_list = ", ".join(sorted(allowed_values))

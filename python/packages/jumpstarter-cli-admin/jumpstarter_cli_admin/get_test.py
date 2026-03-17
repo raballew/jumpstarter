@@ -977,9 +977,18 @@ status:
 def test_get_lease(_load_kube_config_mock, get_lease_mock: AsyncMock):
     runner = CliRunner()
 
-    # Get an in progress lease
+    # Get an in progress lease (default columns: NAME, CLIENT, EXPORTER, REMAINING)
     get_lease_mock.return_value = IN_PROGRESS_LEASE
     result = runner.invoke(get, ["lease", "82a8ac0d-d7ff-4009-8948-18a3c5c607b1"])
+    assert result.exit_code == 0
+    assert "82a8ac0d-d7ff-4009-8948-18a3c5c607b1" in result.output
+    assert "test_client" in result.output
+    assert "test_exporter" in result.output
+    get_lease_mock.reset_mock()
+
+    # Get an in progress lease with wide output (all columns)
+    get_lease_mock.return_value = IN_PROGRESS_LEASE
+    result = runner.invoke(get, ["lease", "82a8ac0d-d7ff-4009-8948-18a3c5c607b1", "--output", "wide"])
     assert result.exit_code == 0
     assert "82a8ac0d-d7ff-4009-8948-18a3c5c607b1" in result.output
     assert "test_client" in result.output
@@ -991,13 +1000,20 @@ def test_get_lease(_load_kube_config_mock, get_lease_mock: AsyncMock):
     assert "5m" in result.output
     get_lease_mock.reset_mock()
 
-    # Get a finished lease
+    # Get a finished lease (default columns)
     get_lease_mock.return_value = FINISHED_LEASE
     result = runner.invoke(get, ["lease", "82a8ac0d-d7ff-4009-8948-18a3c5c607b2"])
     assert result.exit_code == 0
     assert "82a8ac0d-d7ff-4009-8948-18a3c5c607b2" in result.output
     assert "test_client" in result.output
     assert "test_exporter" in result.output
+    get_lease_mock.reset_mock()
+
+    # Get a finished lease with wide output
+    get_lease_mock.return_value = FINISHED_LEASE
+    result = runner.invoke(get, ["lease", "82a8ac0d-d7ff-4009-8948-18a3c5c607b2", "--output", "wide"])
+    assert result.exit_code == 0
+    assert "82a8ac0d-d7ff-4009-8948-18a3c5c607b2" in result.output
     assert "*" in result.output
     assert "Ended" in result.output
     assert "Complete" in result.output
@@ -1189,7 +1205,7 @@ lease.jumpstarter.dev/82a8ac0d-d7ff-4009-8948-18a3c5c607b2
 def test_get_leases(_load_kube_config_mock, list_leases_mock: AsyncMock):
     runner = CliRunner()
 
-    # Found leases
+    # Found leases (default columns: NAME, CLIENT, EXPORTER, REMAINING)
     list_leases_mock.return_value = V1Alpha1LeaseList(items=[IN_PROGRESS_LEASE, FINISHED_LEASE])
     result = runner.invoke(get, ["leases"])
     assert result.exit_code == 0
@@ -1197,6 +1213,12 @@ def test_get_leases(_load_kube_config_mock, list_leases_mock: AsyncMock):
     assert "82a8ac0d-d7ff-4009-8948-18a3c5c607b2" in result.output
     assert "test_client" in result.output
     assert "test_exporter" in result.output
+    list_leases_mock.reset_mock()
+
+    # Found leases with wide output (all columns)
+    list_leases_mock.return_value = V1Alpha1LeaseList(items=[IN_PROGRESS_LEASE, FINISHED_LEASE])
+    result = runner.invoke(get, ["leases", "--output", "wide"])
+    assert result.exit_code == 0
     assert "hardware:rpi4" in result.output
     assert "*" in result.output
     assert "InProgress" in result.output

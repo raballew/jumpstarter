@@ -1,13 +1,44 @@
-from datetime import datetime, timezone
+import re
+from datetime import datetime, timedelta, timezone
+
+
+def _parse_duration(duration_str: str) -> timedelta:
+    match = re.fullmatch(r"(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?", duration_str)
+    if not match or not any(match.groups()):
+        return timedelta()
+    hours = int(match.group(1) or 0)
+    minutes = int(match.group(2) or 0)
+    seconds = int(match.group(3) or 0)
+    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
+
+def time_remaining(begin_time: str | None, duration: str | None) -> str:
+    if begin_time is None or duration is None:
+        return "-"
+    begin = datetime.strptime(begin_time, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    end = begin + _parse_duration(duration)
+    remaining = end - now
+    total_seconds = remaining.total_seconds()
+    if total_seconds <= 0:
+        return "Expired"
+    if total_seconds < 60:
+        return "<1m"
+    total_minutes = int(total_seconds // 60)
+    if total_minutes < 60:
+        return f"{total_minutes}m"
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+    if minutes > 0:
+        return f"{hours}h {minutes}m"
+    return f"{hours}h"
 
 
 def time_since(t_str: str):
-    # Format the elapsed time in a readable way
     t = datetime.strptime(t_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
     elapsed = now - t
 
-    # Format the elapsed time in a readable way
     if elapsed.total_seconds() < 60:
         return f"{int(elapsed.total_seconds())}s"
     elif elapsed.total_seconds() < 3600:

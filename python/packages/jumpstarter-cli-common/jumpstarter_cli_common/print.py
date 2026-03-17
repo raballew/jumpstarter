@@ -60,9 +60,13 @@ def model_print(  # noqa: C901
                 pad_edge=None,
             )
 
+            table_kwargs = {**kwargs}
+            if output is not None:
+                table_kwargs["output"] = output
+
             try:
-                model.rich_add_columns(table, **kwargs)
-                model.rich_add_rows(table, **kwargs)
+                model.rich_add_columns(table, **table_kwargs)
+                model.rich_add_rows(table, **table_kwargs)
             except AttributeError as err:
                 raise NotImplementedError from err
 
