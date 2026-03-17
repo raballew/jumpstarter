@@ -80,6 +80,30 @@ def test_shell_allows_existing_lease_name_without_selector_or_name():
     mock_exit.assert_called_once_with(0)
 
 
+def test_run_shell_only_passes_session_metadata_to_launch_shell():
+    from jumpstarter_cli.shell import _run_shell_only
+
+    from jumpstarter.common.session import SessionMetadata
+
+    mock_lease = Mock()
+    mock_lease.exporter_name = "test-exporter"
+
+    mock_config = Mock()
+    mock_config.drivers.allow = ["*"]
+    mock_config.drivers.unsafe = False
+    mock_config.shell.use_profiles = False
+
+    with patch("jumpstarter_cli.shell.launch_shell", return_value=0) as mock_launch:
+        _run_shell_only(mock_lease, mock_config, (), "/tmp/test.sock")
+
+    mock_launch.assert_called_once()
+    call_kwargs = mock_launch.call_args
+    assert "session_metadata" in call_kwargs.kwargs
+    metadata = call_kwargs.kwargs["session_metadata"]
+    assert isinstance(metadata, SessionMetadata)
+    assert metadata.exporter_name == "test-exporter"
+
+
 def test_shell_allows_env_lease_without_selector_or_name():
     with (
         patch("jumpstarter_cli.shell.anyio.run", return_value=0),

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from anyio.from_thread import BlockingPortal, start_blocking_portal
 
 from jumpstarter.client import client_from_path
+from jumpstarter.common.session import SessionMetadata
 from jumpstarter.config.env import JMP_DRIVERS_ALLOW, JUMPSTARTER_HOST
 from jumpstarter.exporter import Session
 from jumpstarter.utils.env import env
@@ -84,6 +85,12 @@ def _run_process(
     return process.wait()
 
 
+def _print_motd(session_metadata: SessionMetadata) -> None:
+    print(f"Connected to exporter: {session_metadata.exporter_name}")
+    if session_metadata.motd:
+        print(session_metadata.motd)
+
+
 def launch_shell(
     host: str,
     context: str,
@@ -93,22 +100,8 @@ def launch_shell(
     *,
     command: tuple[str, ...] | None = None,
     lease=None,
+    session_metadata: SessionMetadata | None = None,
 ) -> int:
-    """Launch a shell with a custom prompt indicating the exporter type.
-
-    Args:
-        host: The jumpstarter host path
-        context: The context of the shell (e.g. "local" or exporter name)
-        allow: List of allowed drivers
-        unsafe: Whether to allow drivers outside of the allow list
-        use_profiles: Whether to load shell profile files
-        command: Optional command to run instead of launching an interactive shell
-        lease: Optional Lease object to set up lease ending callback
-
-    Returns:
-        The exit code of the shell or command process
-    """
-
     shell = os.environ.get("SHELL", "bash")
     shell_name = os.path.basename(shell)
 
@@ -120,6 +113,9 @@ def launch_shell(
 
     if command:
         return _run_process(list(command), common_env, lease)
+
+    if session_metadata is not None:
+        _print_motd(session_metadata)
 
     if shell_name.endswith("bash"):
         env = common_env | {

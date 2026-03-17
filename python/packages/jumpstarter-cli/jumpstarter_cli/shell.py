@@ -21,6 +21,7 @@ from .login import relogin_client
 from jumpstarter.client.client import client_from_path
 from jumpstarter.common import HOOK_WARNING_PREFIX, ExporterStatus
 from jumpstarter.common.exceptions import ConnectionError, ExporterOfflineError
+from jumpstarter.common.session import SessionMetadata
 from jumpstarter.common.utils import launch_shell
 from jumpstarter.config.client import ClientConfigV1Alpha1
 from jumpstarter.config.env import JMP_LEASE
@@ -30,7 +31,6 @@ logger = logging.getLogger(__name__)
 
 
 def _run_shell_only(lease, config, command, path: str) -> int:
-    """Run just the shell command without log streaming."""
     return launch_shell(
         path,
         lease.exporter_name,
@@ -39,6 +39,7 @@ def _run_shell_only(lease, config, command, path: str) -> int:
         config.shell.use_profiles,
         command=command,
         lease=lease,
+        session_metadata=SessionMetadata(exporter_name=lease.exporter_name),
     )
 
 
@@ -137,7 +138,7 @@ async def _run_shell_with_lease_async(lease, exporter_logs, config, command, can
                             logger.debug("Exporter ready (status: %s), launching shell...", result)
 
                             if monitor.status_message and monitor.status_message.startswith(HOOK_WARNING_PREFIX):
-                                warning_text = monitor.status_message[len(HOOK_WARNING_PREFIX):]
+                                warning_text = monitor.status_message[len(HOOK_WARNING_PREFIX) :]
                                 click.echo(click.style(f"Warning: {warning_text}", fg="yellow", bold=True))
 
                             # Run the shell command
@@ -194,11 +195,9 @@ async def _run_shell_with_lease_async(lease, exporter_logs, config, command, can
                                                 if monitor.status_message and monitor.status_message.startswith(
                                                     HOOK_WARNING_PREFIX
                                                 ):
-                                                    warning_text = monitor.status_message[len(HOOK_WARNING_PREFIX):]
+                                                    warning_text = monitor.status_message[len(HOOK_WARNING_PREFIX) :]
                                                     click.echo(
-                                                        click.style(
-                                                            f"Warning: {warning_text}", fg="yellow", bold=True
-                                                        )
+                                                        click.style(f"Warning: {warning_text}", fg="yellow", bold=True)
                                                     )
                                                 logger.info("afterLease hook completed")
                                             elif result == ExporterStatus.AFTER_LEASE_HOOK_FAILED:
@@ -357,4 +356,8 @@ def shell(
                     unsafe=True,
                     use_profiles=False,
                     command=command,
+                    session_metadata=SessionMetadata(
+                        exporter_name=config.metadata.name,
+                        motd=config.motd,
+                    ),
                 )

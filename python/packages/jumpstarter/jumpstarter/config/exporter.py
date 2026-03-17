@@ -138,6 +138,7 @@ class ExporterConfigV1Alpha1(BaseModel):
     grpcOptions: dict[str, str | int] | None = Field(default_factory=dict)
 
     description: str | None = None
+    motd: str | None = None
     export: dict[str, ExporterConfigV1Alpha1DriverInstance] = Field(default_factory=dict)
     hooks: HookConfigV1Alpha1 = Field(default_factory=HookConfigV1Alpha1)
 

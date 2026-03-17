@@ -154,3 +154,43 @@ export:
     assert "afterLease:" in yaml_output
     assert "before_lease:" not in yaml_output
     assert "after_lease:" not in yaml_output
+
+
+def test_exporter_config_motd_field_defaults_to_none():
+    config = ExporterConfigV1Alpha1(
+        metadata=ObjectMeta(namespace="default", name="test"),
+    )
+    assert config.motd is None
+
+
+def test_exporter_config_motd_field_stores_value():
+    config = ExporterConfigV1Alpha1(
+        metadata=ObjectMeta(namespace="default", name="test"),
+        motd="Welcome to the board",
+    )
+    assert config.motd == "Welcome to the board"
+
+
+def test_exporter_config_motd_roundtrip_yaml(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    monkeypatch.setattr(ExporterConfigV1Alpha1, "BASE_PATH", tmp_path)
+
+    path = tmp_path / "motd-test.yaml"
+    text = """apiVersion: jumpstarter.dev/v1alpha1
+kind: ExporterConfig
+metadata:
+  namespace: default
+  name: motd-test
+endpoint: "jumpstarter.my-lab.com:1443"
+token: "test-token"
+motd: "Welcome to the test board"
+export: {}
+"""
+    path.write_text(text, encoding="utf-8")
+
+    config = ExporterConfigV1Alpha1.load("motd-test")
+    assert config.motd == "Welcome to the test board"
+
+    path.unlink()
+    ExporterConfigV1Alpha1.save(config)
+    reloaded = ExporterConfigV1Alpha1.load("motd-test")
+    assert reloaded.motd == "Welcome to the test board"
