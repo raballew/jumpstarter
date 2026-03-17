@@ -1,3 +1,7 @@
+import logging
+import os
+import socket
+import ssl
 import types
 from functools import wraps
 from types import TracebackType
@@ -7,10 +11,48 @@ import click
 
 from jumpstarter.common.exceptions import ConnectionError, JumpstarterException
 
+ERRNO_CONNECTION_REFUSED = 111
+
+
+def is_debug_mode() -> bool:
+    debug_env = os.environ.get("JUMPSTARTER_DEBUG", "")
+    if debug_env:
+        return True
+    root_logger = logging.getLogger()
+    return root_logger.level == logging.DEBUG
+
+
+def friendly_error_message(exc: BaseException) -> str | None:
+    if isinstance(exc, ssl.SSLCertVerificationError):
+        return (
+            "TLS certificate verification failed. "
+            "Check that the server certificate is valid or use --insecure-tls-config for testing."
+        )
+    if isinstance(exc, ssl.SSLError):
+        return f"TLS/SSL error: {exc}. Check your TLS configuration."
+    if isinstance(exc, ConnectionRefusedError):
+        return "Connection refused. Is the server running and reachable?"
+    if isinstance(exc, OSError) and getattr(exc, "errno", None) == ERRNO_CONNECTION_REFUSED:
+        return "Connection refused. Is the server running and reachable?"
+    if isinstance(exc, socket.gaierror):
+        return f"Could not resolve hostname. Check the server address and your DNS settings. ({exc})"
+    if isinstance(exc, TimeoutError):
+        return "Connection timed out. Check the server address and your network connection."
+    return None
+
 
 class ClickExceptionRed(click.ClickException):
     def format_message(self) -> str:
         return click.style(self.message, fg="red")
+
+
+def _raise_friendly_or_reraise(exc: BaseException) -> None:
+    if is_debug_mode():
+        raise exc
+    msg = friendly_error_message(exc)
+    if msg:
+        raise ClickExceptionRed(msg) from None
+    raise exc
 
 
 def async_handle_exceptions(func):
@@ -21,20 +63,20 @@ def async_handle_exceptions(func):
         try:
             return await func(*args, **kwargs)
         except BaseExceptionGroup as eg:
-            # Handle exceptions wrapped in ExceptionGroup (e.g., from task groups)
             for exc in leaf_exceptions(eg, fix_tracebacks=False):
                 if isinstance(exc, JumpstarterException):
                     raise ClickExceptionRed(str(exc)) from None
                 elif isinstance(exc, click.ClickException):
                     raise exc from None
-            # If no handled exceptions, re-raise the original group
+                else:
+                    _raise_friendly_or_reraise(exc)
             raise eg
         except JumpstarterException as e:
             raise ClickExceptionRed(str(e)) from None
         except click.ClickException:
-            raise  # if it was already a click exception from the cli commands, just re-raise it
-        except Exception:
             raise
+        except Exception as e:
+            _raise_friendly_or_reraise(e)
 
     return wrapped
 
@@ -49,9 +91,9 @@ def handle_exceptions(func):
         except JumpstarterException as e:
             raise ClickExceptionRed(str(e)) from None
         except click.ClickException:
-            raise  # if it was already a click exception from the cli commands, just re-raise it
-        except Exception:
             raise
+        except Exception as e:
+            _raise_friendly_or_reraise(e)
 
     return wrapped
 
@@ -98,8 +140,8 @@ def handle_exceptions_with_reauthentication(login_func):
                 _handle_exception_group_with_reauth(eg, login_func)
             except (ConnectionError, JumpstarterException, click.ClickException) as e:
                 _handle_single_exception_with_reauth(e, login_func)
-            except Exception:
-                raise
+            except Exception as e:
+                _raise_friendly_or_reraise(e)
 
         return wrapped
 
