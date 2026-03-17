@@ -30,10 +30,10 @@
 - [ ] [T018] [P1] [Story] Test: Write failing test for double extensions (.tar.xz should detect .xz)
 - [ ] [T019] [P1] [Story] Implement: Extract only the final extension for compression detection
 
-## Phase 3: Case-Insensitive Extension Matching
+## Phase 3: Case-Insensitive Extension Matching (Story: User Story 1)
 
-- [ ] [T020] [P1] Test: Write failing test for uppercase extensions (.XZ, .GZ)
-- [ ] [T021] [P1] Implement: Convert extensions to lowercase before matching
+- [ ] [T020] [P1] [Story] Test: Write failing test for uppercase extensions (.XZ, .GZ)
+- [ ] [T021] [P1] [Story] Implement: Convert extensions to lowercase before matching
 
 ## Phase 4: Integrate with StorageMux Driver (Story: User Story 1)
 
@@ -50,12 +50,12 @@
 - [ ] [T029] [P2] [Story] Refactor: Update Flasher driver to use shared detect_compression_from_url() function
 - [ ] [T030] [P2] [Story] Test: Verify both drivers produce identical behavior
 
-## Phase 6: Edge Cases & Error Handling
+## Phase 6: Edge Cases & Error Handling (Story: User Story 1)
 
-- [ ] [T031] [P1] Test: Write failing test for unrecognized compression extension (.rar, .zip)
-- [ ] [T032] [P1] Implement: Return None for unrecognized extensions
-- [ ] [T033] [P1] Test: Write failing test for malformed URLs
-- [ ] [T034] [P1] Implement: Handle URL parsing errors gracefully
+- [ ] [T031] [P1] [Story] Test: Write failing test for unrecognized compression extension (.rar, .zip)
+- [ ] [T032] [P1] [Story] Implement: Return None for unrecognized extensions
+- [ ] [T033] [P1] [Story] Test: Write failing test for malformed URLs
+- [ ] [T034] [P1] [Story] Implement: Handle URL parsing errors gracefully
 
 ## Phase 7: Documentation & Integration
 
