@@ -6,6 +6,8 @@
 
 Print a welcome message (exporter name + optional admin-configured MOTD) to stdout before launching the shell subprocess in `launch_shell()`. The MOTD text comes from the exporter configuration and is transmitted via existing session metadata.
 
+**Data Flow**: ExporterConfig.motd → Session metadata (during gRPC session establishment) → shell.py retrieves from session → launch_shell() displays before spawning subprocess.
+
 ## Technical Context
 
 **Language/Version**: Python 3.11+
@@ -34,9 +36,12 @@ Print a welcome message (exporter name + optional admin-configured MOTD) to stdo
 
 ```text
 python/packages/jumpstarter/jumpstarter/common/
-└── utils.py                 # Add MOTD print before shell launch
+├── utils.py                 # Add MOTD print before shell launch
+└── session.py               # Add motd field to session metadata model
 python/packages/jumpstarter/jumpstarter/config/
 └── exporter.py              # Add optional motd field to config model
+python/packages/jumpstarter/jumpstarter/
+└── exporter.py              # Include motd from config in session metadata response
 python/packages/jumpstarter-cli/jumpstarter_cli/
 └── shell.py                 # Pass MOTD context to launch_shell
 ```
