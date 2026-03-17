@@ -20,9 +20,10 @@ Since this is a documentation fix with no code changes, TDD does not apply. Manu
 
 ### Phase 2: Verification and Polish
 
-- [ ] [T2.1] Verify documentation builds without errors by running `make docs` from repository root
-- [ ] [T2.2] Review rendered documentation to ensure kubeconfig mount is properly displayed in all examples
-- [ ] [T2.3] Add note explaining kubeconfig mount is needed for Kubernetes-dependent commands near the container examples
+- [ ] [T2.1] [P] [US1] Verify documentation builds without errors by running `make docs` from repository root
+- [ ] [T2.2] [P] [US1] Review rendered documentation to ensure kubeconfig mount is properly displayed in all examples
+- [ ] [T2.3] [P] [US1] Add note explaining kubeconfig mount is needed for Kubernetes-dependent commands in `/var/home/raballew/code/jumpstarter/python/docs/source/getting-started/installation/packages.md` before the container examples section (around line 220)
+- [ ] [T2.4] [P] [US1] Add note about non-default kubeconfig locations (KUBECONFIG env var) and rootless container considerations in `/var/home/raballew/code/jumpstarter/python/docs/source/getting-started/installation/packages.md` near the kubeconfig mount examples
 
 **Checkpoint**: Documentation builds successfully and examples are clear
 
@@ -32,6 +33,7 @@ Since this is a documentation fix with no code changes, TDD does not apply. Manu
 - T2.1 depends on T1.1, T1.2, T1.3 (all doc updates must be complete before building)
 - T2.2 depends on T2.1 (can only review rendered docs after build succeeds)
 - T2.3 can be done in Phase 1 but review depends on T2.2
+- T2.4 can be done in Phase 1 but review depends on T2.2
 
 ### Parallel Tasks
 - T1.1, T1.2, T1.3 are all in the same file but different sections, can be edited together
@@ -40,7 +42,7 @@ Since this is a documentation fix with no code changes, TDD does not apply. Manu
 
 ### User Story 1: Run jmp in a container with kubeconfig access
 
-**Tasks**: T1.1, T1.2, T1.3, T2.3
+**Tasks**: T1.1, T1.2, T1.3, T2.3, T2.4
 
 **Acceptance**:
 - All container run examples include `-v "${HOME}/.kube/config:/root/.kube/config":z`
