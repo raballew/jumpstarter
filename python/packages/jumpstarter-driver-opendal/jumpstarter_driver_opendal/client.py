@@ -21,7 +21,7 @@ from .common import Capability, HashAlgo, Metadata, Mode, PathBuf, PresignedRequ
 from jumpstarter.client import DriverClient
 from jumpstarter.client.decorators import driver_click_group
 from jumpstarter.common.exceptions import ArgumentError
-from jumpstarter.streams.encoding import Compression
+from jumpstarter.streams.encoding import Compression, detect_compression_from_url
 
 
 @dataclass(kw_only=True)
@@ -630,6 +630,9 @@ class FlasherClient(FlasherClientInterface, DriverClient):
         compression: Compression | None,
     ):
         """Flash image to DUT"""
+        if compression is None:
+            compression = detect_compression_from_url(str(image))
+
         if operator is None:
             image, operator, _ = operator_for_path(image)
 
@@ -760,6 +763,9 @@ class StorageMuxFlasherClient(FlasherClient, StorageMuxClient):
         """Flash image to DUT"""
         if target is not None:
             raise ArgumentError(f"target is not supported for StorageMuxFlasherClient, {target} provided")
+
+        if compression is None:
+            compression = detect_compression_from_url(str(path))
 
         self.host()
 

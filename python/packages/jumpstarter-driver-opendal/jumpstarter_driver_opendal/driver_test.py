@@ -322,3 +322,85 @@ def test_copy_and_rename_tracking(tmp_path):
     assert "copied_dir" in created_paths
     assert "renamed_dir" in created_paths
     assert len(created_paths) == 4
+
+
+def test_storagemux_flasher_auto_detects_xz_compression(tmp_path):
+    import lzma
+
+
+    with serve(MockStorageMuxFlasher()) as flasher:
+        original = b'hello compressed world'
+        compressed = lzma.compress(original, format=lzma.FORMAT_XZ)
+        compressed_file = tmp_path / 'disk.img.xz'
+        compressed_file.write_bytes(compressed)
+
+        flasher.flash(compressed_file, compression=None)
+
+        uncompressed_file = tmp_path / 'dump.img'
+        flasher.dump(uncompressed_file)
+        assert uncompressed_file.read_bytes() == original
+
+
+def test_storagemux_flasher_no_auto_detection_without_extension(tmp_path):
+    with serve(MockStorageMuxFlasher()) as flasher:
+        (tmp_path / 'disk.img').write_bytes(b'hello')
+
+        flasher.flash(tmp_path / 'disk.img', compression=None)
+        flasher.dump(tmp_path / 'dump.img')
+        assert (tmp_path / 'dump.img').read_bytes() == b'hello'
+
+
+def test_storagemux_flasher_explicit_compression_overrides_auto_detection(tmp_path):
+    import gzip
+
+    from jumpstarter.streams.encoding import Compression
+
+    with serve(MockStorageMuxFlasher()) as flasher:
+        original = b'hello compressed world'
+        compressed = gzip.compress(original)
+        compressed_file = tmp_path / 'disk.img.gz'
+        compressed_file.write_bytes(compressed)
+
+        flasher.flash(compressed_file, compression=Compression.GZIP)
+
+        uncompressed_file = tmp_path / 'dump.img'
+        flasher.dump(uncompressed_file)
+        assert uncompressed_file.read_bytes() == original
+
+
+def test_flasher_auto_detects_xz_compression(tmp_path):
+    import lzma
+
+    with serve(MockFlasher()) as flasher:
+        original = b'hello compressed world'
+        compressed = lzma.compress(original, format=lzma.FORMAT_XZ)
+        compressed_file = tmp_path / 'disk.img.xz'
+        compressed_file.write_bytes(compressed)
+
+        flasher.flash(compressed_file, compression=None)
+        flasher.dump(tmp_path / 'dump.img')
+        assert (tmp_path / 'dump.img').read_bytes() == original
+
+
+def test_flasher_and_storagemux_consistent_auto_detection(tmp_path):
+    import lzma
+
+    original = b'consistency test data'
+    compressed = lzma.compress(original, format=lzma.FORMAT_XZ)
+
+    flasher_file = tmp_path / 'flasher_disk.img.xz'
+    flasher_file.write_bytes(compressed)
+    mux_file = tmp_path / 'mux_disk.img.xz'
+    mux_file.write_bytes(compressed)
+
+    with serve(MockFlasher()) as flasher:
+        flasher.flash(flasher_file, compression=None)
+        flasher.dump(tmp_path / 'flasher_dump.img')
+
+    with serve(MockStorageMuxFlasher()) as mux_flasher:
+        mux_flasher.flash(mux_file, compression=None)
+        mux_flasher.dump(tmp_path / 'mux_dump.img')
+
+    assert (tmp_path / 'flasher_dump.img').read_bytes() == original
+    assert (tmp_path / 'mux_dump.img').read_bytes() == original
+    assert (tmp_path / 'flasher_dump.img').read_bytes() == (tmp_path / 'mux_dump.img').read_bytes()

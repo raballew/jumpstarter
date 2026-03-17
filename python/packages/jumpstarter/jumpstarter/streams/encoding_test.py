@@ -20,6 +20,7 @@ from .encoding import (
     Compression,
     compress_stream,
     detect_compression_from_signature,
+    detect_compression_from_url,
 )
 
 pytestmark = pytest.mark.anyio
@@ -95,6 +96,55 @@ class TestDetectCompressionFromSignature:
     def test_detect_from_real_zstd_data(self):
         compressed = zstd.compress(b"test data")
         assert detect_compression_from_signature(compressed) == Compression.ZSTD
+
+
+
+class TestDetectCompressionFromUrl:
+
+    def test_xz_extension(self):
+        assert detect_compression_from_url("https://example.com/image.raw.xz") == Compression.XZ
+
+    def test_gz_extension(self):
+        assert detect_compression_from_url("https://example.com/image.raw.gz") == Compression.GZIP
+
+    def test_bz2_extension(self):
+        assert detect_compression_from_url("https://example.com/image.raw.bz2") == Compression.BZ2
+
+    def test_zst_extension(self):
+        assert detect_compression_from_url("https://example.com/image.raw.zst") == Compression.ZSTD
+
+    def test_uncompressed_returns_none(self):
+        assert detect_compression_from_url("https://example.com/image.raw") is None
+
+    def test_url_with_query_parameters(self):
+        assert detect_compression_from_url("https://example.com/image.raw.xz?token=abc") == Compression.XZ
+
+    def test_url_with_fragment(self):
+        assert detect_compression_from_url("https://example.com/image.raw.gz#section") == Compression.GZIP
+
+    def test_double_extension_tar_xz(self):
+        assert detect_compression_from_url("https://example.com/image.tar.xz") == Compression.XZ
+
+    def test_uppercase_extension_xz(self):
+        assert detect_compression_from_url("https://example.com/image.raw.XZ") == Compression.XZ
+
+    def test_uppercase_extension_gz(self):
+        assert detect_compression_from_url("https://example.com/image.raw.GZ") == Compression.GZIP
+
+    def test_unrecognized_extension_rar(self):
+        assert detect_compression_from_url("https://example.com/image.raw.rar") is None
+
+    def test_unrecognized_extension_zip(self):
+        assert detect_compression_from_url("https://example.com/image.raw.zip") is None
+
+    def test_malformed_url(self):
+        assert detect_compression_from_url("") is None
+
+    def test_plain_filename(self):
+        assert detect_compression_from_url("image.raw.xz") == Compression.XZ
+
+    def test_local_path(self):
+        assert detect_compression_from_url("/path/to/image.raw.gz") == Compression.GZIP
 
 
 class TestAutoDecompressIterator:

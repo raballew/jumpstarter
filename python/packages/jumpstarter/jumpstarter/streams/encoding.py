@@ -59,6 +59,29 @@ def detect_compression_from_signature(data: bytes) -> Compression | None:
     return None
 
 
+COMPRESSION_EXTENSIONS: dict[str, Compression] = {
+    ".xz": Compression.XZ,
+    ".gz": Compression.GZIP,
+    ".gzip": Compression.GZIP,
+    ".bz2": Compression.BZ2,
+    ".zst": Compression.ZSTD,
+}
+
+
+def detect_compression_from_url(url: str) -> Compression | None:
+    from os.path import splitext
+    from urllib.parse import urlparse
+
+    try:
+        parsed = urlparse(url)
+        path = parsed.path
+    except Exception:
+        return None
+
+    _, ext = splitext(path)
+    return COMPRESSION_EXTENSIONS.get(ext.lower())
+
+
 def create_decompressor(compression: Compression) -> Any:
     """Create a decompressor object for the given compression type."""
     match compression:

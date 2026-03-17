@@ -10,7 +10,7 @@ import time
 from concurrent.futures import CancelledError
 from contextlib import contextmanager
 from dataclasses import dataclass
-from pathlib import Path, PosixPath
+from pathlib import Path
 from queue import Queue
 from urllib.parse import urlparse
 
@@ -1632,23 +1632,17 @@ class BaseFlasherClient(FlasherClient, CompositeClient):
 
 
 def _get_decompression_command(filename_or_url) -> str:
-    """
-    Determine the appropriate decompression command based on file extension
+    from jumpstarter.streams.encoding import Compression, detect_compression_from_url
 
-    Args:
-        filename (str): Name of the file to check
-
-    Returns:
-        str: Decompression command ('zcat', 'xzcat', or 'cat' for uncompressed)
-    """
-    if type(filename_or_url) is PosixPath:
-        filename = filename_or_url.name
-    elif filename_or_url.startswith(("http://", "https://")):
-        filename = urlparse(filename_or_url).path.split("/")[-1]
-
-    filename = filename.lower()
-    if filename.endswith((".gz", ".gzip")):
-        return "zcat |"
-    elif filename.endswith(".xz"):
-        return "xzcat |"
-    return ""
+    compression = detect_compression_from_url(str(filename_or_url))
+    match compression:
+        case Compression.GZIP:
+            return "zcat |"
+        case Compression.XZ:
+            return "xzcat |"
+        case Compression.BZ2:
+            return "bzcat |"
+        case Compression.ZSTD:
+            return "zstdcat |"
+        case _:
+            return ""
