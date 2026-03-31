@@ -50,7 +50,7 @@ async def delete_client(
     name: Optional[str],
     kubeconfig: Optional[str],
     context: Optional[str],
-    namespace: str,
+    namespace: Optional[str],
     delete: bool,
     output: NameOutputType,
     nointeractive: bool,
@@ -60,7 +60,7 @@ async def delete_client(
         async with ClientsV1Alpha1Api(namespace, kubeconfig, context) as api:
             await api.delete_client(name)
             if output is None:
-                click.echo(f"Deleted client '{name}' in namespace '{namespace}'")
+                click.echo(f"Deleted client '{name}' in namespace '{api.namespace}'")
             else:
                 click.echo(f"client.jumpstarter.dev/{name}")
             # Save the client config
@@ -101,7 +101,7 @@ async def delete_exporter(
     name: Optional[str],
     kubeconfig: Optional[str],
     context: Optional[str],
-    namespace: str,
+    namespace: Optional[str],
     delete: bool,
     output: NameOutputType,
     nointeractive: bool,
@@ -111,7 +111,7 @@ async def delete_exporter(
         async with ExportersV1Alpha1Api(namespace, kubeconfig, context) as api:
             await api.delete_exporter(name)
             if output is None:
-                click.echo(f"Deleted exporter '{name}' in namespace '{namespace}'")
+                click.echo(f"Deleted exporter '{name}' in namespace '{api.namespace}'")
             else:
                 click.echo(f"exporter.jumpstarter.dev/{name}")
             # Save the exporter config

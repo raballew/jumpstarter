@@ -54,7 +54,7 @@ def import_res():
 @blocking
 async def import_client(
     name: str,
-    namespace: str,
+    namespace: Optional[str],
     kubeconfig: Optional[str],
     context: Optional[str],
     insecure_tls_config: bool,
@@ -114,7 +114,7 @@ async def import_client(
 @blocking
 async def import_exporter(
     name: str,
-    namespace: str,
+    namespace: Optional[str],
     out: Optional[str],
     kubeconfig: Optional[str],
     context: Optional[str],

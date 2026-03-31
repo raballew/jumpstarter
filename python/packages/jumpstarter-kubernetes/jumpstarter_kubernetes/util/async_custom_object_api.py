@@ -20,11 +20,16 @@ class AbstractAsyncCustomObjectApi(AbstractAsyncContextManager):
     _client: ApiClient
     config_file: Optional[str]
     context: Optional[str]
-    namespace: str
+    namespace: Optional[str]
     api: CustomObjectsApi
     core_api: CoreV1Api
 
-    def __init__(self, namespace: str, config_file: Optional[str] = None, context: Optional[str] = None):
+    def __init__(
+        self,
+        namespace: Optional[str] = None,
+        config_file: Optional[str] = None,
+        context: Optional[str] = None,
+    ):
         self.config_file = config_file
         self.context = context
         self.namespace = namespace
@@ -32,6 +37,9 @@ class AbstractAsyncCustomObjectApi(AbstractAsyncContextManager):
     async def __aenter__(self) -> Self:
         # Load the kubeconfig
         await self._load_kube_config()
+        # Resolve namespace from kubeconfig context if not explicitly provided
+        if self.namespace is None:
+            self.namespace = self._resolve_namespace_from_kubeconfig()
         # Construct the API client and enter context
         self._client = ApiClient()
         await self._client.__aenter__()
@@ -39,6 +47,17 @@ class AbstractAsyncCustomObjectApi(AbstractAsyncContextManager):
         self.api = CustomObjectsApi(self._client)
         self.core_api = CoreV1Api(self._client)
         return self
+
+    def _resolve_namespace_from_kubeconfig(self) -> str:
+        try:
+            _, current_context = config.list_kube_config_contexts(self.config_file)
+            if current_context and "context" in current_context:
+                namespace = current_context["context"].get("namespace")
+                if namespace:
+                    return namespace
+        except Exception:
+            logger.debug("Failed to read namespace from kubeconfig, falling back to 'default'")
+        return "default"
 
     async def _load_kube_config(self):
         await config.load_kube_config(self.config_file, self.context)

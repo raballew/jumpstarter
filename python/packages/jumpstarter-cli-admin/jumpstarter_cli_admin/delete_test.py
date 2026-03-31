@@ -54,7 +54,7 @@ def test_delete_client(
 
     # Delete client object and config does not exist
     mock_config_exists.return_value = False
-    result = runner.invoke(delete, ["client", CLIENT_NAME])
+    result = runner.invoke(delete, ["client", CLIENT_NAME, "--namespace", "default"])
     assert result.exit_code == 0
     assert f"Deleted client '{CLIENT_NAME}' in namespace 'default'" in result.output
     assert "Client configuration successfully deleted" not in result.output
@@ -69,7 +69,7 @@ def test_delete_client(
 
     # Delete client object and delete config prompt = n
     mock_config_exists.return_value = True
-    result = runner.invoke(delete, ["client", CLIENT_NAME], input="n\n")
+    result = runner.invoke(delete, ["client", CLIENT_NAME, "--namespace", "default"], input="n\n")
     assert result.exit_code == 0
     assert f"Deleted client '{CLIENT_NAME}' in namespace 'default'" in result.output
     assert "Client configuration successfully deleted" not in result.output
@@ -86,7 +86,7 @@ def test_delete_client(
     # Delete client object, not current client config and delete config prompt = Y
     mock_config_exists.return_value = True
     mock_load_or_create_user_config.return_value = USER_CONFIG_NOT_CURRENT
-    result = runner.invoke(delete, ["client", CLIENT_NAME], input="Y\n")
+    result = runner.invoke(delete, ["client", CLIENT_NAME, "--namespace", "default"], input="Y\n")
     assert result.exit_code == 0
     assert f"Deleted client '{CLIENT_NAME}' in namespace 'default'" in result.output
     assert "Client configuration successfully deleted" in result.output
@@ -104,7 +104,7 @@ def test_delete_client(
     # Delete client object, current client config and delete config prompt = Y
     mock_config_exists.return_value = True
     mock_load_or_create_user_config.return_value = USER_CONFIG_CURRENT
-    result = runner.invoke(delete, ["client", CLIENT_NAME], input="Y\n")
+    result = runner.invoke(delete, ["client", CLIENT_NAME, "--namespace", "default"], input="Y\n")
     assert result.exit_code == 0
     assert f"Deleted client '{CLIENT_NAME}' in namespace 'default'" in result.output
     assert "Client configuration successfully deleted" in result.output
@@ -122,7 +122,7 @@ def test_delete_client(
 
     # Delete client object nointeractive
     mock_config_exists.return_value = True
-    result = runner.invoke(delete, ["client", CLIENT_NAME, "--nointeractive"])
+    result = runner.invoke(delete, ["client", CLIENT_NAME, "--namespace", "default", "--nointeractive"])
     assert result.exit_code == 0
     assert f"Deleted client '{CLIENT_NAME}' in namespace 'default'" in result.output
     assert "Client configuration successfully deleted" not in result.output
@@ -188,7 +188,7 @@ def test_delete_exporter(
 
     # Delete exporter object and config does not exist
     mock_config_exists.return_value = False
-    result = runner.invoke(delete, ["exporter", EXPORTER_NAME])
+    result = runner.invoke(delete, ["exporter", EXPORTER_NAME, "--namespace", "default"])
     assert result.exit_code == 0
     assert "Deleted exporter 'test' in namespace 'default'" in result.output
     assert "Exporter configuration successfully deleted" not in result.output
@@ -201,7 +201,7 @@ def test_delete_exporter(
 
     # Delete exporter object and config exists, delete = n
     mock_config_exists.return_value = True
-    result = runner.invoke(delete, ["exporter", EXPORTER_NAME], input="n\n")
+    result = runner.invoke(delete, ["exporter", EXPORTER_NAME, "--namespace", "default"], input="n\n")
     assert result.exit_code == 0
     assert "Deleted exporter 'test' in namespace 'default'" in result.output
     assert "Exporter configuration successfully deleted" not in result.output
@@ -214,7 +214,7 @@ def test_delete_exporter(
 
     # Delete exporter object and config exists, delete = Y
     mock_config_exists.return_value = True
-    result = runner.invoke(delete, ["exporter", EXPORTER_NAME], input="Y\n")
+    result = runner.invoke(delete, ["exporter", EXPORTER_NAME, "--namespace", "default"], input="Y\n")
     assert result.exit_code == 0
     assert "Deleted exporter 'test' in namespace 'default'" in result.output
     assert "Exporter configuration successfully deleted" in result.output
@@ -227,7 +227,7 @@ def test_delete_exporter(
 
     # Delete exporter object nointeractive
     mock_config_exists.return_value = True
-    result = runner.invoke(delete, ["exporter", EXPORTER_NAME, "--nointeractive"])
+    result = runner.invoke(delete, ["exporter", EXPORTER_NAME, "--namespace", "default", "--nointeractive"])
     assert result.exit_code == 0
     assert "Deleted exporter 'test' in namespace 'default'" in result.output
     assert "Exporter configuration successfully deleted" not in result.output

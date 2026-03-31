@@ -79,7 +79,7 @@ async def create_client(
     kubeconfig: Optional[str],
     context: Optional[str],
     insecure_tls_config: bool,
-    namespace: str,
+    namespace: Optional[str],
     labels: dict[str, str],
     save: bool,
     allow: Optional[str],
@@ -94,8 +94,7 @@ async def create_client(
         confirm_insecure_tls(insecure_tls_config, nointeractive)
         async with ClientsV1Alpha1Api(namespace, kubeconfig, context) as api:
             if output is None:
-                # Only print status if  is not JSON/YAML
-                click.echo(f"Creating client '{name}' in namespace '{namespace}'")
+                click.echo(f"Creating client '{name}' in namespace '{api.namespace}'")
             created_client = await api.create_client(name, labels, oidc_username)
             # Save the client config
             if save or out is not None or nointeractive is False and click.confirm("Save client configuration?"):
@@ -120,7 +119,7 @@ async def create_client(
                     UserConfigV1Alpha1.save(user_config)
                 if output is None:
                     click.echo(f"Client configuration successfully saved to {client_config.path}")
-            model_print(created_client, output, namespace=namespace)
+            model_print(created_client, output, namespace=api.namespace)
     except ApiException as e:
         handle_k8s_api_exception(e)
     except ConfigException as e:
@@ -156,7 +155,7 @@ async def create_exporter(
     kubeconfig: Optional[str],
     context: Optional[str],
     insecure_tls_config: bool,
-    namespace: str,
+    namespace: Optional[str],
     labels: dict[str, str],
     save: bool,
     out: Optional[str],
@@ -169,7 +168,7 @@ async def create_exporter(
         confirm_insecure_tls(insecure_tls_config, nointeractive)
         async with ExportersV1Alpha1Api(namespace, kubeconfig, context) as api:
             if output is None:
-                click.echo(f"Creating exporter '{name}' in namespace '{namespace}'")
+                click.echo(f"Creating exporter '{name}' in namespace '{api.namespace}'")
             created_exporter = await api.create_exporter(name, labels, oidc_username)
             # Save the client config
             if save or out is not None or nointeractive is False and click.confirm("Save exporter configuration?"):
@@ -180,7 +179,7 @@ async def create_exporter(
                 ExporterConfigV1Alpha1.save(exporter_config, out)
                 if output is None:
                     click.echo(f"Exporter configuration successfully saved to {exporter_config.path}")
-            model_print(created_exporter, output, namespace=namespace)
+            model_print(created_exporter, output, namespace=api.namespace)
     except ApiException as e:
         handle_k8s_api_exception(e)
     except ConfigException as e:

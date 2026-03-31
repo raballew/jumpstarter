@@ -46,3 +46,16 @@ def test_create_lease_requires_selector_or_name():
             lease_id=None,
             output="yaml",
         )
+
+
+def test_create_lease_rejects_empty_selector():
+    with pytest.raises(click.UsageError, match="one of --selector/-l or --name/-n is required"):
+        inspect.unwrap(create_lease.callback)(
+            config=Mock(),
+            selector="",
+            exporter_name=None,
+            duration=timedelta(minutes=5),
+            begin_time=None,
+            lease_id=None,
+            output="yaml",
+        )

@@ -40,17 +40,17 @@ def get():
 @opt_output_all
 @blocking
 async def get_client(
-    name: Optional[str], kubeconfig: Optional[str], context: Optional[str], namespace: str, output: OutputType
+    name: Optional[str], kubeconfig: Optional[str], context: Optional[str], namespace: Optional[str], output: OutputType
 ):
     """Get the client objects in a Kubernetes cluster"""
     try:
         async with ClientsV1Alpha1Api(namespace, kubeconfig, context) as api:
             if name is not None:
                 client = await api.get_client(name)
-                model_print(client, output, namespace=namespace)
+                model_print(client, output, namespace=api.namespace)
             else:
                 clients = await api.list_clients()
-                model_print(clients, output, namespace=namespace)
+                model_print(clients, output, namespace=api.namespace)
     except ApiException as e:
         handle_k8s_api_exception(e)
     except ConfigException as e:
@@ -69,7 +69,7 @@ async def get_exporter(
     name: Optional[str],
     kubeconfig: Optional[str],
     context: Optional[str],
-    namespace: str,
+    namespace: Optional[str],
     devices: bool,
     output: OutputType,
 ):
@@ -78,10 +78,10 @@ async def get_exporter(
         async with ExportersV1Alpha1Api(namespace, kubeconfig, context) as api:
             if name is not None:
                 exporter = await api.get_exporter(name)
-                model_print(exporter, output, devices=devices, namespace=namespace)
+                model_print(exporter, output, devices=devices, namespace=api.namespace)
             else:
                 exporters = await api.list_exporters()
-                model_print(exporters, output, devices=devices, namespace=namespace)
+                model_print(exporters, output, devices=devices, namespace=api.namespace)
     except ApiException as e:
         handle_k8s_api_exception(e)
     except ConfigException as e:
@@ -96,17 +96,17 @@ async def get_exporter(
 @opt_output_all
 @blocking
 async def get_lease(
-    name: Optional[str], kubeconfig: Optional[str], context: Optional[str], namespace: str, output: OutputType
+    name: Optional[str], kubeconfig: Optional[str], context: Optional[str], namespace: Optional[str], output: OutputType
 ):
     """Get the lease objects in a Kubernetes cluster"""
     try:
         async with LeasesV1Alpha1Api(namespace, kubeconfig, context) as api:
             if name is not None:
                 lease = await api.get_lease(name)
-                model_print(lease, output, namespace=namespace)
+                model_print(lease, output, namespace=api.namespace)
             else:
                 leases = await api.list_leases()
-                model_print(leases, output, namespace=namespace)
+                model_print(leases, output, namespace=api.namespace)
     except ApiException as e:
         handle_k8s_api_exception(e)
     except ConfigException as e:
