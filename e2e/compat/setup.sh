@@ -6,7 +6,7 @@
 #
 # Environment variables:
 #   COMPAT_SCENARIO      - "old-controller" or "old-client" (required)
-#   COMPAT_CONTROLLER_TAG - Controller image tag for old-controller scenario (default: v0.7.1)
+#   COMPAT_CONTROLLER_TAG - Controller image tag for old-controller scenario (default: v0.8.1)
 #   COMPAT_CLIENT_VERSION - PyPI version for old-client scenario (default: 0.7.1)
 
 set -euo pipefail
@@ -27,7 +27,7 @@ export METHOD="operator"
 
 # Scenario configuration
 COMPAT_SCENARIO="${COMPAT_SCENARIO:-old-controller}"
-COMPAT_CONTROLLER_TAG="${COMPAT_CONTROLLER_TAG:-v0.7.0}"
+COMPAT_CONTROLLER_TAG="${COMPAT_CONTROLLER_TAG:-v0.8.1}"
 COMPAT_CLIENT_VERSION="${COMPAT_CLIENT_VERSION:-0.7.1}"
 
 # Color output
@@ -204,9 +204,58 @@ deploy_old_controller() {
 
     kubectl config use-context kind-jumpstarter
 
-    # Install the operator and deploy old controller
+    # Install the operator
     log_info "Installing old controller via operator (version: ${COMPAT_CONTROLLER_TAG})..."
-    kubectl apply -f "https://github.com/jumpstarter-dev/jumpstarter/releases/download/${COMPAT_CONTROLLER_TAG}/install.yaml"
+    kubectl apply -f "https://github.com/jumpstarter-dev/jumpstarter/releases/download/${COMPAT_CONTROLLER_TAG}/operator-installer.yaml"
+
+    # Wait for operator to be ready
+    log_info "Waiting for operator to be ready..."
+    kubectl wait --namespace jumpstarter-operator-system \
+      --for=condition=available deployment/jumpstarter-operator-controller-manager \
+      --timeout=120s
+
+    # Create namespace for Jumpstarter deployment
+    log_info "Creating jumpstarter-lab namespace..."
+    kubectl create namespace jumpstarter-lab --dry-run=client -o yaml | kubectl apply -f -
+
+    # Create Jumpstarter CR with the computed networking variables
+    log_info "Creating Jumpstarter custom resource..."
+    kubectl apply -f - <<EOF
+apiVersion: operator.jumpstarter.dev/v1alpha1
+kind: Jumpstarter
+metadata:
+  name: jumpstarter
+  namespace: jumpstarter-lab
+spec:
+  baseDomain: ${BASEDOMAIN}
+  certManager:
+    enabled: true
+    server:
+      selfSigned:
+        enabled: true
+  authentication:
+    internal:
+      prefix: "internal:"
+      enabled: true
+    autoProvisioning:
+      enabled: true
+  controller:
+    replicas: 1
+    grpc:
+      endpoints:
+        - address: ${GRPC_ENDPOINT}
+          nodeport:
+            enabled: true
+            port: 30010
+  routers:
+    replicas: 1
+    grpc:
+      endpoints:
+        - address: ${GRPC_ROUTER_ENDPOINT}
+          nodeport:
+            enabled: true
+            port: 30011
+EOF
 
     kubectl config set-context --current --namespace=jumpstarter-lab
 
@@ -287,8 +336,9 @@ setup_test_environment() {
     cd "$REPO_ROOT"
 
     # Get the controller endpoint from the Jumpstarter CR
-    export ENDPOINT
-    ENDPOINT="grpc.$(kubectl get jumpstarter -n "${JS_NAMESPACE}" jumpstarter -o jsonpath='{.spec.baseDomain}' 2>/dev/null || echo 'jumpstarter.local'):8082"
+    local BASEDOMAIN
+    BASEDOMAIN=$(kubectl get jumpstarter -n "${JS_NAMESPACE}" jumpstarter -o jsonpath='{.spec.baseDomain}')
+    export ENDPOINT="grpc.${BASEDOMAIN}:8082"
 
     log_info "Controller endpoint: $ENDPOINT"
 
