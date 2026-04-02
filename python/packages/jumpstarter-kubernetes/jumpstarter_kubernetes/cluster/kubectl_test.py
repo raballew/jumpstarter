@@ -204,11 +204,10 @@ class TestCheckJumpstarterInstallation:
                 "status": "deployed",
             }
         ]
-        # Mock calls: helm list, kubectl get namespaces, kubectl get crds
         mock_run_command.side_effect = [
-            (0, json.dumps(helm_releases), ""),  # helm list success
-            (0, '{"items": []}', ""),  # kubectl get namespaces
-            (0, '{"items": []}', ""),  # kubectl get crds
+            (0, '{"items": []}', ""),  # kubectl get crds (no CRDs found)
+            (0, json.dumps(helm_releases), ""),  # helm list success (fallback)
+            (0, '{}', ""),  # helm get values
         ]
 
         result = await check_jumpstarter_installation("test-context")
@@ -222,11 +221,9 @@ class TestCheckJumpstarterInstallation:
     @pytest.mark.asyncio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_jumpstarter_installation_no_helm(self, mock_run_command):
-        # Helm command fails, fallback to kubectl
         mock_run_command.side_effect = [
-            (1, "", "helm not found"),  # helm list fails
-            (0, '{"items": []}', ""),  # kubectl get namespaces
-            (1, "", "not found"),  # kubectl get crds
+            (1, "", "not found"),  # kubectl get crds fails
+            (1, "", "helm not found"),  # helm list fails (fallback)
         ]
 
         result = await check_jumpstarter_installation("test-context")
@@ -236,12 +233,11 @@ class TestCheckJumpstarterInstallation:
 
     @pytest.mark.asyncio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
-    async def test_check_jumpstarter_installation_namespace_found(self, mock_run_command):
+    async def test_check_jumpstarter_installation_crd_found(self, mock_run_command):
         crds_response = {"items": [{"metadata": {"name": "exporter.jumpstarter.dev"}}]}
 
         mock_run_command.side_effect = [
-            (1, "", "helm not found"),  # helm list fails
-            (0, json.dumps(crds_response), ""),  # kubectl get crds
+            (0, json.dumps(crds_response), ""),  # kubectl get crds (primary)
         ]
 
         result = await check_jumpstarter_installation("test-context")
@@ -249,22 +245,38 @@ class TestCheckJumpstarterInstallation:
         assert result.installed is True
         assert result.namespace == "unknown"
         assert result.has_crds is True
-        assert result.status == "manual-install"
+        assert result.status == "operator-install"
 
     @pytest.mark.asyncio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_jumpstarter_installation_custom_namespace(self, mock_run_command):
+        crds_response = {"items": []}
         mock_run_command.side_effect = [
-            (0, "[]", ""),  # helm list
-            (0, '{"items": []}', ""),  # kubectl get crds
+            (0, json.dumps(crds_response), ""),  # kubectl get crds (primary)
+            (0, "[]", ""),  # helm list (fallback)
         ]
 
         await check_jumpstarter_installation("test-context", namespace="custom-ns")
 
-        # Verify the helm command was called (namespace parameter not used in current implementation)
-        helm_call = mock_run_command.call_args_list[0]
-        assert "helm" in helm_call[0][0]
-        assert "list" in helm_call[0][0]
+        first_call = mock_run_command.call_args_list[0]
+        assert "kubectl" in first_call[0][0][0]
+        assert "crd" in first_call[0][0]
+
+    @pytest.mark.asyncio
+    @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
+    async def test_crd_detection_is_primary(self, mock_run_command):
+        crds_response = {"items": [{"metadata": {"name": "exporters.jumpstarter.dev"}}]}
+        mock_run_command.side_effect = [
+            (0, json.dumps(crds_response), ""),  # kubectl get crds
+        ]
+
+        result = await check_jumpstarter_installation("test-context")
+
+        first_call = mock_run_command.call_args_list[0]
+        assert "kubectl" in first_call[0][0][0]
+        assert "crd" in first_call[0][0]
+        assert result.installed is True
+        assert result.has_crds is True
 
 
 class TestGetClusterInfo:
@@ -387,6 +399,6 @@ class TestListClusters:
     async def test_list_clusters_custom_parameters(self, mock_get_contexts):
         mock_get_contexts.return_value = []
 
-        await list_clusters(kubectl="custom-kubectl", helm="custom-helm", minikube="custom-minikube")
+        await list_clusters(kubectl="custom-kubectl", minikube="custom-minikube")
 
         mock_get_contexts.assert_called_once_with("custom-kubectl")

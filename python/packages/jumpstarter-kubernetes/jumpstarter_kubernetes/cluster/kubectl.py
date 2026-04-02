@@ -90,86 +90,18 @@ async def check_jumpstarter_installation(  # noqa: C901
     }
 
     try:
-        # Check for Helm installation first
-        helm_cmd = [helm, "list", "--all-namespaces", "-o", "json", "--kube-context", context]
-        returncode, stdout, _ = await run_command(helm_cmd)
-
-        if returncode == 0:
-            # Extract JSON from output (handle case where warnings are printed before JSON)
-            json_start = stdout.find("[")
-            if json_start >= 0:
-                json_output = stdout[json_start:]
-                releases = json.loads(json_output)
-            else:
-                releases = json.loads(stdout)  # Fallback to original parsing
-            for release in releases:
-                # Look for Jumpstarter chart
-                if "jumpstarter" in release.get("chart", "").lower():
-                    result_data["installed"] = True
-                    result_data["version"] = release.get("app_version") or release.get("chart", "").split("-")[-1]
-                    result_data["namespace"] = release.get("namespace")
-                    result_data["chart_name"] = release.get("name")
-                    result_data["status"] = release.get("status")
-
-                    # Try to get Helm values to extract basedomain and endpoints
-                    try:
-                        values_cmd = [
-                            helm,
-                            "get",
-                            "values",
-                            release.get("name"),
-                            "-n",
-                            release.get("namespace"),
-                            "-o",
-                            "json",
-                            "--kube-context",
-                            context,
-                        ]
-                        values_returncode, values_stdout, _ = await run_command(values_cmd)
-
-                        if values_returncode == 0:
-                            # Extract JSON from values output (handle warnings)
-                            json_start = values_stdout.find("{")
-                            if json_start >= 0:
-                                json_output = values_stdout[json_start:]
-                                values = json.loads(json_output)
-                            else:
-                                values = json.loads(values_stdout)  # Fallback
-
-                            # Extract basedomain
-                            basedomain = values.get("global", {}).get("baseDomain")
-                            if basedomain:
-                                result_data["basedomain"] = basedomain
-                                # Construct default endpoints from basedomain
-                                result_data["controller_endpoint"] = f"grpc.{basedomain}:8082"
-                                result_data["router_endpoint"] = f"router.{basedomain}:8083"
-
-                            # Check for explicit endpoints in values
-                            controller_config = values.get("jumpstarter-controller", {}).get("grpc", {})
-                            if controller_config.get("endpoint"):
-                                result_data["controller_endpoint"] = controller_config["endpoint"]
-                            if controller_config.get("routerEndpoint"):
-                                result_data["router_endpoint"] = controller_config["routerEndpoint"]
-
-                    except (json.JSONDecodeError, RuntimeError):
-                        # Failed to get Helm values, but we still have basic info
-                        pass
-
-                    break
-
-        # Check for Jumpstarter CRDs as secondary verification
+        # Check for Jumpstarter CRDs as primary detection method
         try:
             crd_cmd = [kubectl, "--context", context, "get", "crd", "-o", "json"]
             returncode, stdout, _ = await run_command(crd_cmd)
 
             if returncode == 0:
-                # Extract JSON from CRD output (handle warnings)
                 json_start = stdout.find("{")
                 if json_start >= 0:
                     json_output = stdout[json_start:]
                     crds = json.loads(json_output)
                 else:
-                    crds = json.loads(stdout)  # Fallback
+                    crds = json.loads(stdout)
                 jumpstarter_crds = []
                 for item in crds.get("items", []):
                     name = item.get("metadata", {}).get("name", "")
@@ -178,17 +110,70 @@ async def check_jumpstarter_installation(  # noqa: C901
 
                 if jumpstarter_crds:
                     result_data["has_crds"] = True
-                    if not result_data["installed"]:
-                        # CRDs exist but no Helm release found - manual installation?
-                        result_data["installed"] = True
-                        result_data["version"] = "unknown"
-                        result_data["namespace"] = namespace or "unknown"
-                        result_data["status"] = "manual-install"
+                    result_data["installed"] = True
+                    result_data["version"] = "unknown"
+                    result_data["namespace"] = namespace or "unknown"
+                    result_data["status"] = "operator-install"
         except RuntimeError:
-            pass  # CRD check failed, continue with Helm results
+            pass
+
+        # Legacy fallback: check for Helm-based installation
+        if not result_data["installed"]:
+            helm_cmd = [helm, "list", "--all-namespaces", "-o", "json", "--kube-context", context]
+            returncode, stdout, _ = await run_command(helm_cmd)
+
+            if returncode == 0:
+                json_start = stdout.find("[")
+                if json_start >= 0:
+                    json_output = stdout[json_start:]
+                    releases = json.loads(json_output)
+                else:
+                    releases = json.loads(stdout)
+                for release in releases:
+                    if "jumpstarter" in release.get("chart", "").lower():
+                        result_data["installed"] = True
+                        result_data["version"] = (
+                            release.get("app_version") or release.get("chart", "").split("-")[-1]
+                        )
+                        result_data["namespace"] = release.get("namespace")
+                        result_data["chart_name"] = release.get("name")
+                        result_data["status"] = release.get("status")
+
+                        try:
+                            values_cmd = [
+                                helm, "get", "values", release.get("name"),
+                                "-n", release.get("namespace"),
+                                "-o", "json", "--kube-context", context,
+                            ]
+                            values_returncode, values_stdout, _ = await run_command(values_cmd)
+
+                            if values_returncode == 0:
+                                json_start = values_stdout.find("{")
+                                if json_start >= 0:
+                                    json_output = values_stdout[json_start:]
+                                    values = json.loads(json_output)
+                                else:
+                                    values = json.loads(values_stdout)
+
+                                basedomain = values.get("global", {}).get("baseDomain")
+                                if basedomain:
+                                    result_data["basedomain"] = basedomain
+                                    result_data["controller_endpoint"] = f"grpc.{basedomain}:8082"
+                                    result_data["router_endpoint"] = f"router.{basedomain}:8083"
+
+                                controller_config = values.get("jumpstarter-controller", {}).get("grpc", {})
+                                if controller_config.get("endpoint"):
+                                    result_data["controller_endpoint"] = controller_config["endpoint"]
+                                if controller_config.get("routerEndpoint"):
+                                    result_data["router_endpoint"] = controller_config["routerEndpoint"]
+
+                        except (json.JSONDecodeError, RuntimeError):
+                            pass
+
+                        break
 
     except json.JSONDecodeError as e:
-        result_data["error"] = f"Failed to parse Helm output: {e}"
+        result_data["error"] = f"Failed to parse output: {e}"
     except RuntimeError as e:
         result_data["error"] = f"Command failed: {e}"
 
@@ -198,7 +183,6 @@ async def check_jumpstarter_installation(  # noqa: C901
 async def get_cluster_info(
     context: str,
     kubectl: str = "kubectl",
-    helm: str = "helm",
     minikube: str = "minikube",
 ) -> V1Alpha1ClusterInfo:
     """Get comprehensive cluster information."""
@@ -249,7 +233,7 @@ async def get_cluster_info(
 
         # Check Jumpstarter installation
         if cluster_accessible:
-            jumpstarter_info = await check_jumpstarter_installation(context, None, helm, kubectl)
+            jumpstarter_info = await check_jumpstarter_installation(context, kubectl=kubectl)
         else:
             jumpstarter_info = V1Alpha1JumpstarterInstance(installed=False, error="Cluster not accessible")
 
@@ -284,7 +268,6 @@ async def get_cluster_info(
 async def list_clusters(
     cluster_type_filter: str = "all",
     kubectl: str = "kubectl",
-    helm: str = "helm",
     kind: str = "kind",
     minikube: str = "minikube",
 ) -> V1Alpha1ClusterList:
@@ -294,7 +277,7 @@ async def list_clusters(
         cluster_infos = []
 
         for context in contexts:
-            cluster_info = await get_cluster_info(context["name"], kubectl, helm, minikube)
+            cluster_info = await get_cluster_info(context["name"], kubectl, minikube)
 
             # Filter by type if specified
             if cluster_type_filter != "all" and cluster_info.type != cluster_type_filter:
