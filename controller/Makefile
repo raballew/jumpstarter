@@ -30,9 +30,6 @@ endif
 # tools. (i.e. podman)
 CONTAINER_TOOL ?= podman
 
-# Deployment method: operator (default) or helm
-METHOD ?= operator
-
 # Cluster type: kind (default) or k3s
 CLUSTER_TYPE ?= kind
 export CLUSTER_TYPE
@@ -67,17 +64,8 @@ help: ## Display this help.
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) 	rbac:roleName=jumpstarter-manager-role crd webhook paths="./api/..." paths="./internal/..." \
-						output:crd:artifacts:config=deploy/helm/jumpstarter/charts/jumpstarter-controller/templates/crds/ \
-						output:rbac:artifacts:config=deploy/helm/jumpstarter/charts/jumpstarter-controller/templates/rbac/
-
-	# Add ArgoCD sync-wave annotation to RBAC role for proper deployment ordering (PR #207)
-	@awk '/^  name: jumpstarter-manager-role$$/{print; print "  annotations:"; print "    argocd.argoproj.io/sync-wave: \"-1\""; next}1' \
-		deploy/helm/jumpstarter/charts/jumpstarter-controller/templates/rbac/role.yaml > \
-		deploy/helm/jumpstarter/charts/jumpstarter-controller/templates/rbac/role.yaml.tmp && \
-		mv deploy/helm/jumpstarter/charts/jumpstarter-controller/templates/rbac/role.yaml.tmp \
-		deploy/helm/jumpstarter/charts/jumpstarter-controller/templates/rbac/role.yaml
-
-	cp deploy/helm/jumpstarter/charts/jumpstarter-controller/templates/crds/* deploy/operator/config/crd/bases/
+						output:crd:artifacts:config=deploy/operator/config/crd/bases/ \
+						output:rbac:artifacts:config=deploy/operator/config/rbac/
 
 	# Regenerate operator install.yaml to include updated CRDs
 	$(MAKE) -C deploy/operator build-installer
@@ -188,15 +176,9 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: deploy
-deploy: docker-build cluster grpcurl ## Deploy controller using METHOD (operator or helm). Set CLUSTER_TYPE=k3s for k3s.
-ifeq ($(METHOD),operator)
+deploy: docker-build cluster grpcurl ## Deploy controller using operator. Set CLUSTER_TYPE=k3s for k3s.
 	$(MAKE) build-operator
 	./hack/deploy_with_operator.sh
-else ifeq ($(METHOD),helm)
-	./hack/deploy_with_helm.sh
-else
-	$(error Unknown METHOD=$(METHOD). Use 'operator' or 'helm')
-endif
 
 # Backward compatibility alias
 .PHONY: deploy-with-operator
@@ -221,11 +203,6 @@ deploy-with-operator-parallel:
 .PHONY: deploy-exporters
 deploy-exporters:
 	./hack/demoenv/prepare_exporters.sh
-
-.PHONY: lint-helm
-lint-helm:
-	helm lint deploy/helm/jumpstarter
-
 
 .PHONY: undeploy
 undeploy: kustomize ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.

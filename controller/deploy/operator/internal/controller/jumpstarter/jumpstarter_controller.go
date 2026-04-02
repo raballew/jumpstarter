@@ -529,7 +529,6 @@ func (r *JumpstarterReconciler) reconcileSecrets(ctx context.Context, jumpstarte
 	log := logf.FromContext(ctx)
 
 	// Create controller secret if it doesn't exist
-	// Use fixed name to match Helm chart for migration compatibility
 	controllerSecretName := "jumpstarter-controller-secret"
 	if err := r.ensureSecretExists(ctx, jumpstarter, controllerSecretName); err != nil {
 		log.Error(err, "Failed to ensure controller secret exists", "secret", controllerSecretName)
@@ -537,7 +536,6 @@ func (r *JumpstarterReconciler) reconcileSecrets(ctx context.Context, jumpstarte
 	}
 
 	// Create router secret if it doesn't exist
-	// Use fixed name to match Helm chart for migration compatibility
 	routerSecretName := "jumpstarter-router-secret"
 	if err := r.ensureSecretExists(ctx, jumpstarter, routerSecretName); err != nil {
 		log.Error(err, "Failed to ensure router secret exists", "secret", routerSecretName)

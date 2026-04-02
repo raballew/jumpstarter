@@ -40,11 +40,6 @@ jobs:
           - ubuntu-24.04-arm
         method:
           - operator
-          - helm
-        exclude:
-          # Only run operator on ARM, skip helm
-          - os: ubuntu-24.04-arm
-            method: helm
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
