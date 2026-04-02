@@ -200,11 +200,6 @@ wait_for_exporter() {
 }
 
 @test "can login with simplified login" {
-  # This test only works with operator-based deployment, which deploys the CA ConfigMap
-  if [ "${METHOD:-}" != "operator" ]; then
-    skip "CA certificate injection only configured with operator deployment (METHOD=$METHOD)"
-  fi
-
   jmp config client   delete test-client-oidc
 
   run jmp login test-client-oidc@${LOGIN_ENDPOINT} --insecure-login-http \
@@ -267,11 +262,6 @@ EOF
 }
 
 @test "legacy client config contains CA certificate and works with secure TLS" {
-  # This test only works with operator-based deployment, which creates the CA ConfigMap
-  if [ "${METHOD:-}" != "operator" ]; then
-    skip "CA certificate injection only available with operator deployment (METHOD=$METHOD)"
-  fi
-
   wait_for_exporter
 
   # Get the config file path from jmp (clients are saved to ~/.config/jumpstarter/clients/)

@@ -23,8 +23,6 @@ REPO_ROOT="$(cd "$E2E_DIR/.." && pwd)"
 # Default namespace for tests
 export JS_NAMESPACE="${JS_NAMESPACE:-jumpstarter-lab}"
 
-export METHOD="operator"
-
 # Scenario configuration
 COMPAT_SCENARIO="${COMPAT_SCENARIO:-old-controller}"
 COMPAT_CONTROLLER_TAG="${COMPAT_CONTROLLER_TAG:-v0.8.1}"
@@ -357,7 +355,6 @@ ENDPOINT=$ENDPOINT
 JS_NAMESPACE=$JS_NAMESPACE
 REPO_ROOT=$REPO_ROOT
 SCRIPT_DIR=$SCRIPT_DIR
-METHOD=$METHOD
 BATS_LIB_PATH=${BATS_LIB_PATH:-}
 EOF
 

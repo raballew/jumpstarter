@@ -5,7 +5,7 @@ This guide covers installing Jumpstarter with the Kubernetes operator, using:
 - **Ingress** on vanilla Kubernetes
 - **Route** on OpenShift
 
-It mirrors how `make deploy METHOD=operator` deploys the operator and creates a `Jumpstarter` custom resource (CR), but uses production-friendly manifests and release artifacts.
+It mirrors how `make deploy` deploys the operator and creates a `Jumpstarter` custom resource (CR), but uses production-friendly manifests and release artifacts.
 
 ## Prerequisites
 

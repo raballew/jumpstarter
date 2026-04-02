@@ -183,7 +183,7 @@ deploy: docker-build cluster grpcurl ## Deploy controller using operator. Set CL
 # Backward compatibility alias
 .PHONY: deploy-with-operator
 deploy-with-operator:
-	$(MAKE) deploy METHOD=operator
+	$(MAKE) deploy
 
 .PHONY: deploy-operator
 deploy-operator: docker-build build-operator cluster grpcurl ## Deploy only the operator (without Jumpstarter CR)
@@ -198,7 +198,7 @@ operator-logs:
 
 .PHONY: deploy-with-operator-parallel
 deploy-with-operator-parallel:
-	make deploy METHOD=operator -j5 --output-sync=target
+	make deploy -j5 --output-sync=target
 
 .PHONY: deploy-exporters
 deploy-exporters:
