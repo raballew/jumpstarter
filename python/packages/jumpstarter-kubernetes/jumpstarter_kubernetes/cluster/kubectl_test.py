@@ -264,6 +264,12 @@ class TestCheckJumpstarterInstallation:
 
     @pytest.mark.asyncio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
+    async def test_check_jumpstarter_installation_does_not_accept_helm_parameter(self, mock_run_command):
+        with pytest.raises(TypeError):
+            await check_jumpstarter_installation("test-context", helm="custom-helm")
+
+    @pytest.mark.asyncio
+    @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_crd_detection_is_primary(self, mock_run_command):
         crds_response = {"items": [{"metadata": {"name": "exporters.jumpstarter.dev"}}]}
         mock_run_command.side_effect = [

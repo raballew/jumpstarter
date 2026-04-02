@@ -73,9 +73,10 @@ async def get_kubectl_contexts(kubectl: str = "kubectl") -> List[Dict[str, str]]
 
 
 async def check_jumpstarter_installation(  # noqa: C901
-    context: str, namespace: Optional[str] = None, helm: str = "helm", kubectl: str = "kubectl"
+    context: str, namespace: Optional[str] = None, kubectl: str = "kubectl"
 ) -> V1Alpha1JumpstarterInstance:
     """Check if Jumpstarter is installed in the cluster."""
+    helm = "helm"
     result_data = {
         "installed": False,
         "version": None,
