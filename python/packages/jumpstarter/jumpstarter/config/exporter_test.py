@@ -59,7 +59,7 @@ export:
         kind="ExporterConfig",
         metadata=ObjectMeta(namespace="default", name="test"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",  # noqa: S106
+        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",
         tls=TLSConfigV1Alpha1(ca="cacertificatedata", insecure=True),
         export={
             "power": ExporterConfigV1Alpha1DriverInstance(

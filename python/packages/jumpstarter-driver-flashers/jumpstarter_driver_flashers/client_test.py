@@ -64,7 +64,7 @@ def test_validate_oci_credentials_accepts_pair_and_strips_whitespace():
 
     username, password = client._validate_oci_credentials(" myuser ", " mypassword ")
     assert username == "myuser"
-    assert password == "mypassword"  # noqa: S105
+    assert password == "mypassword"
 
 
 def test_resolve_oci_credentials_reads_env_for_oci_path(monkeypatch):
@@ -75,7 +75,7 @@ def test_resolve_oci_credentials_reads_env_for_oci_path(monkeypatch):
 
     username, password = client._resolve_oci_credentials("oci://quay.io/org/image:tag", None, None)
     assert username == "env-user"
-    assert password == "env-pass"  # noqa: S105
+    assert password == "env-pass"
 
 
 def test_resolve_oci_credentials_ignores_env_for_non_oci_path(monkeypatch):
@@ -260,7 +260,7 @@ def test_flash_http_url_with_oci_credentials_still_uses_direct_http_path():
         "https://example.com/image.raw.xz",
         method="fls",
         oci_username="myuser",
-        oci_password="mypassword",  # noqa: S106
+        oci_password="mypassword",
         fls_version="",
     )
 

@@ -415,7 +415,7 @@ class TestTryRefreshToken:
     @patch("jumpstarter_cli.shell.ClientConfigV1Alpha1")
     @patch("jumpstarter_cli.shell.Config")
     @patch("jumpstarter_cli.shell.decode_jwt_issuer", return_value="https://issuer")
-    async def test_successful_refresh(self, _mock_issuer, mock_oidc_cls, mock_save):  # noqa: PT019
+    async def test_successful_refresh(self, _mock_issuer, mock_oidc_cls, mock_save):
         config = _make_config()
         lease = _make_mock_lease()
 
@@ -429,8 +429,8 @@ class TestTryRefreshToken:
         result = await _try_refresh_token(config, lease)
 
         assert result is True
-        assert config.token == "new_tok"  # noqa: S105
-        assert config.refresh_token == "new_rt"  # noqa: S105
+        assert config.token == "new_tok"
+        assert config.refresh_token == "new_rt"
         lease.refresh_channel.assert_called_once()
         mock_save.save.assert_called_once()
 
@@ -438,7 +438,7 @@ class TestTryRefreshToken:
     @patch("jumpstarter_cli.shell.Config")
     @patch("jumpstarter_cli.shell.decode_jwt_issuer", return_value="https://issuer")
     async def test_successful_refresh_without_new_refresh_token(
-        self, _mock_issuer, mock_oidc_cls, _mock_save  # noqa: PT019
+        self, _mock_issuer, mock_oidc_cls, _mock_save
     ):
         config = _make_config()
         lease = _make_mock_lease()
@@ -453,26 +453,26 @@ class TestTryRefreshToken:
         result = await _try_refresh_token(config, lease)
 
         assert result is True
-        assert config.token == "new_tok"  # noqa: S105
-        assert config.refresh_token == "rt"  # unchanged  # noqa: S105
+        assert config.token == "new_tok"
+        assert config.refresh_token == "rt"  # unchanged
 
     @patch("jumpstarter_cli.shell.decode_jwt_issuer", side_effect=ValueError("bad jwt"))
-    async def test_rollback_on_failure(self, _mock_issuer):  # noqa: PT019
-        config = _make_config(token="original_tok", refresh_token="original_rt")  # noqa: S106
+    async def test_rollback_on_failure(self, _mock_issuer):
+        config = _make_config(token="original_tok", refresh_token="original_rt")
         lease = _make_mock_lease()
 
         result = await _try_refresh_token(config, lease)
 
         assert result is False
-        assert config.token == "original_tok"  # noqa: S105
-        assert config.refresh_token == "original_rt"  # noqa: S105
+        assert config.token == "original_tok"
+        assert config.refresh_token == "original_rt"
         lease.refresh_channel.assert_not_called()
 
     @patch("jumpstarter_cli.shell.ClientConfigV1Alpha1")
     @patch("jumpstarter_cli.shell.Config")
     @patch("jumpstarter_cli.shell.decode_jwt_issuer", return_value="https://issuer")
     async def test_save_failure_does_not_fail_refresh(
-        self, _mock_issuer, mock_oidc_cls, mock_save, caplog  # noqa: PT019
+        self, _mock_issuer, mock_oidc_cls, mock_save, caplog
     ):
         """Disk save is best-effort; refresh should still succeed."""
         config = _make_config()
@@ -489,7 +489,7 @@ class TestTryRefreshToken:
             result = await _try_refresh_token(config, lease)
 
         assert result is True
-        assert config.token == "new_tok"  # noqa: S105
+        assert config.token == "new_tok"
         assert "Failed to save refreshed token to disk" in caplog.text
 
 
@@ -500,45 +500,45 @@ class TestTryReloadTokenFromDisk:
 
     @patch("jumpstarter_cli.shell.ClientConfigV1Alpha1")
     @patch("jumpstarter_cli.shell.get_token_remaining_seconds", return_value=3600)
-    async def test_successful_reload(self, _mock_remaining, mock_client_cfg):  # noqa: PT019
-        config = _make_config(token="old_tok", refresh_token="old_rt")  # noqa: S106
+    async def test_successful_reload(self, _mock_remaining, mock_client_cfg):
+        config = _make_config(token="old_tok", refresh_token="old_rt")
         lease = _make_mock_lease()
 
         disk_config = Mock()
-        disk_config.token = "disk_tok"  # noqa: S105
-        disk_config.refresh_token = "disk_rt"  # noqa: S105
+        disk_config.token = "disk_tok"
+        disk_config.refresh_token = "disk_rt"
         mock_client_cfg.from_file.return_value = disk_config
 
         result = await _try_reload_token_from_disk(config, lease)
 
         assert result is True
-        assert config.token == "disk_tok"  # noqa: S105
-        assert config.refresh_token == "disk_rt"  # noqa: S105
+        assert config.token == "disk_tok"
+        assert config.refresh_token == "disk_rt"
         lease.refresh_channel.assert_called_once()
 
     @patch("jumpstarter_cli.shell.ClientConfigV1Alpha1")
     @patch("jumpstarter_cli.shell.get_token_remaining_seconds", return_value=3600)
-    async def test_clears_refresh_token_when_disk_has_none(self, _mock_remaining, mock_client_cfg):  # noqa: PT019
+    async def test_clears_refresh_token_when_disk_has_none(self, _mock_remaining, mock_client_cfg):
         """If disk config has no refresh token, in-memory refresh token must be cleared."""
-        config = _make_config(token="old_tok", refresh_token="stale_rt")  # noqa: S106
+        config = _make_config(token="old_tok", refresh_token="stale_rt")
         lease = _make_mock_lease()
 
         disk_config = Mock()
-        disk_config.token = "disk_tok"  # noqa: S105
+        disk_config.token = "disk_tok"
         disk_config.refresh_token = None
         mock_client_cfg.from_file.return_value = disk_config
 
         result = await _try_reload_token_from_disk(config, lease)
 
         assert result is True
-        assert config.token == "disk_tok"  # noqa: S105
+        assert config.token == "disk_tok"
         assert config.refresh_token is None
 
     @patch("jumpstarter_cli.shell.ClientConfigV1Alpha1")
     async def test_returns_false_when_disk_token_is_same(self, mock_client_cfg):
-        config = _make_config(token="same_tok")  # noqa: S106
+        config = _make_config(token="same_tok")
         disk_config = Mock()
-        disk_config.token = "same_tok"  # noqa: S105
+        disk_config.token = "same_tok"
         mock_client_cfg.from_file.return_value = disk_config
 
         result = await _try_reload_token_from_disk(config, _make_mock_lease())
@@ -548,28 +548,28 @@ class TestTryReloadTokenFromDisk:
     @patch("jumpstarter_cli.shell.ClientConfigV1Alpha1")
     @patch("jumpstarter_cli.shell.get_token_remaining_seconds", return_value=-10)
     async def test_returns_false_when_disk_token_is_expired(
-        self, _mock_remaining, mock_client_cfg  # noqa: PT019
+        self, _mock_remaining, mock_client_cfg
     ):
-        config = _make_config(token="old_tok")  # noqa: S106
+        config = _make_config(token="old_tok")
         disk_config = Mock()
-        disk_config.token = "disk_tok"  # noqa: S105
+        disk_config.token = "disk_tok"
         mock_client_cfg.from_file.return_value = disk_config
 
         result = await _try_reload_token_from_disk(config, _make_mock_lease())
 
         assert result is False
-        assert config.token == "old_tok"  # unchanged  # noqa: S105
+        assert config.token == "old_tok"  # unchanged
 
     @patch("jumpstarter_cli.shell.ClientConfigV1Alpha1")
     async def test_rollback_on_file_error(self, mock_client_cfg):
-        config = _make_config(token="orig_tok", refresh_token="orig_rt")  # noqa: S106
+        config = _make_config(token="orig_tok", refresh_token="orig_rt")
         mock_client_cfg.from_file.side_effect = FileNotFoundError("gone")
 
         result = await _try_reload_token_from_disk(config, _make_mock_lease())
 
         assert result is False
-        assert config.token == "orig_tok"  # noqa: S105
-        assert config.refresh_token == "orig_rt"  # noqa: S105
+        assert config.token == "orig_tok"
+        assert config.refresh_token == "orig_rt"
 
 
 class TestAttemptTokenRecovery:
@@ -630,7 +630,7 @@ class TestMonitorTokenExpiry:
 
     @patch("jumpstarter_cli.shell.anyio.sleep", new_callable=AsyncMock)
     @patch("jumpstarter_cli.shell.get_token_remaining_seconds", return_value=None)
-    async def test_returns_when_remaining_is_none(self, _mock_remaining, _mock_sleep):  # noqa: PT019
+    async def test_returns_when_remaining_is_none(self, _mock_remaining, _mock_sleep):
         config = _make_config()
         cancel_scope = Mock(cancel_called=False)
 
@@ -697,7 +697,7 @@ class TestMonitorTokenExpiry:
 
     @patch("jumpstarter_cli.shell.anyio.sleep", new_callable=AsyncMock)
     @patch("jumpstarter_cli.shell.get_token_remaining_seconds", return_value=500)
-    async def test_sleeps_30s_when_above_threshold(self, _mock_remaining, mock_sleep):  # noqa: PT019
+    async def test_sleeps_30s_when_above_threshold(self, _mock_remaining, mock_sleep):
         # Exit after one loop via cancel_called
         call_count = 0
 
@@ -722,7 +722,7 @@ class TestMonitorTokenExpiry:
     @patch("jumpstarter_cli.shell._attempt_token_recovery", new_callable=AsyncMock)
     @patch("jumpstarter_cli.shell.get_token_remaining_seconds")
     async def test_sleeps_5s_when_below_threshold(
-        self, mock_remaining, mock_recovery, mock_sleep, _mock_click  # noqa: PT019
+        self, mock_remaining, mock_recovery, mock_sleep, _mock_click
     ):
         mock_remaining.side_effect = [60, Exception("done")]
         mock_recovery.return_value = None
@@ -738,7 +738,7 @@ class TestMonitorTokenExpiry:
     @patch("jumpstarter_cli.shell._attempt_token_recovery", new_callable=AsyncMock)
     @patch("jumpstarter_cli.shell.get_token_remaining_seconds")
     async def test_does_not_cancel_scope_on_expiry(
-        self, mock_remaining, mock_recovery, mock_sleep, _mock_click  # noqa: PT019
+        self, mock_remaining, mock_recovery, mock_sleep, _mock_click
     ):
         """The monitor must never cancel the scope — the shell stays alive."""
         mock_remaining.side_effect = [60, Exception("done")]

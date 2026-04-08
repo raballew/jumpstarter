@@ -350,7 +350,7 @@ async def test_get_client_config_includes_ca_bundle():
     api.api.get_namespaced_custom_object = AsyncMock(return_value=client_dict)
 
     # Mock secret with token
-    token = "test-token-value"  # noqa: S105
+    token = "test-token-value"
     mock_secret = V1Secret(data={"token": base64.b64encode(token.encode()).decode()})
     api.core_api.read_namespaced_secret = AsyncMock(return_value=mock_secret)
 
@@ -395,7 +395,7 @@ async def test_get_client_config_without_ca_bundle():
     api.api.get_namespaced_custom_object = AsyncMock(return_value=client_dict)
 
     # Mock secret with token
-    token = "test-token-value"  # noqa: S105
+    token = "test-token-value"
     mock_secret = V1Secret(data={"token": base64.b64encode(token.encode()).decode()})
     api.core_api.read_namespaced_secret = AsyncMock(return_value=mock_secret)
 

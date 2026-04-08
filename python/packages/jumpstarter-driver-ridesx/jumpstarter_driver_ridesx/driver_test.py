@@ -548,7 +548,7 @@ def test_flash_oci_image_with_credentials(temp_storage_dir, ridesx_driver):
                 call_kwargs = mock_subprocess.call_args[1]
                 env = call_kwargs["env"]
                 assert env["FLS_REGISTRY_USERNAME"] == "myuser"
-                assert env["FLS_REGISTRY_PASSWORD"] == "mypass"  # noqa: S105
+                assert env["FLS_REGISTRY_PASSWORD"] == "mypass"
 
 
 def test_flash_oci_image_partial_credentials_rejected(temp_storage_dir, ridesx_driver):

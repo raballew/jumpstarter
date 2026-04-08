@@ -449,7 +449,7 @@ class TestEnsureFreshToken:
         future_exp = int(time.time()) + 3600
         config = MagicMock()
         config.token = _make_jwt_payload(exp=future_exp)
-        config.refresh_token = "some-refresh-token"  # noqa: S105
+        config.refresh_token = "some-refresh-token"
 
         with patch("jumpstarter_mcp.server.ClientConfigV1Alpha1") as mock_cls:
             result = await _ensure_fresh_token(config)
@@ -472,7 +472,7 @@ class TestEnsureFreshToken:
         past_exp = int(time.time()) - 60
         config = MagicMock()
         config.token = _make_jwt_payload(exp=past_exp)
-        config.refresh_token = "old-refresh"  # noqa: S105
+        config.refresh_token = "old-refresh"
 
         new_access = "new-access-token"
         new_refresh = "new-refresh-token"
@@ -497,7 +497,7 @@ class TestEnsureFreshToken:
         past_exp = int(time.time()) - 60
         config = MagicMock()
         config.token = _make_jwt_payload(exp=past_exp)
-        config.refresh_token = "old-refresh"  # noqa: S105
+        config.refresh_token = "old-refresh"
 
         mock_oidc = AsyncMock()
         mock_oidc.refresh_token_grant.return_value = {
@@ -510,8 +510,8 @@ class TestEnsureFreshToken:
         ):
             result = await _ensure_fresh_token(config)
 
-        assert result.token == "new-access"  # noqa: S105
-        assert result.refresh_token == "old-refresh"  # noqa: S105
+        assert result.token == "new-access"
+        assert result.refresh_token == "old-refresh"
 
     @pytest.mark.asyncio
     async def test_expired_token_refresh_failure_returns_config_unchanged(self):
@@ -519,7 +519,7 @@ class TestEnsureFreshToken:
         original_token = _make_jwt_payload(exp=past_exp)
         config = MagicMock()
         config.token = original_token
-        config.refresh_token = "old-refresh"  # noqa: S105
+        config.refresh_token = "old-refresh"
 
         mock_oidc = AsyncMock()
         mock_oidc.refresh_token_grant.side_effect = RuntimeError("OIDC server down")
@@ -538,7 +538,7 @@ class TestEnsureFreshToken:
         near_exp = int(time.time()) + TOKEN_REFRESH_THRESHOLD_SECONDS - 1
         config = MagicMock()
         config.token = _make_jwt_payload(exp=near_exp)
-        config.refresh_token = "refresh"  # noqa: S105
+        config.refresh_token = "refresh"
 
         mock_oidc = AsyncMock()
         mock_oidc.refresh_token_grant.return_value = {"access_token": "refreshed"}
@@ -549,13 +549,13 @@ class TestEnsureFreshToken:
         ):
             result = await _ensure_fresh_token(config)
 
-        assert result.token == "refreshed"  # noqa: S105
+        assert result.token == "refreshed"
 
     @pytest.mark.asyncio
     async def test_token_without_exp_claim_skips_refresh(self):
         config = MagicMock()
         config.token = _make_jwt_payload(exp=None)
-        config.refresh_token = "some-refresh"  # noqa: S105
+        config.refresh_token = "some-refresh"
 
         with patch("jumpstarter_mcp.server.ClientConfigV1Alpha1") as mock_cls:
             result = await _ensure_fresh_token(config)

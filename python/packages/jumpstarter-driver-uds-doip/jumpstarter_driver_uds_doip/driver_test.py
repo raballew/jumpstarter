@@ -203,7 +203,7 @@ def test_uds_doip_read_dtc(mock_doip_cls, mock_conn_cls, mock_uds_cls):
 @patch("jumpstarter_driver_uds_doip.driver.UdsoncanClient")
 @patch("jumpstarter_driver_uds_doip.driver.DoIPClientUDSConnector")
 @patch("jumpstarter_driver_uds_doip.driver.DoIPClient")
-def test_uds_doip_connection_failure(mock_doip_cls, _mock_conn_cls, _mock_uds_cls):  # noqa: PT019
+def test_uds_doip_connection_failure(mock_doip_cls, _mock_conn_cls, _mock_uds_cls):
     mock_doip_cls.side_effect = ConnectionRefusedError("Connection refused")
     with pytest.raises(ConnectionRefusedError, match="Connection refused"):
         UdsDoip(ecu_ip="192.168.1.100", ecu_logical_address=0x00E0)

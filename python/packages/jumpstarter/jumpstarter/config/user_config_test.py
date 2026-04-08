@@ -30,7 +30,7 @@ config:
             alias="testclient",
             metadata=ObjectMeta(namespace="default", name="testclient"),
             endpoint="abc",
-            token="123",  # noqa: S106
+            token="123",
             drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=False),
         ),
     ) as mock_load, tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
@@ -61,7 +61,7 @@ config: {}
             alias="testclient",
             metadata=ObjectMeta(namespace="default", name="testclient"),
             endpoint="abc",
-            token="123",  # noqa: S106
+            token="123",
             drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=False),
         ),
     ) as mock_load, tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
@@ -87,7 +87,7 @@ config:
             alias="testclient",
             metadata=ObjectMeta(namespace="default", name="testclient"),
             endpoint="abc",
-            token="123",  # noqa: S106
+            token="123",
             drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=False),
         ),
     ) as mock_load, tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
@@ -188,7 +188,7 @@ config:
                     alias="testclient",
                     metadata=ObjectMeta(namespace="default", name="testclient"),
                     endpoint="abc",
-                    token="123",  # noqa: S106
+                    token="123",
                     drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=False),
                 )
             )
@@ -229,7 +229,7 @@ config:
             alias="testclient",
             metadata=ObjectMeta(namespace="default", name="testclient"),
             endpoint="abc",
-            token="123",  # noqa: S106
+            token="123",
             drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=False),
         ),
     ) as mock_load, tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
@@ -240,7 +240,7 @@ config:
                     alias="another",
                     metadata=ObjectMeta(namespace="default", name="testclient"),
                     endpoint="abc",
-                    token="123",  # noqa: S106
+                    token="123",
                     drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=False),
                 )
             )
@@ -268,7 +268,7 @@ config:
                     alias="another",
                     metadata=ObjectMeta(namespace="default", name="testclient"),
                     endpoint="abc",
-                    token="123",  # noqa: S106
+                    token="123",
                     drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=False),
                 )
             )

@@ -211,7 +211,7 @@ def test_drivers_tmt_driver_exports():
         children={"ssh": TcpNetwork(host="127.0.0.1", port=22)},
         reboot_cmd="custom reboot",
         default_username="testuser",
-        default_password="testpass"  # noqa: S106
+        default_password="testpass"
     )
 
     with serve(instance) as client:
@@ -222,7 +222,7 @@ def test_drivers_tmt_driver_exports():
         # Test get_default_user_pass
         username, password = client.call("get_default_user_pass")
         assert username == "testuser"
-        assert password == "testpass"  # noqa: S105
+        assert password == "testpass"
 
 
 def test_drivers_tmt_driver_defaults():

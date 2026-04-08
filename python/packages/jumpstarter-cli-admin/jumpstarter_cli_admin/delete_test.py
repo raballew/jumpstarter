@@ -22,7 +22,7 @@ CLIENT_NAME = "test"
 CLIENT_CONFIG_PATH = ClientConfigV1Alpha1.CLIENT_CONFIGS_PATH / (CLIENT_NAME + ".yaml")
 
 CLIENT_ENDPOINT = "grpc://example.com:443"
-CLIENT_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
+CLIENT_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
 
 CLIENT_CONFIG = ClientConfigV1Alpha1(
     alias=CLIENT_NAME,
@@ -43,7 +43,7 @@ USER_CONFIG_NOT_CURRENT = UserConfigV1Alpha1(config=UserConfigV1Alpha1Config(cur
 @patch.object(UserConfigV1Alpha1, "save")
 @patch.object(ClientsV1Alpha1Api, "_load_kube_config")
 def test_delete_client(
-    _mock_load_kube_config,  # noqa: PT019
+    _mock_load_kube_config,
     mock_save_user_config: Mock,
     mock_load_or_create_user_config: Mock,
     mock_delete_client: AsyncMock,
@@ -154,7 +154,7 @@ def test_delete_client(
 
 EXPORTER_NAME = "test"
 EXPORTER_ENDPOINT = "grpc://example.com:443"
-EXPORTER_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
+EXPORTER_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
 # Default config path
 default_config_path = ExporterConfigV1Alpha1.BASE_PATH / (EXPORTER_NAME + ".yaml")
 # Create a test exporter config
@@ -179,7 +179,7 @@ EXPORTER_CONFIG = ExporterConfigV1Alpha1(
 @patch.object(ExportersV1Alpha1Api, "delete_exporter")
 @patch.object(ExportersV1Alpha1Api, "_load_kube_config")
 def test_delete_exporter(
-    _mock_load_kube_config,  # noqa: PT019
+    _mock_load_kube_config,
     mock_delete_exporter: AsyncMock,
     mock_config_exists: Mock,
     mock_config_delete: Mock,

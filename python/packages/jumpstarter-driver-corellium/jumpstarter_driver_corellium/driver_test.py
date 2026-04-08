@@ -19,7 +19,7 @@ def test_driver_corellium_init_ok(monkeypatch):
     assert c.device_flavor == 'kronos'
     assert c.device_os == '1.0'
     assert c.api.host  == 'api-host'
-    assert c.api.token == 'api-token'  # noqa: S105
+    assert c.api.token == 'api-token'
 
 
 @pytest.mark.parametrize(

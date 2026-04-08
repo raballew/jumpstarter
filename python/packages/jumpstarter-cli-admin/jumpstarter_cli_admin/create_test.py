@@ -28,7 +28,7 @@ CLIENT_NAME = uuid.uuid4().hex
 CLIENT_CONFIG_PATH = ClientConfigV1Alpha1.CLIENT_CONFIGS_PATH / (CLIENT_NAME + ".yaml")
 
 CLIENT_ENDPOINT = "grpc://example.com:443"
-CLIENT_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
+CLIENT_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
 DRIVER_NAME = "jumpstarter.Testing"
 
 CLIENT_OBJECT = V1Alpha1Client(
@@ -101,7 +101,7 @@ INSECURE_TLS_CLIENT_CONFIG = ClientConfigV1Alpha1(
 @patch.object(ClientsV1Alpha1Api, "create_client", return_value=CLIENT_OBJECT)
 @patch.object(ClientsV1Alpha1Api, "_load_kube_config")
 def test_create_client(
-    _mock_load_kube_config, _mock_create_client, mock_get_client_config: AsyncMock, mock_save_client: Mock  # noqa: PT019
+    _mock_load_kube_config, _mock_create_client, mock_get_client_config: AsyncMock, mock_save_client: Mock
 ):
     runner = CliRunner()
 
@@ -208,7 +208,7 @@ def test_create_client(
 # Generate a random exporter name
 EXPORTER_NAME = uuid.uuid4().hex
 EXPORTER_ENDPOINT = "grpc://example.com:443"
-EXPORTER_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
+EXPORTER_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
 # Default config path
 default_config_path = ExporterConfigV1Alpha1.BASE_PATH / (EXPORTER_NAME + ".yaml")
 # Create a test exporter config
@@ -278,7 +278,7 @@ INSECURE_TLS_EXPORTER_CONFIG = ExporterConfigV1Alpha1(
 @patch.object(ExportersV1Alpha1Api, "create_exporter", return_value=EXPORTER_OBJECT)
 @patch.object(ExportersV1Alpha1Api, "get_exporter_config", return_value=EXPORTER_CONFIG)
 def test_create_exporter(
-    _get_exporter_config_mock, _create_exporter_mock, _load_kube_config_mock, save_exporter_mock: Mock  # noqa: PT019
+    _get_exporter_config_mock, _create_exporter_mock, _load_kube_config_mock, save_exporter_mock: Mock
 ):
     runner = CliRunner()
 
