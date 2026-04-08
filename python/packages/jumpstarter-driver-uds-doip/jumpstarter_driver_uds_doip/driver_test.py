@@ -203,7 +203,7 @@ def test_uds_doip_read_dtc(mock_doip_cls, mock_conn_cls, mock_uds_cls):
 @patch("jumpstarter_driver_uds_doip.driver.UdsoncanClient")
 @patch("jumpstarter_driver_uds_doip.driver.DoIPClientUDSConnector")
 @patch("jumpstarter_driver_uds_doip.driver.DoIPClient")
-def test_uds_doip_connection_failure(mock_doip_cls, _mock_conn_cls, _mock_uds_cls):
+def test_uds_doip_connection_failure(mock_doip_cls, _mock_conn_cls, _mock_uds_cls):  # noqa: PT019
     mock_doip_cls.side_effect = ConnectionRefusedError("Connection refused")
     with pytest.raises(ConnectionRefusedError, match="Connection refused"):
         UdsDoip(ecu_ip="192.168.1.100", ecu_logical_address=0x00E0)
@@ -221,9 +221,8 @@ def test_uds_doip_timeout_on_change_session(mock_doip_cls, mock_conn_cls, mock_u
     uds_mock.change_session.side_effect = TimeoutError("Request timed out")
 
     driver = UdsDoip(ecu_ip="192.168.1.100", ecu_logical_address=0x00E0)
-    with serve(driver) as client:
-        with pytest.raises(DriverError, match="Request timed out"):
-            client.change_session(UdsSessionType.EXTENDED)
+    with serve(driver) as client, pytest.raises(DriverError, match="Request timed out"):
+        client.change_session(UdsSessionType.EXTENDED)
 
 
 @patch("jumpstarter_driver_uds_doip.driver.UdsoncanClient")

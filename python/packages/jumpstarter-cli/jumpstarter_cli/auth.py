@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import click
 from jumpstarter_cli_common.blocking import blocking
@@ -50,7 +50,7 @@ def _print_subject_issuer(payload: dict) -> None:
 def _print_timestamp(label: str, value: int | None) -> None:
     if value is None:
         return
-    dt = datetime.fromtimestamp(value, tz=timezone.utc)
+    dt = datetime.fromtimestamp(value, tz=UTC)
     click.echo(f"{label}: {dt.strftime('%Y-%m-%d %H:%M:%S %Z')}")
 
 
@@ -89,7 +89,7 @@ def token_status(config, verbose: bool):
         return
 
     exp = payload.get("exp")
-    exp_dt = datetime.fromtimestamp(exp, tz=timezone.utc)
+    exp_dt = datetime.fromtimestamp(exp, tz=UTC)
     click.echo(f"Token expiry: {exp_dt.strftime('%Y-%m-%d %H:%M:%S %Z')}")
 
     _print_token_status(remaining)

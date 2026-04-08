@@ -243,16 +243,14 @@ class Driver(
                 case "GET":
                     async with aiohttp.request(
                         method, url, headers=headers, raise_for_status=True, timeout=client_timeout
-                    ) as resp:
-                        async with AiohttpStreamReaderStream(reader=resp.content) as stream:
-                            yield ProgressStream(stream=stream, logging=True)
+                    ) as resp, AiohttpStreamReaderStream(reader=resp.content) as stream:
+                        yield ProgressStream(stream=stream, logging=True)
                 case "PUT":
                     remote, stream = create_memory_stream()
                     async with aiohttp.request(
                         method, url, headers=headers, raise_for_status=True, data=remote, timeout=client_timeout
-                    ) as resp:
-                        async with stream:
-                            yield ProgressStream(stream=stream, logging=True)
+                    ) as resp, stream:
+                        yield ProgressStream(stream=stream, logging=True)
                 case _:
                     # INVARIANT: method is always one of GET or PUT, see PresignedRequestResource
                     raise ValueError("unreachable")

@@ -541,7 +541,7 @@ class BaseFlasherClient(FlasherClient, CompositeClient):
                 raise RuntimeError(f"Error reading CA certificate file: {e}") from e
             self.logger.info("Storing the CA certificate in the remote DUT flasher")
             # write the contents of cacert to /tmp/cacert.crt on the remote target through console
-            stored_cacert = "/tmp/cacert.crt"
+            stored_cacert = "/tmp/cacert.crt"  # noqa: S108
             console.sendline(f"cat > {stored_cacert} << EOF")
             console.sendline(cacert)
             console.sendline("\nEOF")
@@ -1036,10 +1036,10 @@ class BaseFlasherClient(FlasherClient, CompositeClient):
 
             if original_url and original_url.startswith(("http://", "https://")):
                 try:
-                    if headers:
-                        response = requests.head(original_url, headers=headers)
+                    if headers:  # noqa: SIM108
+                        response = requests.head(original_url, headers=headers)  # noqa: S113
                     else:
-                        response = requests.head(original_url)
+                        response = requests.head(original_url)  # noqa: S113
 
                     http_metadata = {}
                     if "content-length" in response.headers:
@@ -1262,7 +1262,7 @@ class BaseFlasherClient(FlasherClient, CompositeClient):
     def _prepare_headers(self, headers: dict[str, str] | None, bearer_token: str | None) -> str:
         all_headers = headers.copy() if headers else {}
         if bearer_token:
-            if any(k.lower() == "authorization" for k in all_headers.keys()):
+            if any(k.lower() == "authorization" for k in all_headers.keys()):  # noqa: SIM118
                 self.logger.warning("Authorization header provided - ignoring bearer token")
             else:
                 all_headers["Authorization"] = f"Bearer {bearer_token}"
@@ -1357,7 +1357,7 @@ class BaseFlasherClient(FlasherClient, CompositeClient):
                 console.logfile_read = original_logfile_read
 
     def _setup_fls_oci_credential_file(
-        self, console, prompt: str, oci_username: str, oci_password: str, creds_file: str = "/tmp/fls_creds"
+        self, console, prompt: str, oci_username: str, oci_password: str, creds_file: str = "/tmp/fls_creds"  # noqa: S108
     ) -> str:
         # Write credential file using base64-encoded chunks to avoid serial
         # console line buffer overflow with long tokens (e.g. 1400+ char JWTs).

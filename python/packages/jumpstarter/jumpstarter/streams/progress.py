@@ -60,7 +60,7 @@ class ProgressStream(ObjectStream[bytes]):
             self.__prog.start()
             self.__recv = self.__prog.add_task(
                 "transfer",
-                total=self.stream.extra(ProgressAttribute.total, None),
+                total=self.stream.extra(ProgressAttribute.total, None),  # noqa: S610
             )
 
         item = await self.stream.receive()
@@ -79,7 +79,7 @@ class ProgressStream(ObjectStream[bytes]):
             self.__prog.start()
             self.__send = self.__prog.add_task(
                 "transfer",
-                total=self.stream.extra(ProgressAttribute.total, None),
+                total=self.stream.extra(ProgressAttribute.total, None),  # noqa: S610
             )
 
         self.__prog.advance(self.__recv, len(item))

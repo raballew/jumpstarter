@@ -63,11 +63,11 @@ async def fetch_auth_config(
     _validate_login_endpoint_url(login_endpoint, allow_http=insecure_tls)
 
     url = f"{login_endpoint.rstrip('/')}/v1/auth/config"
-    ssl_context: ssl.SSLContext | bool = False if insecure_tls else True
+    ssl_context: ssl.SSLContext | bool = False if insecure_tls else True  # noqa: SIM211
     timeout = aiohttp.ClientTimeout(total=_HTTP_TIMEOUT_SECONDS)
 
     try:
-        async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with aiohttp.ClientSession(timeout=timeout) as session:  # noqa: SIM117
             async with session.get(url, ssl=ssl_context) as response:
                 if response.status != 200:
                     raise click.ClickException(f"Failed to fetch auth config from {url}: HTTP {response.status}")
@@ -367,7 +367,7 @@ async def relogin_client(config: ClientConfigV1Alpha1):
                     config.refresh_token = refresh_token
                 ClientConfigV1Alpha1.save(config)  # ty: ignore[invalid-argument-type]
                 return
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
 
         tokens = await oidc.authorization_code_grant()

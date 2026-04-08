@@ -34,7 +34,7 @@ def lease_scope():
     # Return a no-op context manager for context_log_source
     mock_session.context_log_source.return_value = nullcontext()
     lease_scope.session = mock_session
-    lease_scope.socket_path = "/tmp/test_socket"
+    lease_scope.socket_path = "/tmp/test_socket"  # noqa: S108
     return lease_scope
 
 

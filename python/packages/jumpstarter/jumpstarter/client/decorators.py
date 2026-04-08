@@ -2,7 +2,8 @@
 Client-side Click group helpers for building driver CLIs.
 """
 
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import click
 
@@ -37,7 +38,7 @@ def driver_click_group(client: "DriverClient", **kwargs: Any) -> Callable:
 
     def decorator(f: Callable) -> DriverClickGroup:
         # Use function docstring if no help= provided
-        if "help" not in kwargs or kwargs["help"] is None:
+        if "help" not in kwargs or kwargs["help"] is None:  # noqa: SIM102
             if f.__doc__:
                 kwargs["help"] = f.__doc__.strip()
 

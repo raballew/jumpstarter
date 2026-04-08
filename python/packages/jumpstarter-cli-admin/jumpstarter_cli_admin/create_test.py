@@ -28,7 +28,7 @@ CLIENT_NAME = uuid.uuid4().hex
 CLIENT_CONFIG_PATH = ClientConfigV1Alpha1.CLIENT_CONFIGS_PATH / (CLIENT_NAME + ".yaml")
 
 CLIENT_ENDPOINT = "grpc://example.com:443"
-CLIENT_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
+CLIENT_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
 DRIVER_NAME = "jumpstarter.Testing"
 
 CLIENT_OBJECT = V1Alpha1Client(
@@ -40,35 +40,35 @@ CLIENT_OBJECT = V1Alpha1Client(
     ),
 )
 
-CLIENT_JSON = """{{
+CLIENT_JSON = f"""{{
     "apiVersion": "jumpstarter.dev/v1alpha1",
     "kind": "Client",
     "metadata": {{
         "creationTimestamp": "2024-01-01T21:00:00Z",
-        "name": "{name}",
+        "name": "{CLIENT_NAME}",
         "namespace": "default"
     }},
     "status": {{
         "credential": {{
-            "name": "{name}-credential"
+            "name": "{CLIENT_NAME}-credential"
         }},
-        "endpoint": "{endpoint}"
+        "endpoint": "{CLIENT_ENDPOINT}"
     }}
 }}
-""".format(name=CLIENT_NAME, endpoint=CLIENT_ENDPOINT)
+"""
 
-CLIENT_YAML = """apiVersion: jumpstarter.dev/v1alpha1
+CLIENT_YAML = f"""apiVersion: jumpstarter.dev/v1alpha1
 kind: Client
 metadata:
   creationTimestamp: '2024-01-01T21:00:00Z'
-  name: {name}
+  name: {CLIENT_NAME}
   namespace: default
 status:
   credential:
-    name: {name}-credential
-  endpoint: {endpoint}
+    name: {CLIENT_NAME}-credential
+  endpoint: {CLIENT_ENDPOINT}
 
-""".format(name=CLIENT_NAME, endpoint=CLIENT_ENDPOINT)
+"""
 
 UNSAFE_CLIENT_CONFIG = ClientConfigV1Alpha1(
     alias=CLIENT_NAME,
@@ -101,7 +101,7 @@ INSECURE_TLS_CLIENT_CONFIG = ClientConfigV1Alpha1(
 @patch.object(ClientsV1Alpha1Api, "create_client", return_value=CLIENT_OBJECT)
 @patch.object(ClientsV1Alpha1Api, "_load_kube_config")
 def test_create_client(
-    _mock_load_kube_config, _mock_create_client, mock_get_client_config: AsyncMock, mock_save_client: Mock
+    _mock_load_kube_config, _mock_create_client, mock_get_client_config: AsyncMock, mock_save_client: Mock  # noqa: PT019
 ):
     runner = CliRunner()
 
@@ -152,7 +152,7 @@ def test_create_client(
     mock_save_client.reset_mock()
 
     # Save with unsafe with custom output file
-    out = f"/tmp/{CLIENT_NAME}.yaml"
+    out = f"/tmp/{CLIENT_NAME}.yaml"  # noqa: S108
     result = runner.invoke(create, ["client", CLIENT_NAME, "--unsafe", "--out", out], input="\n\n")
     assert result.exit_code == 0
     assert "Client configuration successfully saved" in result.output
@@ -208,7 +208,7 @@ def test_create_client(
 # Generate a random exporter name
 EXPORTER_NAME = uuid.uuid4().hex
 EXPORTER_ENDPOINT = "grpc://example.com:443"
-EXPORTER_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
+EXPORTER_TOKEN = "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
 # Default config path
 default_config_path = ExporterConfigV1Alpha1.BASE_PATH / (EXPORTER_NAME + ".yaml")
 # Create a test exporter config
@@ -221,41 +221,41 @@ EXPORTER_OBJECT = V1Alpha1Exporter(
     ),
 )
 
-EXPORTER_JSON = """{{
+EXPORTER_JSON = f"""{{
     "apiVersion": "jumpstarter.dev/v1alpha1",
     "kind": "Exporter",
     "metadata": {{
         "creationTimestamp": "2024-01-01T21:00:00Z",
-        "name": "{name}",
+        "name": "{EXPORTER_NAME}",
         "namespace": "default"
     }},
     "status": {{
         "credential": {{
-            "name": "{name}-credential"
+            "name": "{EXPORTER_NAME}-credential"
         }},
         "devices": [],
-        "endpoint": "{endpoint}",
+        "endpoint": "{EXPORTER_ENDPOINT}",
         "exporterStatus": null,
         "statusMessage": null
     }}
 }}
-""".format(name=EXPORTER_NAME, endpoint=EXPORTER_ENDPOINT)
+"""
 
-EXPORTER_YAML = """apiVersion: jumpstarter.dev/v1alpha1
+EXPORTER_YAML = f"""apiVersion: jumpstarter.dev/v1alpha1
 kind: Exporter
 metadata:
   creationTimestamp: '2024-01-01T21:00:00Z'
-  name: {name}
+  name: {EXPORTER_NAME}
   namespace: default
 status:
   credential:
-    name: {name}-credential
+    name: {EXPORTER_NAME}-credential
   devices: []
-  endpoint: {endpoint}
+  endpoint: {EXPORTER_ENDPOINT}
   exporterStatus: null
   statusMessage: null
 
-""".format(name=EXPORTER_NAME, endpoint=EXPORTER_ENDPOINT)
+"""
 
 EXPORTER_CONFIG = ExporterConfigV1Alpha1(
     alias=EXPORTER_NAME,
@@ -278,7 +278,7 @@ INSECURE_TLS_EXPORTER_CONFIG = ExporterConfigV1Alpha1(
 @patch.object(ExportersV1Alpha1Api, "create_exporter", return_value=EXPORTER_OBJECT)
 @patch.object(ExportersV1Alpha1Api, "get_exporter_config", return_value=EXPORTER_CONFIG)
 def test_create_exporter(
-    _get_exporter_config_mock, _create_exporter_mock, _load_kube_config_mock, save_exporter_mock: Mock
+    _get_exporter_config_mock, _create_exporter_mock, _load_kube_config_mock, save_exporter_mock: Mock  # noqa: PT019
 ):
     runner = CliRunner()
 
@@ -336,7 +336,7 @@ def test_create_exporter(
     save_exporter_mock.reset_mock()
 
     # Save with arguments and custom path
-    out = f"/tmp/{EXPORTER_NAME}.yaml"
+    out = f"/tmp/{EXPORTER_NAME}.yaml"  # noqa: S108
     result = runner.invoke(create, ["exporter", EXPORTER_NAME, "--label", "foo=bar", "--out", out])
     assert result.exit_code == 0
     assert "Exporter configuration successfully saved" in result.output

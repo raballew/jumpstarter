@@ -128,7 +128,7 @@ def test_login_cli_shows_timeout_message(monkeypatch) -> None:
     runner = CliRunner()
     result = runner.invoke(
         jmp,
-        ["login", "login.example.com", "--client-config", "/tmp/nonexistent-client.yaml"],
+        ["login", "login.example.com", "--client-config", "/tmp/nonexistent-client.yaml"],  # noqa: S108
     )
 
     assert result.exit_code != 0
@@ -144,7 +144,7 @@ def test_login_cli_shows_certificate_message(monkeypatch) -> None:
     runner = CliRunner()
     result = runner.invoke(
         jmp,
-        ["login", "login.example.com", "--client-config", "/tmp/nonexistent-client.yaml"],
+        ["login", "login.example.com", "--client-config", "/tmp/nonexistent-client.yaml"],  # noqa: S108
     )
 
     assert result.exit_code != 0
@@ -236,7 +236,7 @@ def test_login_maps_ssl_cert_error_during_oidc_to_friendly_message(monkeypatch) 
             "login",
             "test-client@login.example.com",
             "--client-config",
-            "/tmp/nonexistent-client.yaml",
+            "/tmp/nonexistent-client.yaml",  # noqa: S108
             "--nointeractive",
             "--unsafe",
         ],

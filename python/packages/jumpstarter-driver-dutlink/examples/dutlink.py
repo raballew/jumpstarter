@@ -26,7 +26,7 @@ if __name__ == "__main__":
             dutlink.power.off()
 
             click.secho("Writing system image", fg="red")
-            dutlink.storage.write_local_file("/tmp/nixos-visionfive2.img")
+            dutlink.storage.write_local_file("/tmp/nixos-visionfive2.img")  # noqa: S108
             click.secho("Written system image", fg="red")
 
             dutlink.storage.dut()

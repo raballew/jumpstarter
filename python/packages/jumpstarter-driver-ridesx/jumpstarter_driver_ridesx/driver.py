@@ -4,7 +4,6 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict
 
 from jumpstarter_driver_opendal.driver import Opendal
 
@@ -73,9 +72,7 @@ class RideSXDriver(Driver):
         return filename.endswith((".gz", ".gzip", ".xz"))
 
     def _decompress_file(self, compressed_file: Path) -> Path:
-        if compressed_file.name.endswith(".xz"):
-            decompressed_name = compressed_file.name[:-3]
-        elif compressed_file.name.endswith(".gz"):
+        if compressed_file.name.endswith(".xz") or compressed_file.name.endswith(".gz"):
             decompressed_name = compressed_file.name[:-3]
         elif compressed_file.name.endswith(".gzip"):
             decompressed_name = compressed_file.name[:-5]
@@ -94,7 +91,7 @@ class RideSXDriver(Driver):
 
             with open(decompressed_file, "wb") as output_file:
                 self.logger.debug(f"running decompression command: {decompress_cmd} {compressed_file}")
-                result = subprocess.run(
+                result = subprocess.run(  # noqa: S603
                     [decompress_cmd, str(compressed_file)],
                     stdout=output_file,
                     stderr=subprocess.PIPE,
@@ -138,7 +135,7 @@ class RideSXDriver(Driver):
             try:
                 self.logger.debug(f"running: fastboot devices -l (attempt {attempt + 1}/{max_attempts})")
                 result = subprocess.run(
-                    ["fastboot", "devices", "-l"], capture_output=True, text=True, check=True, timeout=10
+                    ["fastboot", "devices", "-l"], capture_output=True, text=True, check=True, timeout=10  # noqa: S607
                 )
 
                 self.logger.debug(f"fastboot devices output: {result.stdout.strip()}")
@@ -165,7 +162,7 @@ class RideSXDriver(Driver):
         self.logger.error("No fastboot devices found after all attempts")
         try:
             self.logger.info("Final attempt with verbose fastboot output...")
-            result = subprocess.run(["fastboot", "devices", "-l"], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(["fastboot", "devices", "-l"], capture_output=True, text=True, timeout=10)  # noqa: S607
             self.logger.error(f"Final fastboot stdout: '{result.stdout}'")
             self.logger.error(f"Final fastboot stderr: '{result.stderr}'")
         except Exception as e:
@@ -174,7 +171,7 @@ class RideSXDriver(Driver):
         return {"status": "no_device_found", "device_id": None}
 
     @export
-    def flash_with_fastboot(self, device_id: str, partitions: Dict[str, str]):
+    def flash_with_fastboot(self, device_id: str, partitions: dict[str, str]):
         """Flash partitions using fastboot
 
         Args:
@@ -200,7 +197,7 @@ class RideSXDriver(Driver):
             self.logger.debug(f"Running command: {' '.join(cmd)}")
 
             try:
-                result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=self.flash_timeout)
+                result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=self.flash_timeout)  # noqa: S603
                 self.logger.info(f"Successfully flashed {partition_name}")
                 self.logger.debug(f"Flash stdout: {result.stdout}")
                 if result.stderr:
@@ -218,7 +215,7 @@ class RideSXDriver(Driver):
         cmd = ["fastboot", "-s", device_id, "continue"]
         self.logger.debug(f"Running command: {' '.join(cmd)}")
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=self.continue_timeout)
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=self.continue_timeout)  # noqa: S603
             self.logger.debug(f"Fastboot continue stdout: {result.stdout}")
             self.logger.debug(f"Fastboot continue stderr: {result.stderr}")
             self.logger.info("Fastboot continue completed successfully")
@@ -252,7 +249,7 @@ class RideSXDriver(Driver):
     def flash_oci_image(
         self,
         oci_url: str,
-        partitions: Dict[str, str] | None = None,
+        partitions: dict[str, str] | None = None,
         oci_username: str | None = None,
         oci_password: str | None = None,
     ):
@@ -282,7 +279,7 @@ class RideSXDriver(Driver):
             self.logger.info("Using OCI registry credentials from environment")
 
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603
                 fls_cmd, capture_output=True, text=True,
                 check=True, timeout=self.flash_timeout + 30, env=fls_env,
             )

@@ -24,7 +24,7 @@ def test_init_validates_adb(mock_run, mock_which):
 
 
 @patch("shutil.which", return_value=None)
-def test_init_missing_adb(_):
+def test_init_missing_adb(_):  # noqa: PT019
     with pytest.raises(ConfigurationError, match="not found"):
         AdbServer()
 
@@ -41,7 +41,7 @@ def test_invalid_port_too_high():
 
 @patch("shutil.which", return_value="/usr/bin/adb")
 @patch("subprocess.run", return_value=_mock_adb_ok())
-def test_start_server(mock_run, _):
+def test_start_server(mock_run, _):  # noqa: PT019
     server = AdbServer()
     mock_run.reset_mock()
     port = server.start_server()
@@ -53,7 +53,7 @@ def test_start_server(mock_run, _):
 
 @patch("shutil.which", return_value="/usr/bin/adb")
 @patch("subprocess.run", return_value=_mock_adb_ok())
-def test_kill_server(mock_run, _):
+def test_kill_server(mock_run, _):  # noqa: PT019
     server = AdbServer()
     mock_run.reset_mock()
     port = server.kill_server()
@@ -64,7 +64,7 @@ def test_kill_server(mock_run, _):
 
 @patch("shutil.which", return_value="/usr/bin/adb")
 @patch("subprocess.run", return_value=_mock_adb_ok())
-def test_list_devices(mock_run, _):
+def test_list_devices(mock_run, _):  # noqa: PT019
     mock_run.side_effect = [
         _mock_adb_ok(),  # version check
         _mock_adb_ok(),  # start-server (auto-start)
@@ -77,6 +77,6 @@ def test_list_devices(mock_run, _):
 
 @patch("shutil.which", return_value="/usr/bin/adb")
 @patch("subprocess.run", return_value=_mock_adb_ok())
-def test_custom_port(mock_run, _):
+def test_custom_port(mock_run, _):  # noqa: PT019
     server = AdbServer(port=5038)
     assert server.port == 5038

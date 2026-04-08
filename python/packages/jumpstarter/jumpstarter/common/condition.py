@@ -7,7 +7,7 @@ def condition_present_and_equal(
     conditions: list[kubernetes_pb2.Condition], condition_type: str, status: str, reason: str | None = None
 ) -> bool:
     for condition in conditions:
-        if condition.type == condition_type:
+        if condition.type == condition_type:  # noqa: SIM102
             if reason is None or condition.reason == reason:
                 return condition.status == status
     return False
@@ -17,7 +17,7 @@ def condition_message(
     conditions: list[kubernetes_pb2.Condition], condition_type: str, reason: str | None = None
 ) -> str | None:
     for condition in conditions:
-        if condition.type == condition_type:
+        if condition.type == condition_type:  # noqa: SIM102
             if reason is None or condition.reason == reason:
                 return condition.message
     return None

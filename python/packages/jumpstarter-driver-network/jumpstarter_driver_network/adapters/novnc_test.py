@@ -13,14 +13,14 @@ from jumpstarter.common.utils import serve
 async def echo_handler(stream):
     async with stream:
         while True:
-            try:
+            try:  # noqa: SIM105
                 await stream.send(await stream.receive())
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
 
 
 def test_client_adapter_novnc():
-    with start_blocking_portal() as portal:
+    with start_blocking_portal() as portal:  # noqa: SIM117
         with portal.wrap_async_context_manager(TemporaryTcpListener(echo_handler, local_host="127.0.0.1")) as addr:
             with serve(TcpNetwork(host=addr[0], port=addr[1])) as client:
                 with NovncAdapter(client=client) as url:

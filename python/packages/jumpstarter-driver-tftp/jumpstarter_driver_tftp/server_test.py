@@ -34,7 +34,7 @@ async def tftp_server():
         for task in asyncio.all_tasks():
             if not task.done() and task != asyncio.current_task():
                 task.cancel()
-                try:
+                try:  # noqa: SIM105
                     await task
                 except asyncio.CancelledError:
                     pass

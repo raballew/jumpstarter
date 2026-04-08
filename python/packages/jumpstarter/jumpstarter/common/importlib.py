@@ -54,7 +54,7 @@ def import_class(class_path: str, allow: list[str], unsafe: bool):
     while `import_class("example_package.some_module.fooclass", allow=["notexample_package.*"], unsafe=false)`
     throws ImportError due to not matching the allow list
     """
-    if not unsafe:
+    if not unsafe:  # noqa: SIM102
         if not any(fnmatchcase(class_path, pattern) for pattern in allow):
             raise ImportError(f"{class_path} doesn't match any of the allowed patterns")
     try:

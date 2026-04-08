@@ -251,14 +251,13 @@ class Session(
         Yields:
             tuple[str, str]: (main_socket_path, hook_socket_path)
         """
-        with TemporarySocket() as main_path:
-            with TemporarySocket() as hook_path:
-                async with self.serve_multi_port_async(f"unix://{main_path}", f"unix://{hook_path}"):
-                    yield main_path, hook_path
+        with TemporarySocket() as main_path, TemporarySocket() as hook_path:
+            async with self.serve_multi_port_async(f"unix://{main_path}", f"unix://{hook_path}"):
+                yield main_path, hook_path
 
     @contextmanager
     def serve_unix(self):
-        with start_blocking_portal() as portal:
+        with start_blocking_portal() as portal:  # noqa: SIM117
             with portal.wrap_async_context_manager(self.serve_unix_async()) as path:
                 yield path
 
@@ -319,14 +318,13 @@ class Session(
         async with self[request.uuid].Stream(request, context) as stream:
             metadata = []
             with suppress(TypedAttributeLookupError):
-                metadata.extend(stream.extra(MetadataStreamAttributes.metadata).items())
+                metadata.extend(stream.extra(MetadataStreamAttributes.metadata).items())  # noqa: S610
             await context.send_initial_metadata(metadata)
 
-            async with RouterStream(context=context) as remote:
-                async with forward_stream(remote, stream):
-                    event = Event()
-                    context.add_done_callback(lambda _: event.set())
-                    await event.wait()
+            async with RouterStream(context=context) as remote, forward_stream(remote, stream):
+                event = Event()
+                context.add_done_callback(lambda _: event.set())
+                await event.wait()
 
     async def LogStream(self, request, context):
         while not context.done():
@@ -341,7 +339,7 @@ class Session(
 
         Tracks previous status and increments version counter for transition detection.
         """
-        if isinstance(status, int):
+        if isinstance(status, int):  # noqa: SIM108
             new_status = ExporterStatus.from_proto(status)
         else:
             new_status = status

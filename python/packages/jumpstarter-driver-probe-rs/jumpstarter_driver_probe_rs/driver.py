@@ -43,10 +43,9 @@ class ProbeRs(Driver):
     @export
     async def download(self, src: str):
         with TemporaryFilename() as filename:
-            async with await FileWriteStream.from_path(filename) as stream:
-                async with self.resource(src) as res:
-                    async for chunk in res:
-                        await stream.send(chunk)
+            async with await FileWriteStream.from_path(filename) as stream, self.resource(src) as res:
+                async for chunk in res:
+                    await stream.send(chunk)
             return self._run_cmd(["download", filename])
 
     @export
@@ -61,7 +60,7 @@ class ProbeRs(Driver):
     def _run_cmd(self, cmd):
         cmd = [self.probe_rs_path or "probe-rs", *cmd]
         self.logger.debug("Running command: %s", cmd)
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603
             cmd,
             capture_output=True,  # Captures stdout and stderr
             text=True,  # Returns stdout/stderr as strings (not bytes)

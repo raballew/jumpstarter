@@ -78,7 +78,7 @@ def test_unknown_method(client):
     try:
         client.unknown()
     except AttributeError as e:
-        assert "method unknown not found in" in str(e)
+        assert "method unknown not found in" in str(e)  # noqa: PT017
     else:
         raise AssertionError("Expected AttributeError")
 

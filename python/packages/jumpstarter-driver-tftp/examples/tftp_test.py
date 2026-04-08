@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 class TestResource(JumpstarterTest):
     selector = "board=rpi4"
 
-    @pytest.fixture()
+    @pytest.fixture
     def setup_tftp(self, client):
         # Move the setup code to a fixture
         client.tftp.start()

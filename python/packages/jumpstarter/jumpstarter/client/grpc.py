@@ -49,7 +49,7 @@ def add_exporter_row(table, exporter, options: WithOptions = None, lease_info: t
     if options.show_status:
         status_str = str(exporter.status) if exporter.status else "UNKNOWN"
         row_data.append(status_str)
-    row_data.append(",".join(("{}={}".format(k, v) for k, v in sorted(exporter.labels.items()))))
+    row_data.append(",".join((f"{k}={v}" for k, v in sorted(exporter.labels.items()))))
     if options.show_leases:
         if lease_info:
             lease_client, lease_status, expected_release = lease_info
@@ -63,11 +63,11 @@ def add_exporter_row(table, exporter, options: WithOptions = None, lease_info: t
 def parse_identifier(identifier: str, kind: str) -> tuple[str, str]:
     segments = identifier.split("/")
     if len(segments) != 4:
-        raise ValueError("incorrect number of segments in identifier, expecting 4, got {}".format(len(segments)))
+        raise ValueError(f"incorrect number of segments in identifier, expecting 4, got {len(segments)}")
     if segments[0] != "namespaces":
-        raise ValueError("incorrect first segment in identifier, expecting namespaces, got {}".format(segments[0]))
+        raise ValueError(f"incorrect first segment in identifier, expecting namespaces, got {segments[0]}")
     if segments[2] != kind:
-        raise ValueError("incorrect third segment in identifier, expecting {}, got {}".format(kind, segments[2]))
+        raise ValueError(f"incorrect third segment in identifier, expecting {kind}, got {segments[2]}")
     return segments[1], segments[3]
 
 
@@ -362,7 +362,7 @@ class ClientService:
         with translate_grpc_exceptions():
             exporter = await self.stub.GetExporter(
                 client_pb2.GetExporterRequest(
-                    name="namespaces/{}/exporters/{}".format(self.namespace, name),
+                    name=f"namespaces/{self.namespace}/exporters/{name}",
                 )
             )
         return Exporter.from_protobuf(exporter)
@@ -377,7 +377,7 @@ class ClientService:
         with translate_grpc_exceptions():
             exporters = await self.stub.ListExporters(
                 client_pb2.ListExportersRequest(
-                    parent="namespaces/{}".format(self.namespace),
+                    parent=f"namespaces/{self.namespace}",
                     page_size=page_size,
                     page_token=page_token,
                     filter=filter,
@@ -389,7 +389,7 @@ class ClientService:
         with translate_grpc_exceptions():
             lease = await self.stub.GetLease(
                 client_pb2.GetLeaseRequest(
-                    name="namespaces/{}/leases/{}".format(self.namespace, name),
+                    name=f"namespaces/{self.namespace}/leases/{name}",
                 )
             )
         return Lease.from_protobuf(lease)
@@ -405,7 +405,7 @@ class ClientService:
         with translate_grpc_exceptions():
             leases = await self.stub.ListLeases(
                 client_pb2.ListLeasesRequest(
-                    parent="namespaces/{}".format(self.namespace),
+                    parent=f"namespaces/{self.namespace}",
                     page_size=page_size,
                     page_token=page_token,
                     filter=extract_match_labels_filter(filter),
@@ -440,7 +440,7 @@ class ClientService:
         with translate_grpc_exceptions():
             lease = await self.stub.CreateLease(
                 client_pb2.CreateLeaseRequest(
-                    parent="namespaces/{}".format(self.namespace),
+                    parent=f"namespaces/{self.namespace}",
                     lease=lease_pb,
                     lease_id=lease_id or "",
                 )
@@ -456,7 +456,7 @@ class ClientService:
         client: str | None = None,
     ):
         lease_pb = client_pb2.Lease(
-            name="namespaces/{}/leases/{}".format(self.namespace, name),
+            name=f"namespaces/{self.namespace}/leases/{name}",
         )
 
         update_fields = []
@@ -496,7 +496,7 @@ class ClientService:
         with translate_grpc_exceptions():
             await self.stub.DeleteLease(
                 client_pb2.DeleteLeaseRequest(
-                    name="namespaces/{}/leases/{}".format(self.namespace, name),
+                    name=f"namespaces/{self.namespace}/leases/{name}",
                 )
             )
 

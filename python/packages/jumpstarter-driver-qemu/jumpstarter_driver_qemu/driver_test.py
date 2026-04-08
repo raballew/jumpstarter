@@ -29,15 +29,15 @@ def ovmf(tmpdir_factory):
     ver = "edk2-stable202408.01-r1"
     url = f"https://github.com/rust-osdev/ovmf-prebuilt/releases/download/{ver}/{ver}-bin.tar.xz"
 
-    with requests.get(url, stream=True) as r:
+    with requests.get(url, stream=True) as r:  # noqa: S113
         r.raise_for_status()
         with (tmp_path / "ovmf.tar.xz").open("wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-    tarfile.open(tmp_path / "ovmf.tar.xz").extractall(tmp_path, filter="data")
+    tarfile.open(tmp_path / "ovmf.tar.xz").extractall(tmp_path, filter="data")  # noqa: SIM115
 
-    yield tmp_path / f"{ver}-bin"
+    return tmp_path / f"{ver}-bin"
 
 
 # Get native architecture
@@ -137,7 +137,7 @@ async def test_resize_shrink_blocked(resize_test):
     """Shrinking disk should raise RuntimeError."""
     driver, current = resize_test("10G", 20)  # requested: 10G, current: 20G
 
-    with patch("jumpstarter_driver_qemu.driver.run_process", side_effect=_mock_qemu_img_info(current)):
+    with patch("jumpstarter_driver_qemu.driver.run_process", side_effect=_mock_qemu_img_info(current)):  # noqa: SIM117
         with pytest.raises(RuntimeError, match="Shrinking disk is not supported"):
             await driver.children["power"].on()
 
@@ -149,7 +149,7 @@ async def test_resize_insufficient_space_blocked(resize_test):
 
     mock_usage = SimpleNamespace(free=5 * 1024**3)  # only 5G free
 
-    with patch("jumpstarter_driver_qemu.driver.run_process", side_effect=_mock_qemu_img_info(current)):
+    with patch("jumpstarter_driver_qemu.driver.run_process", side_effect=_mock_qemu_img_info(current)):  # noqa: SIM117
         with patch("jumpstarter_driver_qemu.driver.shutil.disk_usage", return_value=mock_usage):
             with pytest.raises(RuntimeError, match="Not enough disk space"):
                 await driver.children["power"].on()
@@ -161,7 +161,7 @@ async def test_resize_succeeds(resize_test):
     driver, current = resize_test("20G", 10)  # requested: 20G, current: 10G
     mock_usage = SimpleNamespace(free=50 * 1024**3)
 
-    with patch("jumpstarter_driver_qemu.driver.run_process", side_effect=_mock_qemu_img_info(current)) as mock_run:
+    with patch("jumpstarter_driver_qemu.driver.run_process", side_effect=_mock_qemu_img_info(current)) as mock_run:  # noqa: SIM117
         with patch("jumpstarter_driver_qemu.driver.shutil.disk_usage", return_value=mock_usage):
             # Mock Popen to stop before actually starting QEMU VM
             with patch("jumpstarter_driver_qemu.driver.Popen", side_effect=RuntimeError("mock popen")):

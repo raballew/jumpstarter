@@ -64,7 +64,7 @@ def test_validate_oci_credentials_accepts_pair_and_strips_whitespace():
 
     username, password = client._validate_oci_credentials(" myuser ", " mypassword ")
     assert username == "myuser"
-    assert password == "mypassword"
+    assert password == "mypassword"  # noqa: S105
 
 
 def test_resolve_oci_credentials_reads_env_for_oci_path(monkeypatch):
@@ -75,7 +75,7 @@ def test_resolve_oci_credentials_reads_env_for_oci_path(monkeypatch):
 
     username, password = client._resolve_oci_credentials("oci://quay.io/org/image:tag", None, None)
     assert username == "env-user"
-    assert password == "env-pass"
+    assert password == "env-pass"  # noqa: S105
 
 
 def test_resolve_oci_credentials_ignores_env_for_non_oci_path(monkeypatch):
@@ -103,26 +103,26 @@ def test_fls_oci_auth_env_sources_credentials_file():
     """Test OCI auth shell snippet sources the on-target credentials file"""
     client = MockFlasherClient()
 
-    env_args = client._fls_oci_auth_env("oci://quay.io/org/image:tag", "/tmp/fls_creds")
+    env_args = client._fls_oci_auth_env("oci://quay.io/org/image:tag", "/tmp/fls_creds")  # noqa: S108
     assert "set -o allexport;" in env_args
     assert "set +o allexport;" in env_args
     parsed = shlex.split(env_args)
     assert "." in parsed
-    assert "/tmp/fls_creds;" in parsed
+    assert "/tmp/fls_creds;" in parsed  # noqa: S108
 
 
 def test_fls_oci_auth_env_empty_for_non_oci_paths():
     """Test OCI auth env assignment is empty for non-OCI paths"""
     client = MockFlasherClient()
 
-    env_args = client._fls_oci_auth_env("https://example.com/image.raw.xz", "/tmp/fls_creds")
+    env_args = client._fls_oci_auth_env("https://example.com/image.raw.xz", "/tmp/fls_creds")  # noqa: S108
     assert env_args == ""
 
     env_args = client._fls_oci_auth_env("oci://quay.io/org/image:tag", None)
     assert env_args == ""
 
     # PosixPath (converted by operator_for_path) must not crash
-    env_args = client._fls_oci_auth_env(PosixPath("/images/image.raw.xz"), "/tmp/fls_creds")
+    env_args = client._fls_oci_auth_env(PosixPath("/images/image.raw.xz"), "/tmp/fls_creds")  # noqa: S108
     assert env_args == ""
 
 
@@ -153,7 +153,7 @@ def test_setup_fls_oci_credential_file():
 
     console = MockConsole()
     creds_path = client._setup_fls_oci_credential_file(console, "#", "myuser", "my'password")
-    assert creds_path == "/tmp/fls_creds"
+    assert creds_path == "/tmp/fls_creds"  # noqa: S108
 
     # Verify chunked base64 approach: creates file, writes b64 chunks, decodes, cleans up
     assert "true > /tmp/fls_creds" in console.sent_lines[0]
@@ -203,7 +203,7 @@ def test_setup_fls_oci_credential_file_chunks_long_tokens():
     long_token = "eyJ" + "a" * 1397
 
     creds_path = client._setup_fls_oci_credential_file(console, "#", "serviceaccount", long_token)
-    assert creds_path == "/tmp/fls_creds"
+    assert creds_path == "/tmp/fls_creds"  # noqa: S108
 
     # With a 1400+ char token, the base64 encoding should produce multiple chunks
     b64_lines = [line for line in console.sent_lines if "printf" in line and ".b64" in line]
@@ -260,7 +260,7 @@ def test_flash_http_url_with_oci_credentials_still_uses_direct_http_path():
         "https://example.com/image.raw.xz",
         method="fls",
         oci_username="myuser",
-        oci_password="mypassword",
+        oci_password="mypassword",  # noqa: S106
         fls_version="",
     )
 
@@ -418,7 +418,7 @@ def test_categorize_exception_preserves_cause_for_wrapped_exceptions():
     """Test that wrapped unknown exceptions preserve the cause chain"""
     client = MockFlasherClient()
 
-    original = IOError("File not found")
+    original = OSError("File not found")
     result = client._categorize_exception(original)
 
     assert isinstance(result, FlashRetryableError)

@@ -1,6 +1,6 @@
 import asyncio
 import shutil
-from typing import Literal, Optional
+from typing import Literal
 
 
 def helm_installed(name: str) -> bool:
@@ -17,10 +17,10 @@ async def install_helm_chart(
     router_endpoint: str,
     mode: Literal["nodeport"] | Literal["ingress"] | Literal["route"],
     version: str,
-    kubeconfig: Optional[str],
-    context: Optional[str],
-    helm: Optional[str] = "helm",
-    values_files: Optional[list[str]] = None,
+    kubeconfig: str | None,
+    context: str | None,
+    helm: str | None = "helm",
+    values_files: list[str] | None = None,
 ):
     args = [
         helm,
@@ -67,7 +67,7 @@ async def install_helm_chart(
 
 
 async def uninstall_helm_chart(
-    name: str, namespace: str, kubeconfig: Optional[str], context: Optional[str], helm: Optional[str] = "helm"
+    name: str, namespace: str, kubeconfig: str | None, context: str | None, helm: str | None = "helm"
 ):
     args = [
         helm,

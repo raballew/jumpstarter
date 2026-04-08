@@ -31,3 +31,4 @@ build/
 .specify/
 .envrc
 specs/
+forge_output/

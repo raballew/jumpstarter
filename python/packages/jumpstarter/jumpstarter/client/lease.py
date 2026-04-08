@@ -381,13 +381,13 @@ class Lease(ContextManagerMixin, AsyncContextManagerMixin):
                     logger.debug("Socket not ready at %s, retrying (%d left)", path, retries_left)
                     await sleep(1)
                 else:
-                    raise ConnectionError("Socket not ready at %s" % path) from e
+                    raise ConnectionError("Socket not ready at %s" % path) from e  # noqa: UP031
 
     def _notify_lease_ending(self, remaining: timedelta) -> None:
         """Log lease status and invoke the ending callback if set."""
         if remaining <= timedelta(0):
             self.lease_ended = True
-            logger.info("Lease {} ended at {}".format(self.name, datetime.now().astimezone()))
+            logger.info(f"Lease {self.name} ended at {datetime.now().astimezone()}")
         if self.lease_ending_callback is not None:
             self.lease_ending_callback(self, remaining)
 
@@ -433,16 +433,14 @@ class Lease(ContextManagerMixin, AsyncContextManagerMixin):
                 last_known_end_time = end_time
                 remain = end_time - datetime.now().astimezone()
                 if remain < timedelta(0):
-                    logger.info("Lease {} ended at {}".format(self.name, end_time))
+                    logger.info(f"Lease {self.name} ended at {end_time}")
                     self._notify_lease_ending(timedelta(0))
                     break
 
                 # Log once when entering the threshold window
                 if threshold - timedelta(seconds=check_interval) <= remain < threshold:
                     logger.info(
-                        "Lease {} ending in {} minutes at {}".format(
-                            self.name, int((remain.total_seconds() + 30) // 60), end_time
-                        )
+                        f"Lease {self.name} ending in {int((remain.total_seconds() + 30) // 60)} minutes at {end_time}"
                     )
                     self._notify_lease_ending(remain)
                 await sleep(min(remain.total_seconds(), check_interval))
@@ -456,15 +454,14 @@ class Lease(ContextManagerMixin, AsyncContextManagerMixin):
 
     @asynccontextmanager
     async def connect_async(self, stack):
-        async with self.serve_unix_async() as path:
+        async with self.serve_unix_async() as path:  # noqa: SIM117
             async with client_from_path(path, self.portal, stack, allow=self.allow, unsafe=self.unsafe) as client:
                 yield client
 
     @contextmanager
     def connect(self):
-        with ExitStack() as stack:
-            with self.portal.wrap_async_context_manager(self.connect_async(stack)) as client:
-                yield client
+        with ExitStack() as stack, self.portal.wrap_async_context_manager(self.connect_async(stack)) as client:
+            yield client
 
     @contextmanager
     def serve_unix(self):

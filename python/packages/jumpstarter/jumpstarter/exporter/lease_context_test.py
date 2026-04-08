@@ -58,7 +58,7 @@ class TestLeaseContextStateQueries:
         """Test that is_ready() returns False when session is None."""
         before_hook = Event()
         ctx = LeaseContext(lease_name="test-lease", before_lease_hook=before_hook)
-        ctx.socket_path = "/tmp/socket"
+        ctx.socket_path = "/tmp/socket"  # noqa: S108
 
         assert not ctx.is_ready()
 
@@ -75,7 +75,7 @@ class TestLeaseContextStateQueries:
         before_hook = Event()
         ctx = LeaseContext(lease_name="test-lease", before_lease_hook=before_hook)
         ctx.session = MagicMock()
-        ctx.socket_path = "/tmp/socket"
+        ctx.socket_path = "/tmp/socket"  # noqa: S108
 
         assert ctx.is_ready()
 

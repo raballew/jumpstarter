@@ -54,8 +54,8 @@ class LeaseContext:
 
     def __post_init__(self):
         """Validate that required resources are present."""
-        assert self.before_lease_hook is not None, "LeaseScope requires a before_lease_hook event"
-        assert self.lease_name, "LeaseScope requires a non-empty lease_name"
+        assert self.before_lease_hook is not None, "LeaseScope requires a before_lease_hook event"  # noqa: S101
+        assert self.lease_name, "LeaseScope requires a non-empty lease_name"  # noqa: S101
 
     def is_ready(self) -> bool:
         """Check if the lease scope has been fully initialized with session and socket.

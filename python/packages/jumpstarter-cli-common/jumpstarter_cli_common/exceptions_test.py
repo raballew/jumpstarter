@@ -79,7 +79,7 @@ def test_handle_exceptions_with_reauth_maps_keyboard_interrupt() -> None:
 def test_handle_exceptions_maps_file_not_found() -> None:
     @handle_exceptions
     def missing_file_fn():
-        raise FileNotFoundError("/tmp/missing.img")
+        raise FileNotFoundError("/tmp/missing.img")  # noqa: S108
 
     with pytest.raises(click.ClickException, match="File not found"):
         missing_file_fn()

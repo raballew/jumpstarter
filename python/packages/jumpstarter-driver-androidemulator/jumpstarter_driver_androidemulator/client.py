@@ -48,7 +48,7 @@ class AndroidEmulatorClient(CompositeClient):
                     result = devices[0].shell("getprop sys.boot_completed").strip()
                     if result == "1":
                         return
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
             time.sleep(2)
         raise TimeoutError(f"Emulator did not boot within {timeout} seconds")

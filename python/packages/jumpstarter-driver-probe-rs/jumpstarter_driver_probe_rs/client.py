@@ -57,7 +57,7 @@ class ProbeRsClient(DriverClient):
         if words <= 0:
             raise ArgumentError("Words must be positive")
 
-        data_strs = self.call("read", f"b{int(width)}", "0x%x" % int(address), "%d" % words)
+        data_strs = self.call("read", f"b{int(width)}", "0x%x" % int(address), "%d" % words)  # noqa: UP031
         return [int(data, 16) for data in data_strs]
 
     def cli(self):  # noqa: C901
@@ -94,20 +94,20 @@ class ProbeRsClient(DriverClient):
         def read(width, address, words):
             """read from target memory"""
             # parse address to int, it could come in decimal format, or hex format prefixed by 0x
-            if address.startswith("0x"):
+            if address.startswith("0x"):  # noqa: SIM108
                 address = int(address, 16)
             else:
                 address = int(address)
 
             data_ints = self.read(width, address, words)
             if width == 8:
-                data_strs = ["%02x" % data for data in data_ints]
+                data_strs = ["%02x" % data for data in data_ints]  # noqa: UP031
             elif width == 16:
-                data_strs = ["%04x" % data for data in data_ints]
+                data_strs = ["%04x" % data for data in data_ints]  # noqa: UP031
             elif width == 32:
-                data_strs = ["%08x" % data for data in data_ints]
+                data_strs = ["%08x" % data for data in data_ints]  # noqa: UP031
             elif width == 64:
-                data_strs = ["%016x" % data for data in data_ints]
+                data_strs = ["%016x" % data for data in data_ints]  # noqa: UP031
 
             print(" ".join(data_strs))
 

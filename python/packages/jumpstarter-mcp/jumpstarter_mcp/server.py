@@ -94,7 +94,7 @@ def _load_config() -> ClientConfigV1Alpha1:
     from jumpstarter.config.user import UserConfigV1Alpha1
 
     config = None
-    try:
+    try:  # noqa: SIM105
         config = ClientConfigV1Alpha1()
     except ValidationError:
         pass
@@ -253,9 +253,9 @@ def _capture_session_for_notifications(mcp: FastMCP, manager: ConnectionManager)
             session = ctx.request_context.session
 
             async def _log(level: str, message: str) -> None:
-                try:
+                try:  # noqa: SIM105
                     await session.send_log_message(level=level, data=message, logger="jumpstarter")
-                except Exception:
+                except Exception:  # noqa: S110
                     pass
 
             manager.set_log_callback(_log)
@@ -499,9 +499,7 @@ async def run_server():
     except asyncio.CancelledError:
         logger.info("MCP stdio session ended (cancelled)")
     except BaseException as exc:
-        if isinstance(exc, ClosedResourceError):
-            logger.info("MCP client disconnected (stdio closed)")
-        elif isinstance(exc, BaseExceptionGroup) and _is_closed_resource_error(exc):
+        if isinstance(exc, ClosedResourceError) or isinstance(exc, BaseExceptionGroup) and _is_closed_resource_error(exc):  # noqa: E501
             logger.info("MCP client disconnected (stdio closed)")
         else:
             logger.exception("MCP server crashed")

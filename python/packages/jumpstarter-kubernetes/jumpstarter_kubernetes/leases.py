@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from kubernetes_asyncio.client.models import V1Condition, V1ObjectMeta, V1ObjectReference
 from pydantic import Field
@@ -11,11 +11,11 @@ from .util import AbstractAsyncCustomObjectApi
 
 
 class V1Alpha1LeaseStatus(JsonBaseModel):
-    begin_time: Optional[str] = Field(alias="beginTime")
+    begin_time: str | None = Field(alias="beginTime")
     conditions: list[SerializeV1Condition]
-    end_time: Optional[str] = Field(alias="endTime")
+    end_time: str | None = Field(alias="endTime")
     ended: bool
-    exporter: Optional[SerializeV1ObjectReference]
+    exporter: SerializeV1ObjectReference | None
 
 
 class V1Alpha1LeaseSelector(JsonBaseModel):
@@ -24,7 +24,7 @@ class V1Alpha1LeaseSelector(JsonBaseModel):
 
 class V1Alpha1LeaseSpec(JsonBaseModel):
     client: SerializeV1ObjectReference
-    duration: Optional[str]
+    duration: str | None
     selector: V1Alpha1LeaseSelector
 
 
@@ -51,8 +51,8 @@ class V1Alpha1Lease(JsonBaseModel):
                 uid=dict["metadata"]["uid"],
             ),
             status=V1Alpha1LeaseStatus(
-                begin_time=dict["status"]["beginTime"] if "beginTime" in dict["status"] else None,
-                end_time=dict["status"]["endTime"] if "endTime" in dict["status"] else None,
+                begin_time=dict["status"]["beginTime"] if "beginTime" in dict["status"] else None,  # noqa: SIM401
+                end_time=dict["status"]["endTime"] if "endTime" in dict["status"] else None,  # noqa: SIM401
                 ended=dict["status"]["ended"],
                 exporter=V1ObjectReference(name=dict["status"]["exporterRef"]["name"])
                 if "exporterRef" in dict["status"]
@@ -73,7 +73,7 @@ class V1Alpha1Lease(JsonBaseModel):
                 client=V1ObjectReference(name=dict["spec"]["clientRef"]["name"])
                 if "clientRef" in dict["spec"]
                 else None,
-                duration=dict["spec"]["duration"] if "duration" in dict["spec"] else None,
+                duration=dict["spec"]["duration"] if "duration" in dict["spec"] else None,  # noqa: SIM401
                 selector=V1Alpha1LeaseSelector(match_labels=selector_data.get("matchLabels", {})),
             ),
         )

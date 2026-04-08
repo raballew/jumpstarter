@@ -3,7 +3,7 @@
 import json
 import re
 import shutil
-from typing import Literal, Optional
+from typing import Literal
 
 from ..exceptions import ToolNotInstalledError
 from .common import run_command
@@ -56,7 +56,7 @@ async def detect_kind_provider(cluster_name: str) -> tuple[str, str]:
     return runtime, f"{cluster_name}-control-plane"
 
 
-async def detect_existing_cluster_type(cluster_name: str) -> Optional[Literal["kind"] | Literal["minikube"]]:
+async def detect_existing_cluster_type(cluster_name: str) -> Literal["kind"] | Literal["minikube"] | None:
     """Detect which type of cluster exists with the given name."""
     kind_exists = False
     minikube_exists = False
@@ -124,7 +124,7 @@ async def detect_cluster_type(context_name: str, server_url: str, minikube: str 
         return "minikube"
 
     # Check for localhost/127.0.0.1 which usually indicates Kind
-    if any(host in server_url.lower() for host in ["localhost", "127.0.0.1", "0.0.0.0"]):
+    if any(host in server_url.lower() for host in ["localhost", "127.0.0.1", "0.0.0.0"]):  # noqa: S104
         return "kind"
 
     # Check for minikube VM IP ranges (192.168.x.x, 172.x.x.x) and typical minikube ports

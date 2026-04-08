@@ -37,7 +37,7 @@ def test_client_config_try_from_env(monkeypatch: pytest.MonkeyPatch):
     assert config.alias == "default"
     assert config.metadata.namespace == "default"
     assert config.metadata.name == "testclient"
-    assert config.token == "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
+    assert config.token == "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
     assert config.endpoint == "jumpstarter.my-lab.com:1443"
     assert config.drivers.allow == ["jumpstarter.drivers.*", "vendorpackage.*"]
     assert config.drivers.unsafe is False
@@ -59,7 +59,7 @@ def test_client_config_from_env(monkeypatch: pytest.MonkeyPatch):
     assert config.alias == "default"
     assert config.metadata.namespace == "default"
     assert config.metadata.name == "testclient"
-    assert config.token == "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
+    assert config.token == "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
     assert config.endpoint == "jumpstarter.my-lab.com:1443"
     assert config.drivers.allow == ["jumpstarter.drivers.*", "vendorpackage.*"]
     assert config.drivers.unsafe is False
@@ -76,7 +76,7 @@ def test_client_config_from_env_allow_unsafe(monkeypatch: pytest.MonkeyPatch):
     assert config.alias == "default"
     assert config.metadata.namespace == "default"
     assert config.metadata.name == "testclient"
-    assert config.token == "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
+    assert config.token == "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
     assert config.endpoint == "jumpstarter.my-lab.com:1443"
     assert config.drivers.unsafe is True
 
@@ -116,7 +116,7 @@ drivers:
         assert config.metadata.namespace == "default"
         assert config.metadata.name == "testclient"
         assert config.endpoint == "jumpstarter.my-lab.com:1443"
-        assert config.token == "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"
+        assert config.token == "dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz"  # noqa: S105
         assert config.drivers.allow == ["jumpstarter.drivers.*", "vendorpackage.*"]
         assert config.drivers.unsafe is False
         os.unlink(f.name)
@@ -135,7 +135,7 @@ def test_client_config_from_file_invalid_field_raises(invalid_field):
     CLIENT_CONFIG[invalid_field] = "foo"
     with tempfile.NamedTemporaryFile(mode="w") as f:
         yaml.safe_dump(CLIENT_CONFIG, f, sort_keys=False)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             _ = ClientConfigV1Alpha1.from_file(f.name)
 
 
@@ -177,7 +177,7 @@ def test_client_config_load():
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
         f.write("")
         f.close()
-        with patch.object(ClientConfigV1Alpha1, "_get_path", return_value=Path(f.name)) as get_path_mock:
+        with patch.object(ClientConfigV1Alpha1, "_get_path", return_value=Path(f.name)) as get_path_mock:  # noqa: SIM117
             with patch.object(
                 ClientConfigV1Alpha1,
                 "from_file",
@@ -185,7 +185,7 @@ def test_client_config_load():
                     alias="another",
                     metadata=ObjectMeta(namespace="default", name="another"),
                     endpoint="abc",
-                    token="123",
+                    token="123",  # noqa: S106
                     drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=False),
                 ),
             ) as from_file_mock:
@@ -225,12 +225,12 @@ shell:
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",
+        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",  # noqa: S106
         drivers=ClientConfigV1Alpha1Drivers(allow=["jumpstarter.drivers.*", "vendorpackage.*"], unsafe=False),
         shell=ShellConfigV1Alpha1(use_profiles=False),
     )
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
-        with patch.object(ClientConfigV1Alpha1, "_get_path", return_value=Path(f.name)) as _get_path_mock:
+        with patch.object(ClientConfigV1Alpha1, "_get_path", return_value=Path(f.name)) as _get_path_mock:  # noqa: SIM117
             with patch.object(ClientConfigV1Alpha1, "ensure_exists"):
                 ClientConfigV1Alpha1.save(config)
                 with open(f.name) as loaded:
@@ -264,7 +264,7 @@ shell:
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",
+        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",  # noqa: S106
         drivers=ClientConfigV1Alpha1Drivers(allow=["jumpstarter.drivers.*", "vendorpackage.*"], unsafe=False),
         shell=ShellConfigV1Alpha1(use_profiles=False),
     )
@@ -299,7 +299,7 @@ shell:
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",
+        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",  # noqa: S106
         drivers=ClientConfigV1Alpha1Drivers(allow=[], unsafe=True),
         shell=ShellConfigV1Alpha1(use_profiles=False),
     )
@@ -337,7 +337,7 @@ leases:
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",
+        token="dGhpc2lzYXRva2VuLTEyMzQxMjM0MTIzNEyMzQtc2Rxd3Jxd2VycXdlcnF3ZXJxd2VyLTEyMzQxMjM0MTIz",  # noqa: S106
         leases=ClientConfigV1Alpha1Lease(acquisition_timeout=3600),
     )
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
@@ -395,7 +395,7 @@ def test_client_config_list_not_found_returns_empty(monkeypatch: pytest.MonkeyPa
 
 
 def test_client_config_delete():
-    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:  # noqa: SIM117
         with patch.object(ClientConfigV1Alpha1, "_get_path", return_value=Path(f.name)) as _get_path_mock:
             f.write("")
             f.close()
@@ -419,7 +419,7 @@ async def test_create_lease_passes_exporter_name():
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="token",
+        token="token",  # noqa: S106
         drivers=ClientConfigV1Alpha1Drivers(allow=["jumpstarter.drivers.*"], unsafe=False),
     )
     mock_service = Mock()
@@ -462,15 +462,15 @@ async def test_list_leases_paginates():
         duration=timedelta(hours=1), client="c", exporter="e", conditions=[],
     )
 
-    page1 = LeaseList(leases=[lease_a], next_page_token="token1")
-    page2 = LeaseList(leases=[lease_b], next_page_token="token2")
+    page1 = LeaseList(leases=[lease_a], next_page_token="token1")  # noqa: S106
+    page2 = LeaseList(leases=[lease_b], next_page_token="token2")  # noqa: S106
     page3 = LeaseList(leases=[lease_c], next_page_token="")
 
     config = ClientConfigV1Alpha1(
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="token",
+        token="token",  # noqa: S106
         drivers=ClientConfigV1Alpha1Drivers(allow=["jumpstarter.drivers.*"], unsafe=False),
     )
 
@@ -490,8 +490,8 @@ async def test_list_leases_paginates():
     calls = mock_service.ListLeases.call_args_list
     assert calls[0].kwargs["page_size"] == 100
     assert calls[0].kwargs["page_token"] is None
-    assert calls[1].kwargs["page_token"] == "token1"
-    assert calls[2].kwargs["page_token"] == "token2"
+    assert calls[1].kwargs["page_token"] == "token1"  # noqa: S105
+    assert calls[2].kwargs["page_token"] == "token2"  # noqa: S105
 
 
 @pytest.mark.asyncio
@@ -509,7 +509,7 @@ async def test_list_leases_single_page():
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="token",
+        token="token",  # noqa: S106
         drivers=ClientConfigV1Alpha1Drivers(allow=["jumpstarter.drivers.*"], unsafe=False),
     )
 
@@ -540,14 +540,14 @@ async def test_list_exporters_paginates():
         online=True, lease=None,
     )
 
-    page1 = ExporterList(exporters=[exp_a], next_page_token="tok1")
+    page1 = ExporterList(exporters=[exp_a], next_page_token="tok1")  # noqa: S106
     page2 = ExporterList(exporters=[exp_b], next_page_token="")
 
     config = ClientConfigV1Alpha1(
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="token",
+        token="token",  # noqa: S106
         drivers=ClientConfigV1Alpha1Drivers(allow=["jumpstarter.drivers.*"], unsafe=False),
     )
 
@@ -567,7 +567,7 @@ async def test_list_exporters_paginates():
     calls = mock_service.ListExporters.call_args_list
     assert calls[0].kwargs["page_size"] == 100
     assert calls[0].kwargs["page_token"] is None
-    assert calls[1].kwargs["page_token"] == "tok1"
+    assert calls[1].kwargs["page_token"] == "tok1"  # noqa: S105
 
 
 @pytest.mark.asyncio
@@ -591,7 +591,7 @@ async def test_list_exporters_with_leases_propagates_page_size():
         alias="testclient",
         metadata=ObjectMeta(namespace="default", name="testclient"),
         endpoint="jumpstarter.my-lab.com:1443",
-        token="token",
+        token="token",  # noqa: S106
         drivers=ClientConfigV1Alpha1Drivers(allow=["jumpstarter.drivers.*"], unsafe=False),
     )
 

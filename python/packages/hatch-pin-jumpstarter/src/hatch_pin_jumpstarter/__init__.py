@@ -29,7 +29,7 @@ class PinJumpstarter(BuildHookInterface):
                     req.specifier &= SpecifierSet(f"=={self.metadata.version}")
                     metadata["project"]["dependencies"][i] = str(req)
 
-        f = NamedTemporaryFile(delete=False)
+        f = NamedTemporaryFile(delete=False)  # noqa: SIM115
         tomli_w.dump(metadata, f)
         f.close()
 

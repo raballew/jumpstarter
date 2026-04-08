@@ -2,9 +2,9 @@
 
 import logging
 import os
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import TYPE_CHECKING, Literal
 
 import anyio
 
@@ -271,7 +271,7 @@ class HookExecutor:
 
                 logger.debug("Spawning subprocess with command: %s", cmd)
                 try:
-                    process = subprocess.Popen(
+                    process = subprocess.Popen(  # noqa: S603
                         cmd,
                         stdin=child_fd,
                         stdout=child_fd,
@@ -436,14 +436,14 @@ class HookExecutor:
                         try:
                             with anyio.move_on_after(5):
                                 await anyio.to_thread.run_sync(process.wait, abandon_on_cancel=True)
-                        except Exception:
+                        except Exception:  # noqa: S110
                             pass
                         # Force kill if still running
                         if process.poll() is None:
                             process.kill()
-                            try:
+                            try:  # noqa: SIM105
                                 await anyio.to_thread.run_sync(process.wait, abandon_on_cancel=True)
-                            except Exception:
+                            except Exception:  # noqa: S110
                                 pass
 
                 elif returncode == 0:
@@ -460,12 +460,12 @@ class HookExecutor:
                 # Clean up file descriptors — only close those still open to avoid
                 # closing an unrelated fd that reused the same number.
                 if pty_state.parent_fd_open:
-                    try:
+                    try:  # noqa: SIM105
                         os.close(parent_fd)
                     except OSError:
                         pass
                 if pty_state.child_fd_open:
-                    try:
+                    try:  # noqa: SIM105
                         os.close(child_fd)
                     except OSError:
                         pass
@@ -578,7 +578,7 @@ class HookExecutor:
                 LogSource.BEFORE_LEASE_HOOK,
             )
 
-            if warning:
+            if warning:  # noqa: SIM108
                 msg = f"{HOOK_WARNING_PREFIX}beforeLease hook warning: {warning}"
             else:
                 msg = "Ready for commands"
@@ -669,7 +669,7 @@ class HookExecutor:
                 LogSource.AFTER_LEASE_HOOK,
             )
 
-            if warning:
+            if warning:  # noqa: SIM108
                 msg = f"{HOOK_WARNING_PREFIX}afterLease hook warning: {warning}"
             else:
                 msg = "Available for new lease"

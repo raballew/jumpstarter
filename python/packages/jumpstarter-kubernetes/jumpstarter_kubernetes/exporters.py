@@ -175,7 +175,7 @@ class ExportersV1Alpha1Api(AbstractAsyncCustomObjectApi):
                 namespace=self.namespace, group="jumpstarter.dev", plural="exporters", version="v1alpha1", name=name
             )
             # check if the client status is updated with the credentials
-            if "status" in updated_exporter:
+            if "status" in updated_exporter:  # noqa: SIM102
                 if "credential" in updated_exporter["status"]:
                     return V1Alpha1Exporter.from_dict(updated_exporter)
             count += 1

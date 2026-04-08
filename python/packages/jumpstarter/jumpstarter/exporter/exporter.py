@@ -795,7 +795,7 @@ class Exporter(AsyncContextManagerMixin, Metadata):
                         self._lease_context.update_client(status.client_name)
 
                     # Before-lease hook when transitioning from unleased to leased
-                    if not previous_leased:
+                    if not previous_leased:  # noqa: SIM102
                         if self.hook_executor and self._lease_context:
                             tg.start_soon(
                                 self.hook_executor.run_before_lease_hook,

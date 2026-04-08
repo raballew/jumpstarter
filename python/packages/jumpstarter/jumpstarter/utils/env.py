@@ -50,7 +50,6 @@ def env():
     This is useful when interacting with an already established Jumpstarter shell,
     to either a local exporter or a remote one.
     """
-    with start_blocking_portal() as portal:
-        with ExitStack() as stack:
-            with portal.wrap_async_context_manager(env_async(portal, stack)) as client:
-                yield client
+    with start_blocking_portal() as portal, ExitStack() as stack:  # noqa: SIM117
+        with portal.wrap_async_context_manager(env_async(portal, stack)) as client:
+            yield client

@@ -122,17 +122,17 @@ class MockUdsEcu:
     def stop(self):
         self._running = False
         self._thread.join(timeout=2)
-        try:
+        try:  # noqa: SIM105
             self._stack.stop()
-        except Exception:
+        except Exception:  # noqa: S110
             pass
-        try:
+        try:  # noqa: SIM105
             self._notifier.stop()
-        except Exception:
+        except Exception:  # noqa: S110
             pass
-        try:
+        try:  # noqa: SIM105
             self._bus.shutdown()
-        except Exception:
+        except Exception:  # noqa: S110
             pass
 
 

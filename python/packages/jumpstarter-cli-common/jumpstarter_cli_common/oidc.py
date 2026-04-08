@@ -62,12 +62,11 @@ class Config:
 
     async def configuration(self):
         connector = aiohttp.TCPConnector(ssl=_get_ssl_context())
-        async with aiohttp.ClientSession(connector=connector) as session:
-            async with session.get(
-                URL(self.issuer).joinpath(".well-known", "openid-configuration"),
-                raise_for_status=True,
-            ) as response:
-                return await response.json()
+        async with aiohttp.ClientSession(connector=connector) as session, session.get(
+            URL(self.issuer).joinpath(".well-known", "openid-configuration"),
+            raise_for_status=True,
+        ) as response:
+            return await response.json()
 
     def _scopes(self) -> list[str]:
         if self.offline_access:
@@ -88,8 +87,8 @@ class Config:
             lambda: client.fetch_token(
                 config["token_endpoint"],
                 grant_type="urn:ietf:params:oauth:grant-type:token-exchange",
-                requested_token_type="urn:ietf:params:oauth:token-type:access_token",
-                subject_token_type="urn:ietf:params:oauth:token-type:id_token",
+                requested_token_type="urn:ietf:params:oauth:token-type:access_token",  # noqa: S106
+                subject_token_type="urn:ietf:params:oauth:token-type:id_token",  # noqa: S106
                 subject_token=token,
                 **kwargs,
             )
@@ -153,7 +152,7 @@ class Config:
             await runner.cleanup()
             raise click.ClickException(f"Failed to start callback server on port {port}: {e}") from None
 
-        redirect_uri = "http://localhost:%d/callback" % site._server.sockets[0].getsockname()[1]
+        redirect_uri = "http://localhost:%d/callback" % site._server.sockets[0].getsockname()[1]  # noqa: UP031
 
         client = self.client(redirect_uri=redirect_uri)
 

@@ -157,7 +157,7 @@ class SSHWrapperClient(CompositeClient):
         temp_file = None
         if ssh_identity:
             try:
-                temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='_ssh_key')
+                temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='_ssh_key')  # noqa: SIM115
                 temp_file.write(ssh_identity)
                 temp_file.close()
                 # Set proper permissions (600) for SSH key
@@ -167,9 +167,9 @@ class SSHWrapperClient(CompositeClient):
             except Exception as e:
                 self.logger.error("Failed to create temporary identity file: %s", e)
                 if temp_file:
-                    try:
+                    try:  # noqa: SIM105
                         os.unlink(temp_file.name)
-                    except Exception:
+                    except Exception:  # noqa: S110
                         pass
                 raise
 
@@ -288,7 +288,7 @@ class SSHWrapperClient(CompositeClient):
     def _execute_ssh_command(self, ssh_args, options: SSHCommandRunOptions) -> SSHCommandRunResult:
         """Execute the SSH command and return the result"""
         try:
-            result = subprocess.run(ssh_args, capture_output=options.capture_output, text=options.capture_as_text)
+            result = subprocess.run(ssh_args, capture_output=options.capture_output, text=options.capture_as_text)  # noqa: S603
             return SSHCommandRunResult.from_completed_process(result)
         except FileNotFoundError:
             self.logger.error(

@@ -251,7 +251,7 @@ def test_config_validation_demuxer_path_mismatch():
                 )
                 raise AssertionError("Should have raised ValueError")
             except ValueError as e:
-                assert "Demuxer path mismatch" in str(e)
+                assert "Demuxer path mismatch" in str(e)  # noqa: PT017
 
             # Cleanup
             manager.unregister_driver("driver1")
@@ -290,7 +290,7 @@ def test_config_validation_device_mismatch():
                 )
                 raise AssertionError("Should have raised ValueError")
             except ValueError as e:
-                assert "Device mismatch" in str(e)
+                assert "Device mismatch" in str(e)  # noqa: PT017
 
             # Cleanup
             manager.unregister_driver("driver1")
@@ -329,7 +329,7 @@ def test_config_validation_chip_mismatch():
                 )
                 raise AssertionError("Should have raised ValueError")
             except ValueError as e:
-                assert "Chip mismatch" in str(e)
+                assert "Chip mismatch" in str(e)  # noqa: PT017
 
             # Cleanup
             manager.unregister_driver("driver1")
@@ -368,7 +368,7 @@ def test_duplicate_target_rejected():
                 )
                 raise AssertionError("Should have raised ValueError")
             except ValueError as e:
-                assert "already registered" in str(e)
+                assert "already registered" in str(e)  # noqa: PT017
 
             # Cleanup
             manager.unregister_driver("driver1")

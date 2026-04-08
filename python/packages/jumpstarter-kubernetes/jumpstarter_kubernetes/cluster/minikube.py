@@ -5,7 +5,6 @@ import os
 import shlex
 import shutil
 from pathlib import Path
-from typing import List, Optional
 
 from ..callbacks import OutputCallback, SilentCallback
 from ..exceptions import (
@@ -59,7 +58,7 @@ async def minikube_cluster_exists(minikube: str, cluster_name: str) -> bool:  # 
 
         # Check if the error indicates profile doesn't exist
         combined_output = (stdout + stderr).lower()
-        if "profile" in combined_output and "not found" in combined_output:
+        if "profile" in combined_output and "not found" in combined_output:  # noqa: SIM103
             return False
 
         # Non-zero exit but not "not found" means cluster exists but may be stopped
@@ -68,7 +67,7 @@ async def minikube_cluster_exists(minikube: str, cluster_name: str) -> bool:  # 
     except RuntimeError as e:
         # Check if the error message indicates profile not found
         error_msg = str(e).lower()
-        if "profile" in error_msg and "not found" in error_msg:
+        if "profile" in error_msg and "not found" in error_msg:  # noqa: SIM103
             return False
         # Other errors may indicate the cluster exists but has issues
         return True
@@ -100,7 +99,7 @@ async def delete_minikube_cluster(minikube: str, cluster_name: str, callback: Ou
 async def create_minikube_cluster(  # noqa: C901
     minikube: str,
     cluster_name: str,
-    extra_args: Optional[List[str]] = None,
+    extra_args: list[str] | None = None,
     force_recreate: bool = False,
     callback: OutputCallback = None,
 ) -> bool:
@@ -157,7 +156,7 @@ async def create_minikube_cluster(  # noqa: C901
         )
 
 
-async def list_minikube_clusters(minikube: str) -> List[str]:
+async def list_minikube_clusters(minikube: str) -> list[str]:
     """List all Minikube clusters."""
     if not minikube_installed(minikube):
         return []
@@ -199,7 +198,7 @@ async def prepare_certificates(extra_certs: str, callback: OutputCallback = None
 
     # If ca.crt already exists, append to it
     if cert_dest.exists():
-        with open(extra_certs_path, "r") as src, open(cert_dest, "a") as dst:
+        with open(extra_certs_path) as src, open(cert_dest, "a") as dst:
             dst.write("\n")
             dst.write(src.read())
     else:
@@ -213,7 +212,7 @@ async def create_minikube_cluster_with_options(
     cluster_name: str,
     minikube_extra_args: str,
     force_recreate_cluster: bool,
-    extra_certs: Optional[str] = None,
+    extra_certs: str | None = None,
     callback: OutputCallback = None,
 ) -> None:
     """Create a Minikube cluster with optional certificate preparation."""

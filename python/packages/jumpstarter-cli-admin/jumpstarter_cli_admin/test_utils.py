@@ -8,7 +8,7 @@ def json_equal(a: str, b: str) -> bool:
         except ValueError:
             return object()
         if isinstance(data, str):
-            try:
+            try:  # noqa: SIM105
                 data = json.loads(data)
             except ValueError:
                 pass

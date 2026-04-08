@@ -6,7 +6,7 @@ from .fls import download_fls, get_fls_binary, get_fls_github_url
 
 
 @pytest.mark.parametrize(
-    "arch,version,expected_binary",
+    "arch,version,expected_binary",  # noqa: PT006
     [
         ("aarch64", "0.1.9", "fls-aarch64-linux"),
         ("arm64", "0.1.9", "fls-aarch64-linux"),
@@ -23,7 +23,7 @@ def test_get_fls_github_url_auto_detect(arch, version, expected_binary):
 
 
 @pytest.mark.parametrize(
-    "arch,version,expected_binary",
+    "arch,version,expected_binary",  # noqa: PT006
     [
         ("aarch64", "0.1.9", "fls-aarch64-linux"),
         ("AARCH64", "0.1.9", "fls-aarch64-linux"),  # case insensitive
@@ -37,11 +37,11 @@ def test_get_fls_github_url_explicit_arch(arch, version, expected_binary):
 
 
 def test_get_fls_binary_with_custom_url():
-    with patch("jumpstarter.common.fls.download_fls", return_value="/tmp/custom-fls") as mock_download:
+    with patch("jumpstarter.common.fls.download_fls", return_value="/tmp/custom-fls") as mock_download:  # noqa: S108
         result = get_fls_binary(fls_binary_url="https://example.com/fls", allow_custom_binaries=True)
 
         mock_download.assert_called_once_with("https://example.com/fls")
-        assert result == "/tmp/custom-fls"
+        assert result == "/tmp/custom-fls"  # noqa: S108
 
 
 def test_get_fls_binary_custom_url_security_check():
@@ -51,13 +51,13 @@ def test_get_fls_binary_custom_url_security_check():
 
 
 def test_get_fls_binary_with_version():
-    with patch("jumpstarter.common.fls.download_fls", return_value="/tmp/fls-0.1.9") as mock_download:
+    with patch("jumpstarter.common.fls.download_fls", return_value="/tmp/fls-0.1.9") as mock_download:  # noqa: S108, SIM117
         with patch("jumpstarter.common.fls.get_fls_github_url", return_value="https://github.com/...") as mock_url:
             result = get_fls_binary(fls_version="0.1.9")
 
             mock_url.assert_called_once_with("0.1.9")
             mock_download.assert_called_once()
-            assert result == "/tmp/fls-0.1.9"
+            assert result == "/tmp/fls-0.1.9"  # noqa: S108
 
 
 def test_get_fls_binary_falls_back_to_path():
@@ -73,8 +73,8 @@ def test_download_fls_success():
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=None)
 
-    with patch("urllib.request.urlopen", return_value=mock_response) as mock_urlopen:
-        with patch("tempfile.mkstemp", return_value=(99, "/tmp/fls-test")):
+    with patch("urllib.request.urlopen", return_value=mock_response) as mock_urlopen:  # noqa: SIM117
+        with patch("tempfile.mkstemp", return_value=(99, "/tmp/fls-test")):  # noqa: S108
             with patch("os.close") as mock_close:
                 with patch("pathlib.Path.chmod") as mock_chmod:
                     with patch("os.replace") as mock_replace:
@@ -85,13 +85,13 @@ def test_download_fls_success():
                                 mock_close.assert_called_once_with(99)
                                 mock_urlopen.assert_called_once_with("https://example.com/fls", timeout=30.0)
                                 mock_chmod.assert_called_once_with(0o755)
-                                mock_replace.assert_called_once_with("/tmp/fls-test.part", "/tmp/fls-test")
-                                assert result == "/tmp/fls-test"
+                                mock_replace.assert_called_once_with("/tmp/fls-test.part", "/tmp/fls-test")  # noqa: S108
+                                assert result == "/tmp/fls-test"  # noqa: S108
 
 
 def test_download_fls_failure():
-    with patch("urllib.request.urlopen", side_effect=Exception("Network error")):
-        with patch("tempfile.mkstemp", return_value=(99, "/tmp/fls-test")):
+    with patch("urllib.request.urlopen", side_effect=Exception("Network error")):  # noqa: SIM117
+        with patch("tempfile.mkstemp", return_value=(99, "/tmp/fls-test")):  # noqa: S108
             with patch("os.close"):
                 with patch("pathlib.Path.unlink"):
                     with pytest.raises(RuntimeError, match="Failed to download FLS"):

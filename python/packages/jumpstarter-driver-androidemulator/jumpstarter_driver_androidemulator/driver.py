@@ -101,7 +101,7 @@ class AndroidEmulatorPower(PowerInterface, Driver):
                         self.logger.info(message.strip())
                 else:
                     self.logger.info(text)
-        except (ValueError, IOError):
+        except (OSError, ValueError):
             pass
         finally:
             pipe.close()
@@ -129,7 +129,7 @@ class AndroidEmulatorPower(PowerInterface, Driver):
         env = {**os.environ, "ANDROID_ADB_SERVER_PORT": str(self.parent.adb_server_port)}
 
         self.logger.info(f"Starting emulator: {' '.join(cmdline)}")
-        self._process = subprocess.Popen(
+        self._process = subprocess.Popen(  # noqa: S603
             cmdline,
             stdin=PIPE,
             stdout=PIPE,
@@ -154,7 +154,7 @@ class AndroidEmulatorPower(PowerInterface, Driver):
         # Try graceful shutdown via ADB
         try:
             adb_path = shutil.which("adb") or "adb"
-            subprocess.run(
+            subprocess.run(  # noqa: S603
                 [adb_path, "-s", f"emulator-{self.parent.console_port}", "emu", "kill"],
                 env={**os.environ, "ANDROID_ADB_SERVER_PORT": str(self.parent.adb_server_port)},
                 timeout=5,
@@ -164,7 +164,7 @@ class AndroidEmulatorPower(PowerInterface, Driver):
             self.logger.info("Emulator shut down gracefully")
         except (TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError):
             self.logger.warning("Graceful shutdown failed, killing process")
-            try:
+            try:  # noqa: SIM105
                 self._process.kill()
             except ProcessLookupError:
                 pass

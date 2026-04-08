@@ -44,7 +44,7 @@ def test_client_adapter_fabric():
     server_thread.daemon = True
     server_thread.start()
 
-    with serve(TcpNetwork(host=server.server_address[0], port=server.server_address[1])) as client:
+    with serve(TcpNetwork(host=server.server_address[0], port=server.server_address[1])) as client:  # noqa: SIM117
         with FabricAdapter(client=client, connect_kwargs={"password": "password"}) as conn:
             conn.run("dummy command")
 

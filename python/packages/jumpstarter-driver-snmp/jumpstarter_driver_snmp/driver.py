@@ -2,7 +2,7 @@ import asyncio
 import socket
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from pysnmp.carrier.asyncio.dgram import udp
 from pysnmp.entity import config, engine
@@ -12,13 +12,13 @@ from pysnmp.proto import rfc1902
 from jumpstarter.driver import Driver, export
 
 
-class AuthProtocol(str, Enum):
+class AuthProtocol(str, Enum):  # noqa: UP042
     NONE = "NONE"
     MD5 = "MD5"
     SHA = "SHA"
 
 
-class PrivProtocol(str, Enum):
+class PrivProtocol(str, Enum):  # noqa: UP042
     NONE = "NONE"
     DES = "DES"
     AES = "AES"
@@ -117,7 +117,7 @@ class SNMPServer(Driver):
     def client(cls) -> str:
         return "jumpstarter_driver_snmp.client.SNMPServerClient"
 
-    def _create_snmp_callback(self, result: Dict[str, Any], response_received: asyncio.Event):
+    def _create_snmp_callback(self, result: dict[str, Any], response_received: asyncio.Event):
         def callback(snmpEngine, sendRequestHandle, errorIndication, errorStatus, errorIndex, varBinds, cbCtx):
             self.logger.debug(f"Callback {errorIndication} {errorStatus} {errorIndex} {varBinds}")
             if errorIndication:
@@ -138,7 +138,7 @@ class SNMPServer(Driver):
 
         return callback
 
-    def _setup_event_loop(self) -> Tuple[asyncio.AbstractEventLoop, bool]:
+    def _setup_event_loop(self) -> tuple[asyncio.AbstractEventLoop, bool]:
         try:
             loop = asyncio.get_running_loop()
             return loop, False
@@ -175,7 +175,7 @@ class SNMPServer(Driver):
             dispatcher_task = loop.create_task(self._run_snmp_dispatcher(snmp_engine, response_received))
             try:
                 loop.run_until_complete(asyncio.wait_for(dispatcher_task, self.timeout))
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 self.logger.warning(f"SNMP operation timed out after {self.timeout} seconds")
                 result["error"] = "SNMP operation timed out"
 

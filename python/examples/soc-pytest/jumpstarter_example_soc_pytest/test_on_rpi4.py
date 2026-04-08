@@ -16,18 +16,18 @@ log = logging.getLogger(__file__)
 class TestResource(JumpstarterTest):
     selector = "board=rpi4"
 
-    @pytest.fixture()
+    @pytest.fixture
     def console(self, client):
         with PexpectAdapter(client=client.dutlink.console) as console:
             if os.environ.get("DEBUG_CONSOLE") == "1":
                 console.logfile_read = sys.stdout.buffer
             yield console
 
-    @pytest.fixture()
+    @pytest.fixture
     def video(self, client):
         return ImageHash(client.video)
 
-    @pytest.fixture()
+    @pytest.fixture
     def shell(self, client, console):
         client.dutlink.power.off()
         time.sleep(1)

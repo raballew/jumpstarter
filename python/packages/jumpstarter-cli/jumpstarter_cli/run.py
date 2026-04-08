@@ -17,9 +17,9 @@ def _parse_listener_bind(value: str) -> tuple[str, int]:
     """Parse '[host:]port' into (host, port). Default host is 0.0.0.0."""
     if ":" in value:
         host, port_str = value.rsplit(":", 1)
-        host = host.strip() or "0.0.0.0"
+        host = host.strip() or "0.0.0.0"  # noqa: S104
     else:
-        host = "0.0.0.0"
+        host = "0.0.0.0"  # noqa: S104
         port_str = value
     try:
         port = int(port_str, 10)
@@ -175,7 +175,7 @@ def _handle_parent(pid):
         elif signum != signal.SIGCHLD:
             logger.info("PARENT: Got %d (%s), forwarding to child PG %d", signum, signal.Signals(signum).name, pid)
             if pid > 0:
-                try:
+                try:  # noqa: SIM105
                     os.killpg(pid, signum)
                 except (ProcessLookupError, OSError):
                     pass

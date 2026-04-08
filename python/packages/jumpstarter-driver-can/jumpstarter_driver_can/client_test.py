@@ -112,7 +112,7 @@ def test_client_can_redirect(request):
 
 
 @pytest.mark.parametrize(
-    "msgs, expected",
+    "msgs, expected",  # noqa: PT006
     [
         ([can.Message(data=b"a"), can.Message(data=b"b")], [(1, b"a"), (1, b"b"), (1, b"a"), (1, b"b")]),
         (can.Message(data=b"a"), [(1, b"a"), (1, b"a"), (1, b"a"), (1, b"a")]),
@@ -141,7 +141,7 @@ def test_client_can_send_periodic_local(request, msgs, expected):
 
 
 @pytest.mark.parametrize(
-    "msgs, expected",
+    "msgs, expected",  # noqa: PT006
     [
         ([can.Message(data=b"a"), can.Message(data=b"b")], [(0, b"a"), (0, b"b"), (0, b"a"), (0, b"b")]),
         (can.Message(data=b"a"), [(0, b"a"), (0, b"a"), (0, b"a"), (0, b"a")]),
@@ -201,7 +201,7 @@ def test_client_can_isotp(request, tx_data_length, blocking_send):
         transport1.start()
         transport2.start()
 
-        message = randbytes(params.max_frame_size)
+        message = randbytes(params.max_frame_size)  # noqa: S311
 
         transport1.send(message, send_timeout=10)
         assert transport2.recv(block=True, timeout=10) == message
@@ -259,7 +259,7 @@ def test_client_isotp(request, blocking_send, addresses):
         client1.available()
         client1.transmitting()
 
-        message = randbytes(params.max_frame_size)
+        message = randbytes(params.max_frame_size)  # noqa: S311
 
         client1.send(message, send_timeout=10)
 
@@ -288,7 +288,7 @@ def test_client_isotp_socket(request, can_fd):
         client1.start()
         client2.start()
 
-        message = randbytes(params.max_frame_size)
+        message = randbytes(params.max_frame_size)  # noqa: S311
 
         client1.send(message, send_timeout=10)
 

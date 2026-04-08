@@ -134,7 +134,7 @@ class Opendal(Driver):
     async def hash(self, /, path: str, algo: HashAlgo = "sha256") -> str:
         match algo:
             case "md5":
-                m = hashlib.md5()
+                m = hashlib.md5()  # noqa: S324
             case "sha256":
                 m = hashlib.sha256()
         async with await self._operator.open(path, "rb") as f:
@@ -222,7 +222,7 @@ class Opendal(Driver):
         """Copy a file from the exporter to the target path.
         This function is intended to be used on the exporter side to copy files to the target path.
         """
-        async with await AsyncOperator("fs", root=source.parent.as_posix()).open(source.name, "rb") as src:
+        async with await AsyncOperator("fs", root=source.parent.as_posix()).open(source.name, "rb") as src:  # noqa: SIM117
             async with await self._operator.open(target, "wb") as dst:
                 while True:
                     data = await src.read(size=65536)
@@ -326,14 +326,14 @@ class MockFlasher(FlasherInterface, Driver):
 
     @export
     async def flash(self, source, partition: str | None = None):
-        async with await FileWriteStream.from_path(self.__path(partition)) as stream:
+        async with await FileWriteStream.from_path(self.__path(partition)) as stream:  # noqa: SIM117
             async with self.resource(source) as res:
                 async for chunk in res:
                     await stream.send(chunk)
 
     @export
     async def dump(self, target, partition: str | None = None):
-        async with await FileReadStream.from_path(self.__path(partition)) as stream:
+        async with await FileReadStream.from_path(self.__path(partition)) as stream:  # noqa: SIM117
             async with self.resource(target) as res:
                 async for chunk in stream:
                     await res.send(chunk)
@@ -384,17 +384,15 @@ class MockStorageMux(StorageMuxInterface, Driver):
 
     @export
     async def write(self, src: str):
-        async with await FileWriteStream.from_path(self.file.name) as stream:
-            async with self.resource(src) as res:
-                async for chunk in res:
-                    await stream.send(chunk)
+        async with await FileWriteStream.from_path(self.file.name) as stream, self.resource(src) as res:
+            async for chunk in res:
+                await stream.send(chunk)
 
     @export
     async def read(self, dst: str):
-        async with await FileReadStream.from_path(self.file.name) as stream:
-            async with self.resource(dst) as res:
-                async for chunk in stream:
-                    await res.send(chunk)
+        async with await FileReadStream.from_path(self.file.name) as stream, self.resource(dst) as res:
+            async for chunk in stream:
+                await res.send(chunk)
 
 
 @dataclass

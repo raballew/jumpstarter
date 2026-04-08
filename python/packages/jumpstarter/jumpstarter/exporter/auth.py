@@ -8,7 +8,7 @@ import grpc
 
 logger = logging.getLogger(__name__)
 
-PASSPHRASE_METADATA_KEY = "x-jumpstarter-passphrase"
+PASSPHRASE_METADATA_KEY = "x-jumpstarter-passphrase"  # noqa: S105
 
 
 # ── Server-side ──────────────────────────────────────────────────────

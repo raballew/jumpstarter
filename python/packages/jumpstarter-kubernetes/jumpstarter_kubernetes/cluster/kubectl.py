@@ -1,13 +1,12 @@
 """Kubectl operations for cluster management."""
 
 import json
-from typing import Dict, List, Optional
 
 from ..clusters import V1Alpha1ClusterInfo, V1Alpha1ClusterList, V1Alpha1JumpstarterInstance
 from .common import run_command
 
 
-async def check_kubernetes_access(context: Optional[str] = None, kubectl: str = "kubectl") -> bool:
+async def check_kubernetes_access(context: str | None = None, kubectl: str = "kubectl") -> bool:
     """Check if Kubernetes cluster is accessible."""
     try:
         cmd = [kubectl]
@@ -21,7 +20,7 @@ async def check_kubernetes_access(context: Optional[str] = None, kubectl: str = 
         return False
 
 
-async def get_kubectl_contexts(kubectl: str = "kubectl") -> List[Dict[str, str]]:
+async def get_kubectl_contexts(kubectl: str = "kubectl") -> list[dict[str, str]]:
     """Get all kubectl contexts."""
     contexts = []
 
@@ -73,7 +72,7 @@ async def get_kubectl_contexts(kubectl: str = "kubectl") -> List[Dict[str, str]]
 
 
 async def check_jumpstarter_installation(  # noqa: C901
-    context: str, namespace: Optional[str] = None, helm: str = "helm", kubectl: str = "kubectl"
+    context: str, namespace: str | None = None, helm: str = "helm", kubectl: str = "kubectl"
 ) -> V1Alpha1JumpstarterInstance:
     """Check if Jumpstarter is installed in the cluster."""
     result_data = {

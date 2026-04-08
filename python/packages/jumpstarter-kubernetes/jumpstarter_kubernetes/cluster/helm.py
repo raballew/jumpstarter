@@ -1,6 +1,5 @@
 """Helm chart management operations."""
 
-from typing import Optional
 
 from ..callbacks import OutputCallback, SilentCallback
 from ..install import install_helm_chart
@@ -15,12 +14,12 @@ async def install_jumpstarter_helm_chart(
     router_endpoint: str,
     mode: str,
     version: str,
-    kubeconfig: Optional[str],
-    context: Optional[str],
+    kubeconfig: str | None,
+    context: str | None,
     helm: str,
     ip: str,
     callback: OutputCallback = None,
-    values_files: Optional[list[str]] = None,
+    values_files: list[str] | None = None,
 ) -> None:
     """Install Jumpstarter Helm chart."""
     if callback is None:

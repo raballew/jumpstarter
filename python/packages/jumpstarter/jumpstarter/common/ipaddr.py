@@ -21,7 +21,7 @@ def get_ip_address(logger: logging.Logger | None = None) -> str:
         except Exception:
             if logger:
                 logger.warning("Could not determine default IP address, falling back to 0.0.0.0")
-            return "0.0.0.0"
+            return "0.0.0.0"  # noqa: S104
 
     return address
 

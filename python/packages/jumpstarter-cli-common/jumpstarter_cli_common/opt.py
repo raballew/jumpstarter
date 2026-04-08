@@ -71,7 +71,7 @@ def _opt_labels_callback(ctx, param, value):
     for label in value:
         k, sep, v = label.partition("=")
         if sep == "":
-            raise click.BadParameter("Invalid label '{}', should be formatted as 'key=value'".format(k))
+            raise click.BadParameter(f"Invalid label '{k}', should be formatted as 'key=value'")
         labels[k] = v
 
     return labels
@@ -101,7 +101,7 @@ opt_insecure_tls_config = opt_insecure_tls
 
 
 def confirm_insecure_tls(insecure_tls: bool, nointeractive: bool):
-    if nointeractive is False and insecure_tls:
+    if nointeractive is False and insecure_tls:  # noqa: SIM102
         if not click.confirm(
             "Insecure TLS mode is enabled. Certificate verification will be"
             " disabled for HTTPS connections. Continue?"
@@ -113,7 +113,7 @@ def confirm_insecure_tls(insecure_tls: bool, nointeractive: bool):
 confirm_insecure = confirm_insecure_tls
 
 
-def validate_name(name: Optional[str]) -> None:
+def validate_name(name: str | None) -> None:
     if not name or not name.strip():
         raise click.UsageError("Missing required argument 'NAME'.")
 
@@ -125,7 +125,7 @@ class OutputMode(str):
     PATH = "path"
 
 
-OutputType = Optional[OutputMode]
+OutputType = Optional[OutputMode]  # noqa: UP045
 
 opt_output_all = click.option(
     "-o",
@@ -135,7 +135,7 @@ opt_output_all = click.option(
     help='Output mode. Use "-o name" for shorter output (resource/name).',
 )
 
-NameOutputType = Optional[Literal["name"]]
+NameOutputType = Optional[Literal["name"]]  # noqa: UP045
 
 opt_output_name_only = click.option(
     "-o",
@@ -145,7 +145,7 @@ opt_output_name_only = click.option(
     help='Output mode. Use "-o name" for shorter output (resource/name).',
 )
 
-PathOutputType = Optional[Literal["path"]]
+PathOutputType = Optional[Literal["path"]]  # noqa: UP045
 
 opt_output_path_only = click.option(
     "-o",

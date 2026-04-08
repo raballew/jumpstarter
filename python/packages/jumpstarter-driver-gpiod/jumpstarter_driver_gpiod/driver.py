@@ -41,7 +41,7 @@ class _GPIOBase(Driver):
                 self._line.release()
             if hasattr(self, "_chip") and self._chip:
                 self._chip.close()
-        except Exception:
+        except Exception:  # noqa: S110
             pass
         super().close()
 

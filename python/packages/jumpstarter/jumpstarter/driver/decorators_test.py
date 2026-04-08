@@ -34,5 +34,5 @@ def test_driver_decorators():
     assert getattr(functions.generator, MARKER_STREAMING_DRIVERCALL) == MARKER_MAGIC
     assert getattr(functions.asyncgenerator, MARKER_STREAMING_DRIVERCALL) == MARKER_MAGIC
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         export(None)

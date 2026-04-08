@@ -1,6 +1,5 @@
 import sys
 from contextlib import contextmanager
-from typing import Optional
 
 import click
 from anyio import BrokenResourceError, EndOfStream, create_task_group, open_file, sleep
@@ -42,7 +41,7 @@ class PySerialClient(DriverClient):
 
     async def _pipe_serial(
         self,
-        output_file: Optional[str] = None,
+        output_file: str | None = None,
         input_enabled: bool = False,
         append: bool = False,
         no_output: bool = False,
@@ -80,7 +79,7 @@ class PySerialClient(DriverClient):
                 while True:
                     await sleep(1)
 
-    async def _serial_to_output(self, stream, output_file: Optional[str], append: bool):
+    async def _serial_to_output(self, stream, output_file: str | None, append: bool):
         """Read from serial and write to file or stdout."""
         try:
             if output_file:
@@ -122,7 +121,7 @@ class PySerialClient(DriverClient):
 
         # Signal write completion for streams that support half-close.
         if hasattr(stream, "send_eof"):
-            try:
+            try:  # noqa: SIM105
                 await stream.send_eof()
             except (AttributeError, BrokenResourceError, EndOfStream):
                 pass

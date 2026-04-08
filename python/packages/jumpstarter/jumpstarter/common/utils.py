@@ -39,14 +39,13 @@ async def serve_async(root_device: "Driver", portal: BlockingPortal, stack: Exit
 
 @contextmanager
 def serve(root_device: "Driver"):
-    with start_blocking_portal() as portal:
-        with ExitStack() as stack:
-            with portal.wrap_async_context_manager(serve_async(root_device, portal, stack)) as client:
-                try:
-                    yield client
-                finally:
-                    if hasattr(client, "close"):
-                        client.close()
+    with start_blocking_portal() as portal, ExitStack() as stack:  # noqa: SIM117
+        with portal.wrap_async_context_manager(serve_async(root_device, portal, stack)) as client:
+            try:
+                yield client
+            finally:
+                if hasattr(client, "close"):
+                    client.close()
 
 
 ANSI_GRAY = "\\[\\e[90m\\]"
@@ -66,7 +65,7 @@ def lease_ending_handler(process: Popen, lease, remaining_time) -> None:
     """
 
     if remaining_time <= timedelta(0):
-        try:
+        try:  # noqa: SIM105
             process.send_signal(signal.SIGHUP)
         except (ProcessLookupError, OSError):
             pass  # Process already terminated
@@ -78,7 +77,7 @@ def _run_process(
     lease=None,
 ) -> int:
     """Helper to run a process with an option to set a lease ending callback."""
-    process = Popen(cmd, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr, env=env)
+    process = Popen(cmd, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr, env=env)  # noqa: S603
     if lease is not None:
         lease.lease_ending_callback = partial(lease_ending_handler, process)
     return process.wait()

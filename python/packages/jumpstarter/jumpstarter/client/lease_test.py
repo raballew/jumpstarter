@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -79,11 +79,10 @@ class TestLeaseAcquisitionSpinner:
         with patch.object(LeaseAcquisitionSpinner, "_is_terminal_available", return_value=False):
             spinner = LeaseAcquisitionSpinner("test-lease")
 
-            with patch.object(spinner.console, "status") as mock_status:
-                with spinner as ctx_spinner:
-                    assert ctx_spinner is spinner
-                    assert spinner.start_time is not None
-                    mock_status.assert_not_called()
+            with patch.object(spinner.console, "status") as mock_status, spinner as ctx_spinner:
+                assert ctx_spinner is spinner
+                assert spinner.start_time is not None
+                mock_status.assert_not_called()
 
     def test_update_status_with_console(self):
         """Test status update when console is available."""
@@ -403,7 +402,7 @@ class TestGetLeaseEndTime:
     def test_returns_none_when_no_duration(self):
         lease = self._make_lease()
         response = Mock(
-            effective_begin_time=datetime.now(tz=timezone.utc),
+            effective_begin_time=datetime.now(tz=UTC),
             duration=None,
             effective_end_time=None,
         )
@@ -412,9 +411,9 @@ class TestGetLeaseEndTime:
 
     def test_returns_effective_end_time_when_present(self):
         lease = self._make_lease()
-        end_time = datetime(2025, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
+        end_time = datetime(2025, 6, 1, 12, 0, 0, tzinfo=UTC)
         response = Mock(
-            effective_begin_time=datetime(2025, 6, 1, 11, 0, 0, tzinfo=timezone.utc),
+            effective_begin_time=datetime(2025, 6, 1, 11, 0, 0, tzinfo=UTC),
             duration=timedelta(hours=1),
             effective_end_time=end_time,
         )
@@ -423,7 +422,7 @@ class TestGetLeaseEndTime:
 
     def test_returns_effective_end_time_even_without_begin_or_duration(self):
         lease = self._make_lease()
-        end_time = datetime(2025, 6, 1, 12, 0, 0, tzinfo=timezone.utc)
+        end_time = datetime(2025, 6, 1, 12, 0, 0, tzinfo=UTC)
         response = Mock(
             effective_begin_time=None,
             duration=None,
@@ -434,7 +433,7 @@ class TestGetLeaseEndTime:
 
     def test_calculates_end_time_when_no_effective_end(self):
         lease = self._make_lease()
-        begin = datetime(2025, 6, 1, 11, 0, 0, tzinfo=timezone.utc)
+        begin = datetime(2025, 6, 1, 11, 0, 0, tzinfo=UTC)
         duration = timedelta(hours=2)
         response = Mock(
             effective_begin_time=begin,
@@ -470,7 +469,7 @@ class TestMonitorAsyncError:
             if call_count <= 2:
                 raise Exception("transient error")
             # Third call: return expired lease to exit the loop
-            end_time = datetime.now(tz=timezone.utc) - timedelta(seconds=10)
+            end_time = datetime.now(tz=UTC) - timedelta(seconds=10)
             return Mock(
                 effective_begin_time=end_time - timedelta(hours=1),
                 effective_duration=timedelta(hours=1),
@@ -493,7 +492,7 @@ class TestMonitorAsyncError:
         lease.lease_ending_callback = callback
 
         # End time slightly in the future so the monitor caches it and sleeps
-        future_end = datetime.now(tz=timezone.utc) + timedelta(milliseconds=50)
+        future_end = datetime.now(tz=UTC) + timedelta(milliseconds=50)
         call_count = 0
 
         async def get_then_fail():

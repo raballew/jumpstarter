@@ -72,7 +72,7 @@ def get_index_url():
     if name is None:
         return "https://pkg.jumpstarter.dev/simple"
     else:
-        return "https://pkg.jumpstarter.dev/{}/simple".format(name)
+        return f"https://pkg.jumpstarter.dev/{name}/simple"
 
 
 myst_heading_anchors = 3

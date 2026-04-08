@@ -44,7 +44,7 @@ class AdbServer(TcpNetwork):
 
         # Verify adb works
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603, UP022
                 [self.adb_path, "version"],
                 check=True,
                 stdout=subprocess.PIPE,
@@ -71,7 +71,7 @@ class AdbServer(TcpNetwork):
         """Start the ADB server on the exporter. Returns the port number."""
         self.logger.info(f"Starting ADB server on port {self.port}")
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603, UP022
                 [self.adb_path, "start-server"],
                 check=True,
                 stdout=subprocess.PIPE,
@@ -92,7 +92,7 @@ class AdbServer(TcpNetwork):
         """Kill the ADB server on the exporter. Returns the port number."""
         self.logger.info(f"Killing ADB server on port {self.port}")
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603, UP022
                 [self.adb_path, "kill-server"],
                 check=True,
                 stdout=subprocess.PIPE,
@@ -110,7 +110,7 @@ class AdbServer(TcpNetwork):
     def list_devices(self) -> str:
         """List devices visible to the exporter's ADB server."""
         try:
-            result = subprocess.run(
+            result = subprocess.run(  # noqa: S603, UP022
                 [self.adb_path, "devices", "-l"],
                 check=True,
                 stdout=subprocess.PIPE,

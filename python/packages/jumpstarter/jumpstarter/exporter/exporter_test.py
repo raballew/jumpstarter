@@ -27,8 +27,8 @@ def make_lease_context(lease_name="test-lease", client_name="test-client"):
     mock_session = MagicMock()
     mock_session.context_log_source.return_value = nullcontext()
     ctx.session = mock_session
-    ctx.socket_path = "/tmp/test_socket"
-    ctx.hook_socket_path = "/tmp/test_hook_socket"
+    ctx.socket_path = "/tmp/test_socket"  # noqa: S108
+    ctx.hook_socket_path = "/tmp/test_hook_socket"  # noqa: S108
     return ctx
 
 

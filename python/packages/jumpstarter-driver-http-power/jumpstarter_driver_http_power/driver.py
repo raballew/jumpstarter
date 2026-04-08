@@ -1,5 +1,5 @@
+from collections.abc import Generator
 from dataclasses import dataclass, field
-from typing import Generator, Optional
 
 import requests
 from jumpstarter_driver_power.common import PowerReading
@@ -12,7 +12,7 @@ from jumpstarter.driver import Driver, export
 class HttpEndpointConfig:
     url: str = field()
     method: str = field(default='GET')
-    data: Optional[str] = field(default=None)
+    data: str | None = field(default=None)
 
 
 @dataclass(kw_only=True)
@@ -23,7 +23,7 @@ class HttpBasicAuth:
 
 @dataclass(kw_only=True)
 class HttpAuthConfig:
-    basic: Optional[HttpBasicAuth] = field(default=None)
+    basic: HttpBasicAuth | None = field(default=None)
 
 
 @dataclass(kw_only=True)
@@ -36,9 +36,9 @@ class HttpPower(PowerInterface, Driver):
     # HTTP endpoints configuration
     power_on: HttpEndpointConfig = field()
     power_off: HttpEndpointConfig = field()
-    power_read: Optional[HttpEndpointConfig] = field(default=None)
+    power_read: HttpEndpointConfig | None = field(default=None)
     # Authentication configuration
-    auth: Optional[HttpAuthConfig] = field(default=None)
+    auth: HttpAuthConfig | None = field(default=None)
 
     def __post_init__(self):
         if hasattr(super(), "__post_init__"):
@@ -72,7 +72,7 @@ class HttpPower(PowerInterface, Driver):
 
         self.logger.debug(f"Making {method} request to {endpoint_config.url}")
 
-        response = requests.request(method, **kwargs)
+        response = requests.request(method, **kwargs)  # noqa: S113
         response.raise_for_status()
         return response.text
 

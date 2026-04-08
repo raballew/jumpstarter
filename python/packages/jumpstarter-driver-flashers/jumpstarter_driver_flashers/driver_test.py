@@ -26,7 +26,7 @@ def temp_dirs():
 @pytest.fixture(scope="session")  # session to retain cache over time
 def complete_flasher(temp_dirs):
     cache, http, tftp = temp_dirs
-    yield BaseFlasher(
+    return BaseFlasher(
         flasher_bundle="quay.io/jumpstarter-dev/jumpstarter-flasher-test:new",
         cache_dir=cache,
         http_dir=http,
@@ -74,7 +74,7 @@ def test_drivers_flashers_dtb_switching(complete_flasher):
         client.call("use_dtb_variant", "test-dtb")
         assert client.call("get_dtb_filename") == "test-dtb.dtb"
         # verify dtb variant switching to nonexisting
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             client.call("use_dtb_variant", "noexists")
 
 
@@ -137,7 +137,7 @@ def test_drivers_flashers_get_bootcmd_variant_switching(complete_flasher):
 
 def test_drivers_flashers_get_bootcmd_invalid_variant(complete_flasher):
     """Test that get_bootcmd raises DriverInvalidArgument for invalid DTB variant"""
-    with serve(complete_flasher) as client:
+    with serve(complete_flasher) as client:  # noqa: SIM117
         # Set an invalid variant
         with pytest.raises(DriverInvalidArgument):
             client.call("use_dtb_variant", "noexists")

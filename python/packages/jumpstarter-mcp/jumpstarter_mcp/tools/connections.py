@@ -46,12 +46,12 @@ async def connect(
             import anyio
             cli_cmd = await anyio.to_thread.run_sync(client.cli)
             cli_tree = walk_click_tree(cli_cmd)
-    except Exception:
+    except Exception:  # noqa: S110
         pass
 
-    try:
+    try:  # noqa: SIM105
         drivers = list_drivers(conn.client)
-    except Exception:
+    except Exception:  # noqa: S110
         pass
 
     return {

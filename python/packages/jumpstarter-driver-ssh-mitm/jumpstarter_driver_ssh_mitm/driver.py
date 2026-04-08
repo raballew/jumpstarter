@@ -15,7 +15,6 @@ import threading
 from contextlib import asynccontextmanager, suppress
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 import paramiko
 from anyio import get_cancelled_exc_class
@@ -95,7 +94,7 @@ class StreamSocket:
                         self.portal.call(self.send_stream.send, data)
                     else:
                         break
-                except socket.timeout:
+                except TimeoutError:
                     # Allow loop to check _running and exit cleanly
                     continue
                 except (BrokenPipeError, OSError):
@@ -116,21 +115,21 @@ class StreamSocket:
             self.portal.call(self.recv_stream.aclose)
         with suppress(Exception):
             self.portal.call(self.send_stream.aclose)
-        try:
+        try:  # noqa: SIM105
             self.client_sock.shutdown(socket.SHUT_RDWR)
-        except Exception:
+        except Exception:  # noqa: S110
             pass
-        try:
+        try:  # noqa: SIM105
             self.server_sock.shutdown(socket.SHUT_RDWR)
-        except Exception:
+        except Exception:  # noqa: S110
             pass
-        try:
+        try:  # noqa: SIM105
             self.client_sock.close()
-        except Exception:
+        except Exception:  # noqa: S110
             pass
-        try:
+        try:  # noqa: SIM105
             self.server_sock.close()
-        except Exception:
+        except Exception:  # noqa: S110
             pass
         self._recv_thread.join(timeout=5)
         self._send_thread.join(timeout=5)
@@ -156,7 +155,7 @@ class MITMServerInterface(paramiko.ServerInterface):
         self.pty_term: str = "xterm"
 
     def _check_username(self, username: str | None) -> bool:
-        if self.allowed_username and username and username != self.allowed_username:
+        if self.allowed_username and username and username != self.allowed_username:  # noqa: SIM103
             return False
         return True
 
@@ -218,7 +217,7 @@ class SSHMITM(Driver):
     default_pty_width: int = 80
     default_pty_height: int = 24
 
-    _host_key: Optional[paramiko.RSAKey] = field(init=False, default=None)
+    _host_key: paramiko.RSAKey | None = field(init=False, default=None)
 
     def __post_init__(self):
         if hasattr(super(), "__post_init__"):
@@ -290,7 +289,7 @@ class SSHMITM(Driver):
         pkey = self._load_private_key(ssh_identity)
 
         client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # noqa: S507
 
         # Use provided username, or fall back to default_username, or "root"
         username = dut_username or self.default_username or "root"
@@ -326,9 +325,9 @@ class SSHMITM(Driver):
             except Exception as e:
                 self.logger.debug("Channel %s ended: %s", name, e)
             finally:
-                try:
+                try:  # noqa: SIM105
                     dst.close()
-                except Exception:
+                except Exception:  # noqa: S110
                     pass
 
         t1 = threading.Thread(target=forward, args=(client_channel, dut_channel, "client→dut"), daemon=True)
@@ -395,7 +394,7 @@ class SSHMITM(Driver):
                 try:
                     exit_status = dut_channel.recv_exit_status()
                     client_channel.send_exit_status(exit_status)
-                except Exception:
+                except Exception:  # noqa: S110
                     pass
                 finally:
                     client_channel.close()
@@ -405,14 +404,14 @@ class SSHMITM(Driver):
             client_channel.close()
         finally:
             if dut_channel:
-                try:
+                try:  # noqa: SIM105
                     dut_channel.close()
-                except Exception:
+                except Exception:  # noqa: S110
                     pass
             if dut_client:
-                try:
+                try:  # noqa: SIM105
                     dut_client.close()
-                except Exception:
+                except Exception:  # noqa: S110
                     pass
             transport.close()
 

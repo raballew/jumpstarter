@@ -283,7 +283,7 @@ class TestErrorHandling:
             assert DigitalOutput is not None
         except ImportError as e:
             # This would happen if gpiod is not available
-            assert "gpiod is not installed" in str(e)
+            assert "gpiod is not installed" in str(e)  # noqa: PT017
 
     @patch("jumpstarter_driver_gpiod.driver.gpiod")
     def test_chip_open_error(self, mock_gpiod):

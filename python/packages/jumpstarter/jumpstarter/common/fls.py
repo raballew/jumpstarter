@@ -30,7 +30,7 @@ def get_fls_github_url(version: str, arch: str | None = None) -> str:
     Returns:
         Download URL for the architecture-appropriate binary
     """
-    if arch is None:
+    if arch is None:  # noqa: SIM108
         arch = platform.machine().lower()
     else:
         arch = arch.lower()
@@ -63,15 +63,14 @@ def download_fls(url: str, timeout: float = 30.0) -> str:
 
     try:
         logger.info(f"Downloading FLS binary from: {url}")
-        with urllib.request.urlopen(url, timeout=timeout) as response:
-            with open(temp_path, 'wb') as f:
-                while True:
-                    chunk = response.read(8192)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-                f.flush()
-                os.fsync(f.fileno())
+        with urllib.request.urlopen(url, timeout=timeout) as response, open(temp_path, 'wb') as f:  # noqa: S310
+            while True:
+                chunk = response.read(8192)
+                if not chunk:
+                    break
+                f.write(chunk)
+            f.flush()
+            os.fsync(f.fileno())
 
         # Set permissions on temp file before rename
         Path(temp_path).chmod(0o755)

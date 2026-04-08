@@ -33,7 +33,7 @@ def _make_driver():
     return Esp32Flasher(children={"serial": serial})
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_esptool(monkeypatch):
     mock_esp = _MockEsp()
     mocks: dict = {

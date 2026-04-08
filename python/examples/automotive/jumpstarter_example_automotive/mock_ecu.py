@@ -358,7 +358,7 @@ class MockDiagnosticEcu:
                 self.state.routines_running.discard(routine_id)
                 status_record = b"\x00"  # "stopped"
             elif control_type == ROUTINE_REQUEST_RESULTS:
-                if routine_id in self.state.routines_running:
+                if routine_id in self.state.routines_running:  # noqa: SIM108
                     status_record = b"\x01"  # still running
                 else:
                     status_record = b"\x02\x00"  # completed, result=pass
@@ -481,7 +481,7 @@ class MockDiagnosticEcu:
         self._running = False
         self._server.close()
         for c in self._clients:
-            try:
+            try:  # noqa: SIM105
                 c.close()
             except OSError:
                 pass

@@ -17,7 +17,7 @@ def uboot_image(tmpdir_factory):
 
     url = "https://kojipkgs.fedoraproject.org/packages/uboot-tools/2025.10/1.fc43/noarch/uboot-images-armv8-2025.10-1.fc43.noarch.rpm"
 
-    with requests.get(url, stream=True) as r:
+    with requests.get(url, stream=True) as r:  # noqa: S113
         r.raise_for_status()
         with (tmp_path / "uboot-images-armv8.rpm").open("wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
@@ -28,7 +28,7 @@ def uboot_image(tmpdir_factory):
         with (tmp_path / "u-boot.bin").open("wb") as f:
             f.write(fd.read())
 
-    yield tmp_path / "u-boot.bin"
+    return tmp_path / "u-boot.bin"
 
 
 @pytest.mark.xfail(

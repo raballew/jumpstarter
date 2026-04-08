@@ -83,7 +83,7 @@ status:
 
 @patch.object(ClientsV1Alpha1Api, "get_client")
 @patch.object(ClientsV1Alpha1Api, "_load_kube_config")
-def test_get_client(_load_kube_config_mock, get_client_mock: AsyncMock):
+def test_get_client(_load_kube_config_mock, get_client_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
 
     # Get a single client
@@ -234,7 +234,7 @@ kind: ClientList
 
 @patch.object(ClientsV1Alpha1Api, "list_clients")
 @patch.object(ClientsV1Alpha1Api, "_load_kube_config")
-def test_get_clients(_load_kube_config_mock, list_clients_mock: AsyncMock):
+def test_get_clients(_load_kube_config_mock, list_clients_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
 
     # List clients
@@ -347,7 +347,7 @@ status:
 
 @patch.object(ExportersV1Alpha1Api, "get_exporter")
 @patch.object(ExportersV1Alpha1Api, "_load_kube_config")
-def test_get_exporter(_load_kube_config_mock, get_exporter_mock: AsyncMock):
+def test_get_exporter(_load_kube_config_mock, get_exporter_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
 
     # Get a single exporter
@@ -466,7 +466,7 @@ status:
 
 @patch.object(ExportersV1Alpha1Api, "get_exporter")
 @patch.object(ExportersV1Alpha1Api, "_load_kube_config")
-def test_get_exporter_devices(_load_kube_config_mock, get_exporter_mock: AsyncMock):
+def test_get_exporter_devices(_load_kube_config_mock, get_exporter_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
     # Returns exporter
     get_exporter_mock.return_value = TEST_EXPORTER_DEVICES
@@ -624,7 +624,7 @@ exporter.jumpstarter.dev/another
 
 @patch.object(ExportersV1Alpha1Api, "list_exporters")
 @patch.object(ExportersV1Alpha1Api, "_load_kube_config")
-def test_get_exporters(_load_kube_config_mock, list_exporters_mock: AsyncMock):
+def test_get_exporters(_load_kube_config_mock, list_exporters_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
 
     # List exporters
@@ -800,7 +800,7 @@ EXPORTERS_DEVICES_LIST_NAME = EXPORTERS_LIST_NAME
 
 @patch.object(ExportersV1Alpha1Api, "list_exporters")
 @patch.object(ExportersV1Alpha1Api, "_load_kube_config")
-def test_get_exporters_devices(_load_kube_config_mock, list_exporters_mock: AsyncMock):
+def test_get_exporters_devices(_load_kube_config_mock, list_exporters_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
 
     # List exporters
@@ -974,7 +974,7 @@ status:
 
 @patch.object(LeasesV1Alpha1Api, "get_lease")
 @patch.object(LeasesV1Alpha1Api, "_load_kube_config")
-def test_get_lease(_load_kube_config_mock, get_lease_mock: AsyncMock):
+def test_get_lease(_load_kube_config_mock, get_lease_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
 
     # Get an in progress lease
@@ -1186,7 +1186,7 @@ lease.jumpstarter.dev/82a8ac0d-d7ff-4009-8948-18a3c5c607b2
 
 @patch.object(LeasesV1Alpha1Api, "list_leases")
 @patch.object(LeasesV1Alpha1Api, "_load_kube_config")
-def test_get_leases(_load_kube_config_mock, list_leases_mock: AsyncMock):
+def test_get_leases(_load_kube_config_mock, list_leases_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
 
     # Found leases
@@ -1239,7 +1239,7 @@ def test_get_leases(_load_kube_config_mock, list_leases_mock: AsyncMock):
 # Test ConfigException handling
 @patch.object(ClientsV1Alpha1Api, "get_client")
 @patch.object(ClientsV1Alpha1Api, "_load_kube_config")
-def test_get_client_config_exception(_load_kube_config_mock, get_client_mock: AsyncMock):
+def test_get_client_config_exception(_load_kube_config_mock, get_client_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
     get_client_mock.side_effect = ConfigException("Invalid kubeconfig")
     result = runner.invoke(get, ["client", "test"])
@@ -1249,7 +1249,7 @@ def test_get_client_config_exception(_load_kube_config_mock, get_client_mock: As
 
 @patch.object(ExportersV1Alpha1Api, "get_exporter")
 @patch.object(ExportersV1Alpha1Api, "_load_kube_config")
-def test_get_exporter_config_exception(_load_kube_config_mock, get_exporter_mock: AsyncMock):
+def test_get_exporter_config_exception(_load_kube_config_mock, get_exporter_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
     get_exporter_mock.side_effect = ConfigException("Invalid kubeconfig")
     result = runner.invoke(get, ["exporter", "test"])
@@ -1259,7 +1259,7 @@ def test_get_exporter_config_exception(_load_kube_config_mock, get_exporter_mock
 
 @patch.object(LeasesV1Alpha1Api, "get_lease")
 @patch.object(LeasesV1Alpha1Api, "_load_kube_config")
-def test_get_lease_config_exception(_load_kube_config_mock, get_lease_mock: AsyncMock):
+def test_get_lease_config_exception(_load_kube_config_mock, get_lease_mock: AsyncMock):  # noqa: PT019
     runner = CliRunner()
     get_lease_mock.side_effect = ConfigException("Invalid kubeconfig")
     result = runner.invoke(get, ["lease", "test"])

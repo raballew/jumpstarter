@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 import click
 from jumpstarter_cli_common.blocking import blocking
@@ -16,8 +16,8 @@ from jumpstarter.common.ipaddr import get_ip_address, get_minikube_ip
 
 
 def _validate_cluster_type(
-    kind: Optional[str], minikube: Optional[str]
-) -> Optional[Literal["kind"] | Literal["minikube"]]:
+    kind: str | None, minikube: str | None
+) -> Literal["kind"] | Literal["minikube"] | None:
     """Validate cluster type selection - returns None if neither is specified"""
     if kind and minikube:
         raise click.ClickException('You can only select one local cluster type "kind" or "minikube"')
@@ -38,13 +38,13 @@ def _validate_prerequisites(helm: str) -> None:
 
 
 async def _configure_endpoints(
-    cluster_type: Optional[str],
+    cluster_type: str | None,
     minikube: str,
     cluster_name: str,
-    ip: Optional[str],
-    basedomain: Optional[str],
-    grpc_endpoint: Optional[str],
-    router_endpoint: Optional[str],
+    ip: str | None,
+    basedomain: str | None,
+    grpc_endpoint: str | None,
+    router_endpoint: str | None,
 ) -> tuple[str, str, str, str]:
     if ip is None:
         ip = await get_ip_generic(cluster_type, minikube, cluster_name)
@@ -67,11 +67,11 @@ async def _install_jumpstarter_helm_chart(
     router_endpoint: str,
     mode: str,
     version: str,
-    kubeconfig: Optional[str],
-    context: Optional[str],
+    kubeconfig: str | None,
+    context: str | None,
     helm: str,
     ip: str,
-    values_files: Optional[list[str]] = None,
+    values_files: list[str] | None = None,
 ) -> None:
     click.echo(f'Installing Jumpstarter service v{version} in namespace "{namespace}" with Helm\n')
     click.echo(f"Chart URI: {chart}")
@@ -100,7 +100,7 @@ async def _install_jumpstarter_helm_chart(
     click.echo(f'Installed Helm release "{name}" in namespace "{namespace}"')
 
 
-async def get_ip_generic(cluster_type: Optional[str], minikube: str, cluster_name: str) -> str:
+async def get_ip_generic(cluster_type: str | None, minikube: str, cluster_name: str) -> str:
     if cluster_type == "minikube":
         if not minikube_installed(minikube):
             raise click.ClickException("minikube is not installed (or not in your PATH)")
@@ -110,7 +110,7 @@ async def get_ip_generic(cluster_type: Optional[str], minikube: str, cluster_nam
             raise click.ClickException(f"Could not determine Minikube IP address.\n{e}") from e
     else:
         ip = get_ip_address()
-        if ip == "0.0.0.0":
+        if ip == "0.0.0.0":  # noqa: S104
             raise click.ClickException("Could not determine IP address, use --ip <IP> to specify an IP address")
 
     return ip
@@ -163,17 +163,17 @@ async def install(
     chart: str,
     name: str,
     namespace: str,
-    ip: Optional[str],
-    basedomain: Optional[str],
-    grpc_endpoint: Optional[str],
-    router_endpoint: Optional[str],
+    ip: str | None,
+    basedomain: str | None,
+    grpc_endpoint: str | None,
+    router_endpoint: str | None,
     mode: Literal["nodeport"] | Literal["ingress"] | Literal["route"],
-    kind: Optional[str],
-    minikube: Optional[str],
+    kind: str | None,
+    minikube: str | None,
     version: str,
     values_files: tuple[str, ...],
-    kubeconfig: Optional[str],
-    context: Optional[str],
+    kubeconfig: str | None,
+    context: str | None,
 ):
     """Install the Jumpstarter service in a Kubernetes cluster"""
     _validate_prerequisites(helm)
@@ -218,8 +218,8 @@ async def install(
 @click.option("--cluster-name", type=str, help="The name of the cluster", default="jumpstarter-lab")
 @blocking
 async def ip(
-    kind: Optional[str],
-    minikube: Optional[str],
+    kind: str | None,
+    minikube: str | None,
     cluster_name: str,
 ):
     """Attempt to determine the IP address of your computer"""
@@ -242,8 +242,8 @@ async def uninstall(
     helm: str,
     name: str,
     namespace: str,
-    kubeconfig: Optional[str],
-    context: Optional[str],
+    kubeconfig: str | None,
+    context: str | None,
 ):
     """Uninstall the Jumpstarter service in a Kubernetes cluster"""
     _validate_prerequisites(helm)

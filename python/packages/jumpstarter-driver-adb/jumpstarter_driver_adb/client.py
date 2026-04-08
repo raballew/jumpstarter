@@ -3,9 +3,9 @@ import os
 import subprocess
 import sys
 import tempfile
+from collections.abc import Generator
 from contextlib import contextmanager
 from threading import Event
-from typing import Generator
 
 import click
 from jumpstarter_driver_network.adapters import TcpPortforwardAdapter
@@ -44,7 +44,7 @@ def _write_tunnel_state(host: str, port: int) -> None:
 
 def _remove_tunnel_state() -> None:
     """Remove the tunnel state file."""
-    try:
+    try:  # noqa: SIM105
         os.unlink(_TUNNEL_STATE_FILE)
     except FileNotFoundError:
         pass
@@ -142,7 +142,7 @@ class AdbClient(DriverClient):
                 click.echo("\n" + "=" * 60)
                 click.echo("ADB built-in help (from local adb binary):")
                 click.echo("=" * 60 + "\n")
-                subprocess.run([adb, "help"], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+                subprocess.run([adb, "help"], stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)  # noqa: S603
                 return 0
 
             _validate_adb_args(args)
@@ -184,7 +184,7 @@ class AdbClient(DriverClient):
                     "ANDROID_ADB_SERVER_ADDRESS": state["host"],
                     "ANDROID_ADB_SERVER_PORT": state["port"],
                 }
-                process = subprocess.Popen(
+                process = subprocess.Popen(  # noqa: S603
                     [adb, *args],
                     stdin=sys.stdin,
                     stdout=sys.stdout,
@@ -199,7 +199,7 @@ class AdbClient(DriverClient):
                     "ANDROID_ADB_SERVER_ADDRESS": addr[0],
                     "ANDROID_ADB_SERVER_PORT": str(addr[1]),
                 }
-                process = subprocess.Popen(
+                process = subprocess.Popen(  # noqa: S603
                     [adb, *args],
                     stdin=sys.stdin,
                     stdout=sys.stdout,

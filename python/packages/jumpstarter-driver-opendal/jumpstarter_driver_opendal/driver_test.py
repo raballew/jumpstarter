@@ -15,7 +15,7 @@ from .driver import MockFlasher, MockStorageMux, MockStorageMuxFlasher, Opendal
 from jumpstarter.common.utils import serve
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function")  # noqa: PT003
 def opendal(tmp_path):
     with serve(Opendal(scheme="fs", kwargs={"root": str(tmp_path)})) as client:
         yield client
@@ -29,7 +29,7 @@ def test_driver_opendal_read_write_bytes(opendal):
     opendal.write_bytes(test_file, test_content)
 
     assert opendal.read_bytes(test_file) == test_content
-    assert opendal.hash(test_file, "md5") == hashlib.md5(test_content).hexdigest()
+    assert opendal.hash(test_file, "md5") == hashlib.md5(test_content).hexdigest()  # noqa: S324
     assert opendal.hash(test_file, "sha256") == hashlib.sha256(test_content).hexdigest()
 
 
@@ -176,37 +176,36 @@ def test_driver_mock_storage_mux_flasher(tmp_path):
 
 
 def test_drivers_mock_storage_mux_fs(monkeypatch: pytest.MonkeyPatch):
-    with serve(MockStorageMux()) as client:
-        with TemporaryDirectory() as tempdir:
-            # original file on the client to be pushed to the exporter
-            original = Path(tempdir) / "original"
-            # new file read back from the exporter to the client
-            readback = Path(tempdir) / "readback"
+    with serve(MockStorageMux()) as client, TemporaryDirectory() as tempdir:
+        # original file on the client to be pushed to the exporter
+        original = Path(tempdir) / "original"
+        # new file read back from the exporter to the client
+        readback = Path(tempdir) / "readback"
 
-            # test accessing files with absolute path
+        # test accessing files with absolute path
 
-            # fill the original file with random bytes
-            original.write_bytes(randbytes(1024 * 1024 * 10))
-            # write the file to the storage on the exporter
-            client.write_local_file(str(original))
-            # read the storage on the exporter to a local file
-            client.read_local_file(str(readback))
-            # ensure the contents are equal
+        # fill the original file with random bytes
+        original.write_bytes(randbytes(1024 * 1024 * 10))  # noqa: S311
+        # write the file to the storage on the exporter
+        client.write_local_file(str(original))
+        # read the storage on the exporter to a local file
+        client.read_local_file(str(readback))
+        # ensure the contents are equal
+        assert original.read_bytes() == readback.read_bytes()
+
+        # test accessing files with relative path
+        with monkeypatch.context() as m:
+            m.chdir(tempdir)
+
+            original.write_bytes(randbytes(1024 * 1024 * 1))  # noqa: S311
+            client.write_local_file("original")
+            client.read_local_file("readback")
             assert original.read_bytes() == readback.read_bytes()
 
-            # test accessing files with relative path
-            with monkeypatch.context() as m:
-                m.chdir(tempdir)
-
-                original.write_bytes(randbytes(1024 * 1024 * 1))
-                client.write_local_file("original")
-                client.read_local_file("readback")
-                assert original.read_bytes() == readback.read_bytes()
-
-                original.write_bytes(randbytes(1024 * 1024 * 1))
-                client.write_local_file("./original")
-                client.read_local_file("./readback")
-                assert original.read_bytes() == readback.read_bytes()
+            original.write_bytes(randbytes(1024 * 1024 * 1))  # noqa: S311
+            client.write_local_file("./original")
+            client.read_local_file("./readback")
+            assert original.read_bytes() == readback.read_bytes()
 
 
 def test_drivers_mock_storage_mux_http():

@@ -24,7 +24,7 @@ def test_init_registers_children(mock_run, mock_adb_which, mock_emu_which):
 
 
 @patch("jumpstarter_driver_androidemulator.driver.shutil.which", return_value=None)
-def test_init_missing_emulator(_):
+def test_init_missing_emulator(_):  # noqa: PT019
     with pytest.raises(ConfigurationError, match="not found"):
         AndroidEmulator(avd_name="test_avd")
 

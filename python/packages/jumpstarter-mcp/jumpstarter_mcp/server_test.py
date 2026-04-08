@@ -84,7 +84,7 @@ def _make_connection(
     connection_id: str = "test-conn",
     lease_name: str = "test-lease",
     exporter_name: str = "test-exporter",
-    socket_path: str = "/tmp/test.sock",
+    socket_path: str = "/tmp/test.sock",  # noqa: S108
     client: object | None = None,
 ) -> Connection:
     return Connection(
@@ -295,7 +295,7 @@ class TestConnectionManager:
         assert env["lease_name"] == "test-lease"
         assert env["exporter_name"] == "test-exporter"
         assert "JUMPSTARTER_HOST" in env["env"]
-        assert env["env"]["JUMPSTARTER_HOST"] == "/tmp/test.sock"
+        assert env["env"]["JUMPSTARTER_HOST"] == "/tmp/test.sock"  # noqa: S108
         assert "env()" in env["python_example"]
         assert "os.environ" not in env["python_example"]
 
@@ -316,7 +316,7 @@ class TestConnectionManager:
 
 
 class TestRunCommand:
-    @pytest.fixture()
+    @pytest.fixture
     def manager_with_conn(self):
         manager = ConnectionManager()
         conn = _make_connection()
@@ -449,7 +449,7 @@ class TestEnsureFreshToken:
         future_exp = int(time.time()) + 3600
         config = MagicMock()
         config.token = _make_jwt_payload(exp=future_exp)
-        config.refresh_token = "some-refresh-token"
+        config.refresh_token = "some-refresh-token"  # noqa: S105
 
         with patch("jumpstarter_mcp.server.ClientConfigV1Alpha1") as mock_cls:
             result = await _ensure_fresh_token(config)
@@ -472,7 +472,7 @@ class TestEnsureFreshToken:
         past_exp = int(time.time()) - 60
         config = MagicMock()
         config.token = _make_jwt_payload(exp=past_exp)
-        config.refresh_token = "old-refresh"
+        config.refresh_token = "old-refresh"  # noqa: S105
 
         new_access = "new-access-token"
         new_refresh = "new-refresh-token"
@@ -497,7 +497,7 @@ class TestEnsureFreshToken:
         past_exp = int(time.time()) - 60
         config = MagicMock()
         config.token = _make_jwt_payload(exp=past_exp)
-        config.refresh_token = "old-refresh"
+        config.refresh_token = "old-refresh"  # noqa: S105
 
         mock_oidc = AsyncMock()
         mock_oidc.refresh_token_grant.return_value = {
@@ -510,8 +510,8 @@ class TestEnsureFreshToken:
         ):
             result = await _ensure_fresh_token(config)
 
-        assert result.token == "new-access"
-        assert result.refresh_token == "old-refresh"
+        assert result.token == "new-access"  # noqa: S105
+        assert result.refresh_token == "old-refresh"  # noqa: S105
 
     @pytest.mark.asyncio
     async def test_expired_token_refresh_failure_returns_config_unchanged(self):
@@ -519,7 +519,7 @@ class TestEnsureFreshToken:
         original_token = _make_jwt_payload(exp=past_exp)
         config = MagicMock()
         config.token = original_token
-        config.refresh_token = "old-refresh"
+        config.refresh_token = "old-refresh"  # noqa: S105
 
         mock_oidc = AsyncMock()
         mock_oidc.refresh_token_grant.side_effect = RuntimeError("OIDC server down")
@@ -538,7 +538,7 @@ class TestEnsureFreshToken:
         near_exp = int(time.time()) + TOKEN_REFRESH_THRESHOLD_SECONDS - 1
         config = MagicMock()
         config.token = _make_jwt_payload(exp=near_exp)
-        config.refresh_token = "refresh"
+        config.refresh_token = "refresh"  # noqa: S105
 
         mock_oidc = AsyncMock()
         mock_oidc.refresh_token_grant.return_value = {"access_token": "refreshed"}
@@ -549,13 +549,13 @@ class TestEnsureFreshToken:
         ):
             result = await _ensure_fresh_token(config)
 
-        assert result.token == "refreshed"
+        assert result.token == "refreshed"  # noqa: S105
 
     @pytest.mark.asyncio
     async def test_token_without_exp_claim_skips_refresh(self):
         config = MagicMock()
         config.token = _make_jwt_payload(exp=None)
-        config.refresh_token = "some-refresh"
+        config.refresh_token = "some-refresh"  # noqa: S105
 
         with patch("jumpstarter_mcp.server.ClientConfigV1Alpha1") as mock_cls:
             result = await _ensure_fresh_token(config)

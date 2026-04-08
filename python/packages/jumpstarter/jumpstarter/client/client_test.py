@@ -22,7 +22,7 @@ class TestIsTcpAddress:
 
     def test_unix_path_is_not_tcp_address(self) -> None:
         assert _is_tcp_address("/run/user/1000/jumpstarter-xxx/socket") is False
-        assert _is_tcp_address("/tmp/foo") is False
+        assert _is_tcp_address("/tmp/foo") is False  # noqa: S108
 
     def test_invalid_port_not_tcp_address(self) -> None:
         assert _is_tcp_address("host:0") is False

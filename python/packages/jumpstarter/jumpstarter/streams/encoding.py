@@ -2,10 +2,10 @@ import bz2
 import lzma
 import sys
 import zlib
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable, Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Callable, Mapping
+from typing import Any
 
 from anyio import ClosedResourceError, EndOfStream
 from anyio.abc import AnyByteStream, ObjectStream

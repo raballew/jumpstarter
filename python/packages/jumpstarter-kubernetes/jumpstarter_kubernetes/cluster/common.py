@@ -2,7 +2,7 @@
 
 import asyncio
 import os
-from typing import Literal, Optional
+from typing import Literal
 
 from ..exceptions import ClusterTypeValidationError
 
@@ -20,8 +20,8 @@ KIND_ROUTER_HOST_PORT = 8083
 
 
 def validate_cluster_type(
-    kind: Optional[str], minikube: Optional[str]
-) -> Optional[ClusterType]:
+    kind: str | None, minikube: str | None
+) -> ClusterType | None:
     """Validate cluster type selection - returns None if neither is specified."""
     if kind and minikube:
         raise ClusterTypeValidationError('You can only select one local cluster type "kind" or "minikube"')
@@ -34,7 +34,7 @@ def validate_cluster_type(
         return None
 
 
-def get_extra_certs_path(extra_certs: Optional[str]) -> Optional[str]:
+def get_extra_certs_path(extra_certs: str | None) -> str | None:
     """Get the absolute path to extra certificates file if provided.
 
     Expands ~ (tilde) and environment variables before resolving to absolute path.

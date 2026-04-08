@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager, contextmanager, suppress
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Optional, Self
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
 import grpc
 import yaml
@@ -82,7 +82,7 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
         | ExporterConfigV1Alpha1DriverInstanceProxy
     )
 
-    def instantiate(self) -> "Driver":
+    def instantiate(self) -> Driver:
         match self.root:
             case ExporterConfigV1Alpha1DriverInstanceBase():
                 try:
@@ -177,7 +177,7 @@ class ExporterConfigV1Alpha1(BaseModel):
         return yaml.safe_dump(config.model_dump(mode="json", by_alias=True, exclude={"alias", "path"}), sort_keys=False)
 
     @classmethod
-    def save(cls, config: Self, path: Optional[str] = None) -> Path:
+    def save(cls, config: Self, path: str | None = None) -> Path:
         # Set the config path before saving
         if path is None:
             config.path = cls._get_path(config.alias)
@@ -214,7 +214,7 @@ class ExporterConfigV1Alpha1(BaseModel):
 
     @contextmanager
     def serve_unix(self):
-        with start_blocking_portal() as portal:
+        with start_blocking_portal() as portal:  # noqa: SIM117
             with portal.wrap_async_context_manager(self.serve_unix_async()) as path:
                 yield path
 

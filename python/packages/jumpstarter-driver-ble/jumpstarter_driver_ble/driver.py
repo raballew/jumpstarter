@@ -18,7 +18,7 @@ def _ble_notify_handler(_sender: BleakGATTCharacteristic, data: bytearray, data_
         print("Warning: Data queue is full, dropping message")
 
 
-class AsyncBleConfig():
+class AsyncBleConfig:
     def __init__(
         self,
         address: str,

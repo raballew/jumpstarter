@@ -263,7 +263,7 @@ class MockXcpServer:
         self._running = False
         self._server.close()
         for c in self._clients:
-            try:
+            try:  # noqa: SIM105
                 c.close()
             except OSError:
                 pass

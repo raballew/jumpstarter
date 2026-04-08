@@ -13,7 +13,7 @@ import time
 def test_device_properties(adb_device):
     """Read basic device properties via getprop."""
     model = adb_device.prop.model
-    assert model is not None and len(model) > 0
+    assert model is not None and len(model) > 0  # noqa: PT018
 
     sdk = adb_device.prop.get("ro.build.version.sdk")
     assert sdk is not None

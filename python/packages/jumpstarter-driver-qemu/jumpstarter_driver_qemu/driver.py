@@ -55,7 +55,7 @@ class QemuFlasher(FlasherInterface, Driver):
         Supports transparent decompression of gzip, xz, bz2, and zstd compressed images.
         Compression format is auto-detected from file signature.
         """
-        async with await FileWriteStream.from_path(self.parent.validate_partition(partition)) as stream:
+        async with await FileWriteStream.from_path(self.parent.validate_partition(partition)) as stream:  # noqa: SIM117
             async with self.resource(source) as res:
                 # Wrap with auto-decompression to handle .gz, .xz, .bz2, .zstd files
                 async for chunk in AutoDecompressIterator(source=res):
@@ -65,10 +65,9 @@ class QemuFlasher(FlasherInterface, Driver):
     async def dump(self, target, partition: str | None = None):
         async with await FileReadStream.from_path(
             self.parent.validate_partition(partition, use_default_partitions=True)
-        ) as stream:
-            async with self.resource(target) as res:
-                async for chunk in stream:
-                    await res.send(chunk)
+        ) as stream, self.resource(target) as res:
+            async for chunk in stream:
+                await res.send(chunk)
 
 
 @dataclass(kw_only=True)
@@ -135,7 +134,7 @@ class QemuPower(PowerInterface, Driver):
             ",".join(
                 ["user", "id=eth0"]
                 + [
-                    "hostfwd={}:{}:{}-:{}".format(v.protocol, v.hostaddr, v.hostport, v.guestport)
+                    f"hostfwd={v.protocol}:{v.hostaddr}:{v.hostport}-:{v.guestport}"
                     for k, v in self.parent.hostfwd.items()
                 ]
             ),
@@ -147,7 +146,7 @@ class QemuPower(PowerInterface, Driver):
         ]
 
         if _vsock_available():
-            devices.append("vhost-vsock-pci,guest-cid={}".format(self.parent._cid))
+            devices.append(f"vhost-vsock-pci,guest-cid={self.parent._cid}")
 
         for device in devices:
             cmdline += ["-device", device]
@@ -230,12 +229,12 @@ class QemuPower(PowerInterface, Driver):
             "virtio-blk-pci,drive=cidata",
         ]
 
-        self._process = Popen(cmdline, stdin=PIPE)
+        self._process = Popen(cmdline, stdin=PIPE)  # noqa: S603
 
         qmp = QMPClient(self.parent.hostname)
 
         logging.getLogger(
-            "qemu.qmp.protocol.{}".format(self.parent.hostname),
+            f"qemu.qmp.protocol.{self.parent.hostname}",
         ).addFilter(QmpLogFilter())
 
         with fail_after(10):
@@ -294,7 +293,7 @@ class Qemu(Driver):
 
     hostname: str = "demo"
     username: str = "jumpstarter"
-    password: str = "password"
+    password: str = "password"  # noqa: S105
 
     default_partitions: dict[str, Path] = field(default_factory=dict)
 

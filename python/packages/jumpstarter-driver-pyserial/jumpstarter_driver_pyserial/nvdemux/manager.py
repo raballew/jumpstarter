@@ -14,8 +14,9 @@ import signal
 import subprocess
 import sys
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -101,15 +102,15 @@ class DemuxerManager:
         self._drivers: dict[str, DriverInfo] = {}
         self._pts_map: dict[str, str] = {}  # target -> pts_path
         self._ready_targets: set[str] = set()
-        self._process: Optional[subprocess.Popen] = None
-        self._monitor_thread: Optional[threading.Thread] = None
+        self._process: subprocess.Popen | None = None
+        self._monitor_thread: threading.Thread | None = None
         self._shutdown = threading.Event()
         self._cleanup_done = False
 
         # Process configuration (must be same for all drivers)
-        self._demuxer_path: Optional[str] = None
-        self._device: Optional[str] = None
-        self._chip: Optional[str] = None
+        self._demuxer_path: str | None = None
+        self._device: str | None = None
+        self._chip: str | None = None
         self._poll_interval: float = 1.0
 
         # Register atexit handler for cleanup on normal exit
@@ -332,7 +333,7 @@ class DemuxerManager:
 
         # Wait for monitor thread to exit
         monitor_thread = self._monitor_thread
-        if monitor_thread is not None and monitor_thread.is_alive():
+        if monitor_thread is not None and monitor_thread.is_alive():  # noqa: SIM102
             # Don't join if we're being called from the monitor thread itself
             if threading.current_thread() is not monitor_thread:
                 monitor_thread.join(timeout=2.0)
@@ -431,7 +432,7 @@ class DemuxerManager:
         preexec_fn = _get_preexec_fn()
 
         try:
-            self._process = subprocess.Popen(
+            self._process = subprocess.Popen(  # noqa: S603
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,

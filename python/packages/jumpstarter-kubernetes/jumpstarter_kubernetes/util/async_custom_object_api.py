@@ -1,7 +1,7 @@
 import base64
 import logging
 from contextlib import AbstractAsyncContextManager
-from typing import Optional, Self
+from typing import Self
 
 from kubernetes_asyncio import config
 from kubernetes_asyncio.client.api import CoreV1Api, CustomObjectsApi
@@ -18,13 +18,13 @@ class AbstractAsyncCustomObjectApi(AbstractAsyncContextManager):
     """An abstract async custom object API client"""
 
     _client: ApiClient
-    config_file: Optional[str]
-    context: Optional[str]
+    config_file: str | None
+    context: str | None
     namespace: str
     api: CustomObjectsApi
     core_api: CoreV1Api
 
-    def __init__(self, namespace: str, config_file: Optional[str] = None, context: Optional[str] = None):
+    def __init__(self, namespace: str, config_file: str | None = None, context: str | None = None):
         self.config_file = config_file
         self.context = context
         self.namespace = namespace

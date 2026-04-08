@@ -8,7 +8,7 @@ from udsoncan import DidCodec
 from udsoncan.configs import default_client_config
 
 
-class UdsSessionType(str, Enum):
+class UdsSessionType(str, Enum):  # noqa: UP042
     """UDS diagnostic session types (ISO-14229)."""
 
     DEFAULT = "default"
@@ -17,7 +17,7 @@ class UdsSessionType(str, Enum):
     SAFETY = "safety"
 
 
-class UdsResetType(str, Enum):
+class UdsResetType(str, Enum):  # noqa: UP042
     """UDS ECU reset types (ISO-14229)."""
 
     HARD = "hard"

@@ -46,7 +46,7 @@ class UStreamer(Driver):
 
         cmdline += ["--unix", self.socketp]
 
-        self.process = Popen(cmdline, stdout=sys.stdout, stderr=sys.stderr)
+        self.process = Popen(cmdline, stdout=sys.stdout, stderr=sys.stderr)  # noqa: S603
 
     def close(self):
         self.process.terminate()
@@ -57,7 +57,7 @@ class UStreamer(Driver):
 
     @export
     async def state(self):
-        async with ClientSession(connector=UnixConnector(path=self.socketp)) as session:
+        async with ClientSession(connector=UnixConnector(path=self.socketp)) as session:  # noqa: SIM117
             async with session.get("http://localhost/state") as r:
                 json = await r.json()
                 self.logger.debug(f"state: {json}")
@@ -65,7 +65,7 @@ class UStreamer(Driver):
 
     @export
     async def snapshot(self):
-        async with ClientSession(connector=UnixConnector(path=self.socketp)) as session:
+        async with ClientSession(connector=UnixConnector(path=self.socketp)) as session:  # noqa: SIM117
             async with session.get("http://localhost/snapshot") as r:
                 data = await r.read()
                 length = len(data)

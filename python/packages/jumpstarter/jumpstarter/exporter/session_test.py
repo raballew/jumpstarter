@@ -363,7 +363,7 @@ async def test_serve_tcp_passphrase_correct():
     """Client with the correct passphrase can call GetReport."""
     from jumpstarter_protocol import jumpstarter_pb2_grpc
 
-    passphrase = "test-secret-123"
+    passphrase = "test-secret-123"  # noqa: S105
     driver = SimpleDriver(description="auth test")
     session = Session(uuid=driver.uuid, labels=driver.labels, root_device=driver)
     with session:
@@ -383,7 +383,7 @@ async def test_serve_tcp_passphrase_rejected():
     """Client with wrong passphrase is rejected with UNAUTHENTICATED."""
     from jumpstarter_protocol import jumpstarter_pb2_grpc
 
-    passphrase = "test-secret-123"
+    passphrase = "test-secret-123"  # noqa: S105
     driver = SimpleDriver(description="auth test")
     session = Session(uuid=driver.uuid, labels=driver.labels, root_device=driver)
     with session:
@@ -403,7 +403,7 @@ async def test_serve_tcp_passphrase_missing():
     """Client with no passphrase is rejected with UNAUTHENTICATED."""
     from jumpstarter_protocol import jumpstarter_pb2_grpc
 
-    passphrase = "test-secret-123"
+    passphrase = "test-secret-123"  # noqa: S105
     driver = SimpleDriver(description="auth test")
     session = Session(uuid=driver.uuid, labels=driver.labels, root_device=driver)
     with session:

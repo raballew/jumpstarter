@@ -170,7 +170,7 @@ class TestAutoDecompressIterator:
         # Create fake gzip data: valid signature but corrupted payload
         corrupted = b"\x1f\x8b\x08" + b"corrupted data here"
 
-        with pytest.raises(RuntimeError, match=r"Failed to decompress gzip:.*"):
+        with pytest.raises(RuntimeError, match=r"Failed to decompress gzip:.*"):  # noqa: PT012
             chunks = []
             async for chunk in AutoDecompressIterator(source=self._async_iter_from_bytes(corrupted, 16)):
                 chunks.append(chunk)

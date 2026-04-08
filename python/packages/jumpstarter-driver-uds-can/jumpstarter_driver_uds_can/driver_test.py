@@ -245,7 +245,7 @@ def test_uds_can_read_dtc_by_status_mask(mock_bus_cls, mock_notifier_cls, mock_s
 @patch("jumpstarter_driver_uds_can.driver.isotp.NotifierBasedCanStack")
 @patch("jumpstarter_driver_uds_can.driver.can.Notifier")
 @patch("jumpstarter_driver_uds_can.driver.can.Bus")
-def test_uds_can_bus_failure(mock_bus_cls, _mock_notifier, _mock_stack, _mock_conn, _mock_uds):
+def test_uds_can_bus_failure(mock_bus_cls, _mock_notifier, _mock_stack, _mock_conn, _mock_uds):  # noqa: PT019
     mock_bus_cls.side_effect = OSError("No such device: vcan0")
     with pytest.raises(OSError, match="No such device"):
         UdsCan(channel="vcan0", rxid=0x641, txid=0x642)
@@ -267,9 +267,8 @@ def test_uds_can_timeout_on_read(mock_bus_cls, mock_notifier_cls, mock_stack_cls
     uds_mock.read_data_by_identifier.side_effect = TimeoutError("No CAN response")
 
     driver = UdsCan(channel="vcan0", rxid=0x641, txid=0x642)
-    with serve(driver) as client:
-        with pytest.raises(DriverError, match="No CAN response"):
-            client.read_data_by_identifier([0xF190])
+    with serve(driver) as client, pytest.raises(DriverError, match="No CAN response"):
+        client.read_data_by_identifier([0xF190])
 
 
 @patch("jumpstarter_driver_uds_can.driver.UdsoncanClient")

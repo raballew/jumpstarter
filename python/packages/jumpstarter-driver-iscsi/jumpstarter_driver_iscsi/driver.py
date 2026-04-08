@@ -6,7 +6,7 @@ import socket
 from contextlib import suppress
 from dataclasses import dataclass, field
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from jumpstarter_driver_opendal.driver import Opendal
 from rtslib_fb import LUN, TPG, BlockStorageObject, FileIOStorageObject, NetworkPortal, RTSRoot, Target
@@ -48,12 +48,12 @@ class ISCSI(Driver):
     port: int = 3260
     remove_created_on_close: bool = False  # Keep disk images persistent by default
 
-    _rtsroot: Optional[RTSRoot] = field(init=False, default=None)
-    _target: Optional[Target] = field(init=False, default=None)
-    _tpg: Optional[TPG] = field(init=False, default=None)
-    _storage_objects: Dict[str, Any] = field(init=False, default_factory=dict)
-    _portals: List[NetworkPortal] = field(init=False, default_factory=list)
-    _luns: Dict[str, LUN] = field(init=False, default_factory=dict)
+    _rtsroot: RTSRoot | None = field(init=False, default=None)
+    _target: Target | None = field(init=False, default=None)
+    _tpg: TPG | None = field(init=False, default=None)
+    _storage_objects: dict[str, Any] = field(init=False, default_factory=dict)
+    _portals: list[NetworkPortal] = field(init=False, default_factory=list)
+    _luns: dict[str, LUN] = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         if hasattr(super(), "__post_init__"):
@@ -79,7 +79,7 @@ class ISCSI(Driver):
                 return s.getsockname()[0]
         except Exception:
             self.logger.warning("Could not determine default IP address, falling back to 0.0.0.0")
-            return "0.0.0.0"
+            return "0.0.0.0"  # noqa: S104
 
     @classmethod
     def client(cls) -> str:
@@ -180,7 +180,7 @@ class ISCSI(Driver):
                         if udev_path.startswith(root_abs + os.sep) or udev_path == root_abs:
                             with suppress(Exception):
                                 so.delete()
-                except Exception:
+                except Exception:  # noqa: S112
                     continue
         except Exception as e:
             self.logger.debug(f"No orphan storage object cleanup performed: {e}")
@@ -455,7 +455,7 @@ class ISCSI(Driver):
             raise ISCSIError(f"Failed to remove LUN: {e}") from e
 
     @export
-    def list_luns(self) -> List[Dict[str, Any]]:
+    def list_luns(self) -> list[dict[str, Any]]:
         """List all configured LUNs
 
         Returns:

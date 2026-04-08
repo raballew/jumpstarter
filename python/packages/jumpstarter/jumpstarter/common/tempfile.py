@@ -17,7 +17,7 @@ def TemporarySocket():
 
 @asynccontextmanager
 async def TemporaryUnixListener(handler, path: PathLike | None = None):
-    if path is not None:
+    if path is not None:  # noqa: SIM108
         cm = nullcontext(path)
     else:
         cm = TemporarySocket()
@@ -42,10 +42,9 @@ async def TemporaryTcpListener(
         family=family,
         backlog=backlog,
         reuse_port=reuse_port,
-    ) as listener:
-        async with create_task_group() as tg:
-            tg.start_soon(listener.serve, handler, tg)
-            try:
-                yield listener.extra(SocketAttribute.local_address)
-            finally:
-                tg.cancel_scope.cancel()
+    ) as listener, create_task_group() as tg:
+        tg.start_soon(listener.serve, handler, tg)
+        try:
+            yield listener.extra(SocketAttribute.local_address)  # noqa: S610
+        finally:
+            tg.cancel_scope.cancel()

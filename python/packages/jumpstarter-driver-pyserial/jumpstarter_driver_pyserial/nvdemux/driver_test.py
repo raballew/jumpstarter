@@ -8,7 +8,7 @@ from .driver import NVDemuxSerial
 
 def test_nvdemux_registration():
     """Test that driver registers with DemuxerManager on init."""
-    with tempfile.NamedTemporaryFile() as device_file:
+    with tempfile.NamedTemporaryFile() as device_file:  # noqa: SIM117
         with patch("jumpstarter_driver_pyserial.nvdemux.driver.DemuxerManager") as mock_manager_class:
             mock_manager = MagicMock()
             mock_manager_class.get_instance.return_value = mock_manager
@@ -36,7 +36,7 @@ def test_nvdemux_registration():
 
 def test_nvdemux_gets_pts_from_manager():
     """Test that connect() gets pts path from manager."""
-    with tempfile.NamedTemporaryFile() as device_file:
+    with tempfile.NamedTemporaryFile() as device_file:  # noqa: SIM117
         with patch("jumpstarter_driver_pyserial.nvdemux.driver.DemuxerManager") as mock_manager_class:
             mock_manager = MagicMock()
             mock_manager_class.get_instance.return_value = mock_manager
@@ -60,7 +60,7 @@ def test_nvdemux_gets_pts_from_manager():
 
 def test_nvdemux_unregisters_on_close():
     """Test that driver unregisters from manager on close."""
-    with tempfile.NamedTemporaryFile() as device_file:
+    with tempfile.NamedTemporaryFile() as device_file:  # noqa: SIM117
         with patch("jumpstarter_driver_pyserial.nvdemux.driver.DemuxerManager") as mock_manager_class:
             mock_manager = MagicMock()
             mock_manager_class.get_instance.return_value = mock_manager
@@ -81,7 +81,7 @@ def test_nvdemux_unregisters_on_close():
 
 def test_nvdemux_default_values():
     """Test default parameter values."""
-    with tempfile.NamedTemporaryFile() as device_file:
+    with tempfile.NamedTemporaryFile() as device_file:  # noqa: SIM117
         with patch("jumpstarter_driver_pyserial.nvdemux.driver.DemuxerManager") as mock_manager_class:
             mock_manager = MagicMock()
             mock_manager_class.get_instance.return_value = mock_manager
@@ -104,7 +104,7 @@ def test_nvdemux_default_values():
 
 def test_nvdemux_registration_error_propagates():
     """Test that registration errors are propagated."""
-    with tempfile.NamedTemporaryFile() as device_file:
+    with tempfile.NamedTemporaryFile() as device_file:  # noqa: SIM117
         with patch("jumpstarter_driver_pyserial.nvdemux.driver.DemuxerManager") as mock_manager_class:
             mock_manager = MagicMock()
             mock_manager_class.get_instance.return_value = mock_manager
@@ -119,7 +119,7 @@ def test_nvdemux_registration_error_propagates():
                 )
                 raise AssertionError("Should have raised ValueError")
             except ValueError as e:
-                assert "Config mismatch" in str(e)
+                assert "Config mismatch" in str(e)  # noqa: PT017
 
 
 def test_nvdemux_client_class():

@@ -7,7 +7,7 @@ from jumpstarter.common.utils import serve
 
 def test_log_stream(caplog):
     """Test that driver logs are properly streamed to the client."""
-    with serve(MockPower()) as client:
+    with serve(MockPower()) as client:  # noqa: SIM117
         # Set log level to capture INFO messages from exporter:driver logger
         with caplog.at_level(logging.INFO, logger="exporter:driver"):
             with client.log_stream():

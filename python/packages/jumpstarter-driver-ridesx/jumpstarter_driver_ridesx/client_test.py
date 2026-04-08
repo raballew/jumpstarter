@@ -17,7 +17,7 @@ def temp_storage_dir():
 
 @pytest.fixture(scope="session")
 def ridesx_driver(temp_storage_dir):
-    yield RideSXDriver(
+    return RideSXDriver(
         storage_dir=temp_storage_dir,
         children={
             "serial": PySerial(url="loop://"),

@@ -146,7 +146,7 @@ class TestRetryCounterResetLogging:
         exporter = _make_exporter()
         send_tx, send_rx = create_memory_object_stream[str](100)
 
-        with caplog.at_level(logging.DEBUG, logger="jumpstarter.exporter.exporter"):
+        with caplog.at_level(logging.DEBUG, logger="jumpstarter.exporter.exporter"):  # noqa: SIM117
             with pytest.raises(Exception, match="connection lost"):
                 await exporter._retry_stream(
                     stream_name="test",

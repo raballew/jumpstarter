@@ -99,14 +99,14 @@ class OpendalFile:
     @validate_call(validate_return=True)
     def write_bytes(self, data: bytes) -> None:
         buf = BytesIO(data)
-        with self.client.portal.wrap_async_context_manager(BytesIOStream(buf=buf)) as stream:
+        with self.client.portal.wrap_async_context_manager(BytesIOStream(buf=buf)) as stream:  # noqa: SIM117
             with self.client.portal.wrap_async_context_manager(self.client.resource_async(stream)) as handle:
                 self.__write(handle)
 
     @validate_call(validate_return=True)
     def read_bytes(self) -> bytes:
         buf = BytesIO()
-        with self.client.portal.wrap_async_context_manager(BytesIOStream(buf=buf)) as stream:
+        with self.client.portal.wrap_async_context_manager(BytesIOStream(buf=buf)) as stream:  # noqa: SIM117
             with self.client.portal.wrap_async_context_manager(self.client.resource_async(stream)) as handle:
                 self.__read(handle)
         return buf.getvalue()

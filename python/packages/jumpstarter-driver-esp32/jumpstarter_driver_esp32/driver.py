@@ -47,17 +47,16 @@ class Esp32Flasher(FlasherInterface, Driver):
         try:
             if hasattr(esp, "_port") and esp._port:
                 esp._port.close()
-        except Exception:
+        except Exception:  # noqa: S110
             pass
 
     @export
     async def flash(self, source, target: str | None = None):
         address = int(target or "0", 0)
         with _temporary_filename() as filename:
-            async with await FileWriteStream.from_path(filename) as stream:
-                async with self.resource(source) as res:
-                    async for chunk in res:
-                        await stream.send(chunk)
+            async with await FileWriteStream.from_path(filename) as stream, self.resource(source) as res:
+                async for chunk in res:
+                    await stream.send(chunk)
 
             def _do_flash():
                 esp = self._connect_esp()
@@ -89,10 +88,9 @@ class Esp32Flasher(FlasherInterface, Driver):
 
             await to_thread.run_sync(_do_read)
 
-            async with await FileReadStream.from_path(filename) as stream:
-                async with self.resource(target) as res:
-                    async for chunk in stream:
-                        await res.send(chunk)
+            async with await FileReadStream.from_path(filename) as stream, self.resource(target) as res:
+                async for chunk in stream:
+                    await res.send(chunk)
 
     @export
     def get_chip_info(self) -> dict[str, str]:
@@ -164,7 +162,7 @@ def _temporary_filename():
     try:
         yield name
     finally:
-        try:
+        try:  # noqa: SIM105
             os.unlink(name)
         except FileNotFoundError:
             pass

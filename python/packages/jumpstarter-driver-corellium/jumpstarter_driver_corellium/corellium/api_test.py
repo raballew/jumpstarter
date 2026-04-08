@@ -15,11 +15,11 @@ def fixture(path):
     cwd = os.path.dirname(os.path.abspath(__file__))
     fixtures_dir = f'{cwd}/../../fixtures'
 
-    with open(f'{fixtures_dir}/{path}', 'r') as f:
+    with open(f'{fixtures_dir}/{path}') as f:
         return f.read()
 
 
-@pytest.mark.parametrize('project_name,data,has_results', [
+@pytest.mark.parametrize('project_name,data,has_results', [  # noqa: PT006
     ('OtherProject', fixture('http/get-projects-200.json'), True),
     (None, fixture('http/get-projects-200.json'), True),
     ('notfound', fixture('http/get-projects-200.json'), False)
@@ -41,7 +41,7 @@ def test_get_project_ok(requests_mock, project_name, data, has_results):
 
 
 @pytest.mark.parametrize(
-    'status_code,data,msg',
+    'status_code,data,msg',  # noqa: PT006
     [
         (403, fixture('http/403.json'), 'Invalid or missing authorization token'),
         (404, fixture('http/get-projects-404.json'), ''),
@@ -56,7 +56,7 @@ def test_get_project_error(requests_mock, status_code, data, msg):
     assert msg in str(e.value)
 
 
-@pytest.mark.parametrize('model,data,has_results', [
+@pytest.mark.parametrize('model,data,has_results', [  # noqa: PT006
     ('rpi4b', fixture('http/get-models-200.json'), True),
     ('notfound', fixture('http/get-models-200.json'), False)
 ])
@@ -74,7 +74,7 @@ def test_get_device_ok(requests_mock, model, data, has_results):
 
 
 @pytest.mark.parametrize(
-    'status_code,data,msg',
+    'status_code,data,msg',  # noqa: PT006
     [
         (403, fixture('http/403.json'), 'Invalid or missing authorization token'),
     ])
@@ -103,7 +103,7 @@ def test_create_instance_ok(requests_mock):
 
 
 @pytest.mark.parametrize(
-    'status_code,data,msg',
+    'status_code,data,msg',  # noqa: PT006
     [
         (403, fixture('http/403.json'), 'Invalid or missing authorization token'),
         (400, fixture('http/create-instance-400.json'), 'Unsupported device model'),
@@ -112,7 +112,7 @@ def test_create_instance_error(requests_mock, status_code, data, msg):
     requests_mock.post('https://api-host/api/v1/instances', status_code=status_code, text=data)
     api = ApiClient('api-host', 'api-token')
 
-    with pytest.raises(CorelliumApiException) as e:
+    with pytest.raises(CorelliumApiException) as e:  # noqa: PT012
         project = Project('d59db33d-27bd-4b22-878d-49e4758a648e', 'Default Project')
         device = Device(name='rd1ae', type='automotive', flavor='kronos',
                         description='', model='kronos', peripherals=False, quotas={})
@@ -130,7 +130,7 @@ def test_destroy_instance_state_ok(requests_mock):
 
 
 @pytest.mark.parametrize(
-    'status_code,data,msg',
+    'status_code,data,msg',  # noqa: PT006
     [
         (403, fixture('http/403.json'), 'Invalid or missing authorization token'),
         (404, fixture('http/get-instance-404.json'), 'No instance associated with this value'),
@@ -148,7 +148,7 @@ def test_destroy_instance_error(requests_mock, status_code, data, msg):
 
 
 @pytest.mark.parametrize(
-    'console_name,console_id',
+    'console_name,console_id',  # noqa: PT006
     [
         ('Console 1', 'port-1-cons',),
         ('Console 10', None,),
@@ -166,7 +166,7 @@ def test_get_instance_console_id_ok(requests_mock, console_name, console_id):
 
 
 @pytest.mark.parametrize(
-    'status_code,data,msg',
+    'status_code,data,msg',  # noqa: PT006
     [
         (403, fixture('http/403.json'), 'Invalid or missing authorization token'),
         (404, fixture('http/get-instance-404.json'), 'No instance associated with this value'),
@@ -198,7 +198,7 @@ def test_get_instance_console_url_ok(requests_mock):
 
 
 @pytest.mark.parametrize(
-    'status_code,data,msg',
+    'status_code,data,msg',  # noqa: PT006
     [
         (400, fixture('http/get-instance-console-url-400.json'), 'not a valid type'),
         (403, fixture('http/403.json'), 'Invalid or missing authorization token'),

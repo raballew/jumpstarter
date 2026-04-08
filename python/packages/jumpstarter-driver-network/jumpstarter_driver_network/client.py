@@ -2,7 +2,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from ipaddress import IPv6Address, ip_address
 from threading import Event
-from typing import Any, Tuple
+from typing import Any
 from urllib.parse import urlparse
 
 import click
@@ -45,9 +45,9 @@ class NetworkClient(DriverClient):
                 port = addr[1]
                 match host:
                     case IPv6Address():
-                        click.echo("[{}]:{}".format(host, port))
+                        click.echo(f"[{host}]:{port}")
                     case _:
-                        click.echo("{}:{}".format(host, port))
+                        click.echo(f"{host}:{port}")
 
                 Event().wait()
 
@@ -109,7 +109,7 @@ class DbusNetworkClient(NetworkClient, ContextManagerMixin):
         return self.labels[DbusNetwork.KIND_LABEL]
 
 
-def _parse_address(addr: str) -> Tuple[str, str]:
+def _parse_address(addr: str) -> tuple[str, str]:
     """Parse a host:port address string, handling IPv6 addresses correctly.
 
     Uses urllib.parse.urlparse for robust parsing of network addresses.

@@ -6,7 +6,7 @@ from typing import Any
 from pydantic import BaseModel
 
 
-class XcpTransport(str, Enum):
+class XcpTransport(str, Enum):  # noqa: UP042
     """XCP transport layer type."""
 
     ETH = "ETH"
@@ -15,7 +15,7 @@ class XcpTransport(str, Enum):
     SXI = "SXI"
 
 
-class XcpEthProtocol(str, Enum):
+class XcpEthProtocol(str, Enum):  # noqa: UP042
     """Ethernet protocol for XCP over Ethernet transport."""
 
     TCP = "TCP"

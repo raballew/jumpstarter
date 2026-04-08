@@ -57,7 +57,7 @@ class TestGetIpGeneric:
     @patch("jumpstarter_kubernetes.cluster.endpoints.get_ip_address")
     async def test_get_ip_generic_kind_zero_ip(self, mock_get_ip_address):
 
-        mock_get_ip_address.return_value = "0.0.0.0"
+        mock_get_ip_address.return_value = "0.0.0.0"  # noqa: S104
 
         with pytest.raises(EndpointConfigurationError, match="Could not determine IP address"):
             await get_ip_generic("kind", "minikube", "test-cluster")

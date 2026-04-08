@@ -38,11 +38,10 @@ async def copy_stream(dst: AnyByteStream, src: AnyByteStream):
 
 @asynccontextmanager
 async def forward_stream(a, b):
-    async with a, b:
-        async with create_task_group() as tg:
-            tg.start_soon(copy_stream, a, b)
-            tg.start_soon(copy_stream, b, a)
-            yield
+    async with a, b, create_task_group() as tg:
+        tg.start_soon(copy_stream, a, b)
+        tg.start_soon(copy_stream, b, a)
+        yield
 
 
 def create_memory_stream():
