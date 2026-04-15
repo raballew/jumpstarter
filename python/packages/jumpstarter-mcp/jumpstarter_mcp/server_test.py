@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import anyio
 import click
 import pytest
 
@@ -315,6 +316,41 @@ class TestConnectionManager:
 # ---------------------------------------------------------------------------
 
 
+class _MockStream:
+    """Mock for anyio process byte streams."""
+
+    def __init__(self, data: bytes):
+        self._data = data
+        self._sent = False
+
+    async def receive(self, max_bytes=65536):
+        if not self._sent and self._data:
+            self._sent = True
+            return self._data
+        raise anyio.EndOfStream
+
+
+class _MockProcess:
+    """Mock for anyio Process object."""
+
+    def __init__(self, returncode=0, stdout=b"", stderr=b"", slow=False):
+        self.returncode = None
+        self._final_returncode = returncode
+        self.stdout = _MockStream(stdout)
+        self.stderr = _MockStream(stderr)
+        self.pid = 12345
+        self._slow = slow
+
+    async def wait(self):
+        if self._slow:
+            await anyio.sleep(999)
+        self.returncode = self._final_returncode
+        return self._final_returncode
+
+    def kill(self):
+        self.returncode = -9
+
+
 class TestRunCommand:
     @pytest.fixture()
     def manager_with_conn(self):
@@ -329,13 +365,11 @@ class TestRunCommand:
 
         manager, conn_id = manager_with_conn
 
-        mock_result = subprocess.CompletedProcess(
-            args=["/usr/bin/j", "power", "on"], returncode=0, stdout=b"hello\n", stderr=b""
-        )
+        mock_proc = _MockProcess(returncode=0, stdout=b"hello\n", stderr=b"")
 
         with (
             patch("shutil.which", return_value="/usr/bin/j"),
-            patch("jumpstarter_mcp.tools.commands.anyio.run_process", return_value=mock_result),
+            patch("jumpstarter_mcp.tools.commands.anyio.open_process", return_value=mock_proc),
         ):
             result = await run_command(manager, conn_id, ["power", "on"])
 
@@ -349,18 +383,17 @@ class TestRunCommand:
 
         manager, conn_id = manager_with_conn
 
-        async def slow_run_process(*args, **kwargs):
-            import anyio
-            await anyio.sleep(999)
+        mock_proc = _MockProcess(returncode=0, stdout=b"partial", stderr=b"", slow=True)
 
         with (
             patch("shutil.which", return_value="/usr/bin/j"),
-            patch("jumpstarter_mcp.tools.commands.anyio.run_process", side_effect=slow_run_process),
+            patch("jumpstarter_mcp.tools.commands.anyio.open_process", return_value=mock_proc),
         ):
             result = await run_command(manager, conn_id, ["serial", "pipe"], timeout_seconds=1)
 
         assert result["timed_out"] is True
         assert result["timeout_seconds"] == 1
+        assert result["stdout"] == "partial"
 
     @pytest.mark.anyio
     async def test_j_not_found(self, manager_with_conn):
@@ -381,17 +414,15 @@ class TestRunCommand:
 
         manager, conn_id = manager_with_conn
 
-        mock_result = subprocess.CompletedProcess(
-            args=["/usr/bin/j", "power", "on"], returncode=0, stdout=b"ok\n", stderr=b""
-        )
+        mock_proc = _MockProcess(returncode=0, stdout=b"ok\n", stderr=b"")
 
         with (
             patch("shutil.which", return_value="/usr/bin/j"),
-            patch("jumpstarter_mcp.tools.commands.anyio.run_process", return_value=mock_result) as mock_run,
+            patch("jumpstarter_mcp.tools.commands.anyio.open_process", return_value=mock_proc) as mock_open,
         ):
             await run_command(manager, conn_id, ["power", "on"])
 
-        _, kwargs = mock_run.call_args
+        _, kwargs = mock_open.call_args
         assert kwargs["stdin"] == subprocess.DEVNULL
 
 

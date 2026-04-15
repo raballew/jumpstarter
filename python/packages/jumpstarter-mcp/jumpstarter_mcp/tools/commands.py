@@ -43,30 +43,57 @@ async def run_command(
 
     logger.info("Running command: j %s (timeout=%ds)", " ".join(command), timeout_seconds)
     try:
-        with anyio.fail_after(timeout_seconds):
-            result = await anyio.run_process(
-                [j_path, *command],
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=full_env,
-                check=False,
-            )
-        logger.info("Command finished: j %s -> exit_code=%s", " ".join(command), result.returncode)
+        process = await anyio.open_process(
+            [j_path, *command],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=full_env,
+        )
+        stdout_chunks: list[bytes] = []
+        stderr_chunks: list[bytes] = []
+
+        async def _collect_stream(stream, chunks):
+            if stream is None:
+                return
+            try:
+                while True:
+                    chunk = await stream.receive()
+                    if chunk:
+                        chunks.append(chunk)
+            except anyio.EndOfStream:
+                pass
+
+        timed_out = False
+        try:
+            with anyio.fail_after(timeout_seconds):
+                async with anyio.create_task_group() as tg:
+                    tg.start_soon(_collect_stream, process.stdout, stdout_chunks)
+                    tg.start_soon(_collect_stream, process.stderr, stderr_chunks)
+                await process.wait()
+        except TimeoutError:
+            timed_out = True
+            process.kill()
+
+        stdout_bytes = b"".join(stdout_chunks)
+        stderr_bytes = b"".join(stderr_chunks)
+
+        if timed_out:
+            logger.warning("Command timed out after %ds: j %s", timeout_seconds, " ".join(command))
+            return {
+                "exit_code": -1,
+                "stdout": stdout_bytes.decode(errors="replace"),
+                "stderr": stderr_bytes.decode(errors="replace"),
+                "timed_out": True,
+                "timeout_seconds": timeout_seconds,
+                "command": [j_path, *command],
+            }
+
+        logger.info("Command finished: j %s -> exit_code=%s", " ".join(command), process.returncode)
         return {
-            "exit_code": result.returncode,
-            "stdout": result.stdout.decode(errors="replace"),
-            "stderr": result.stderr.decode(errors="replace"),
-            "command": [j_path, *command],
-        }
-    except TimeoutError:
-        logger.warning("Command timed out after %ds: j %s", timeout_seconds, " ".join(command))
-        return {
-            "exit_code": -1,
-            "stdout": "",
-            "stderr": "",
-            "timed_out": True,
-            "timeout_seconds": timeout_seconds,
+            "exit_code": process.returncode,
+            "stdout": stdout_bytes.decode(errors="replace"),
+            "stderr": stderr_bytes.decode(errors="replace"),
             "command": [j_path, *command],
         }
     except Exception:
