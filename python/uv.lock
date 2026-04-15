@@ -1938,7 +1938,6 @@ dev = [
     { name = "jumpstarter-driver-power" },
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -1964,7 +1963,6 @@ dev = [
     { name = "jumpstarter-driver-power", editable = "packages/jumpstarter-driver-power" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
 ]
 
@@ -2074,7 +2072,6 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -2090,7 +2087,6 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]
 
@@ -2107,7 +2103,6 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -2122,7 +2117,6 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]
 
@@ -2144,7 +2138,6 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -2164,7 +2157,6 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]
 
@@ -2180,7 +2172,6 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -2194,7 +2185,6 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]
 
@@ -2375,7 +2365,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
-    { name = "pytest-asyncio" },
+    { name = "pytest-anyio" },
     { name = "pytest-cov" },
     { name = "requests-mock" },
     { name = "trio" },
@@ -2394,7 +2384,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
-    { name = "pytest-asyncio", specifier = ">=0.25.3" },
+    { name = "pytest-anyio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "requests-mock" },
     { name = "trio", specifier = ">=0.28.0" },
@@ -2614,7 +2604,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
-    { name = "pytest-asyncio" },
+    { name = "pytest-anyio" },
     { name = "pytest-cov" },
 ]
 
@@ -2630,8 +2620,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.3.3" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.24.0" },
+    { name = "pytest-anyio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
 ]
 
@@ -2679,7 +2668,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
-    { name = "pytest-asyncio" },
+    { name = "pytest-anyio" },
     { name = "pytest-cov" },
 ]
 
@@ -2697,7 +2686,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.3.3" },
-    { name = "pytest-asyncio", specifier = ">=0.24.0" },
+    { name = "pytest-anyio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
 ]
 
@@ -2745,7 +2734,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
-    { name = "pytest-asyncio" },
+    { name = "pytest-anyio" },
     { name = "pytest-cov" },
     { name = "types-paramiko" },
     { name = "types-pexpect" },
@@ -2765,7 +2754,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
-    { name = "pytest-asyncio", specifier = ">=0.26.0" },
+    { name = "pytest-anyio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "types-paramiko", specifier = ">=3.5.0.20240928" },
     { name = "types-pexpect", specifier = ">=4.9.0.20241208" },
@@ -3050,7 +3039,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
-    { name = "pytest-asyncio" },
+    { name = "pytest-anyio" },
     { name = "pytest-cov" },
 ]
 
@@ -3066,7 +3055,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.3.3" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
+    { name = "pytest-anyio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
 ]
 
@@ -3143,7 +3132,6 @@ dev = [
     { name = "jumpstarter-testing" },
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -3160,7 +3148,6 @@ dev = [
     { name = "jumpstarter-testing", editable = "packages/jumpstarter-testing" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
 ]
 
@@ -3181,7 +3168,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "jumpstarter", editable = "packages/jumpstarter" },
-    { name = "opensomeip", specifier = ">=0.1.2" },
+    { name = "opensomeip", specifier = ">=0.1.2,<0.2.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -3301,7 +3288,6 @@ dev = [
     { name = "jumpstarter-testing" },
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -3318,7 +3304,6 @@ dev = [
     { name = "jumpstarter-testing", editable = "packages/jumpstarter-testing" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
 ]
 
@@ -3710,7 +3695,6 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -3729,7 +3713,6 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]
 
@@ -3748,7 +3731,6 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -3765,7 +3747,6 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]
 
@@ -3782,7 +3763,6 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -3797,7 +3777,6 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]
 
@@ -3808,7 +3787,6 @@ dependencies = [
     { name = "jumpstarter" },
     { name = "pytest" },
     { name = "pytest-anyio" },
-    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
 ]
 
@@ -3822,7 +3800,6 @@ requires-dist = [
     { name = "jumpstarter", editable = "packages/jumpstarter" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-anyio", specifier = ">=0.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.0.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
 ]
 
@@ -5290,18 +5267,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/00/44/a02e5877a671b0940f21a7a0d9704c22097b123ed5cdbcca9cab39f17acc/pytest-anyio-0.0.0.tar.gz", hash = "sha256:b41234e9e9ad7ea1dbfefcc1d6891b23d5ef7c9f07ccf804c13a9cc338571fd3", size = 1560, upload-time = "2021-06-29T22:57:30.846Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c6/25/bd6493ae85d0a281b6a0f248d0fdb1d9aa2b31f18bcd4a8800cf397d8209/pytest_anyio-0.0.0-py2.py3-none-any.whl", hash = "sha256:dc8b5c4741cb16ff90be37fddd585ca943ed12bbeb563de7ace6cd94441d8746", size = 1999, upload-time = "2021-06-29T22:57:29.158Z" },
-]
-
-[[package]]
-name = "pytest-asyncio"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pytest" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d0/d4/14f53324cb1a6381bef29d698987625d80052bb33932d8e7cbf9b337b17c/pytest_asyncio-1.0.0.tar.gz", hash = "sha256:d15463d13f4456e1ead2594520216b225a16f781e144f8fdf6c5bb4667c48b3f", size = 46960, upload-time = "2025-05-26T04:54:40.484Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/30/05/ce271016e351fddc8399e546f6e23761967ee09c8c568bbfbecb0c150171/pytest_asyncio-1.0.0-py3-none-any.whl", hash = "sha256:4f024da9f1ef945e680dc68610b52550e36590a67fd31bb3b4943979a1f90ef3", size = 15976, upload-time = "2025-05-26T04:54:39.035Z" },
 ]
 
 [[package]]
