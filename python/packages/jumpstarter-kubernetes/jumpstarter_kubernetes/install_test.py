@@ -32,7 +32,7 @@ class TestHelmInstalled:
 class TestInstallHelmChart:
     """Test install_helm_chart function."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.install.asyncio.create_subprocess_exec")
     async def test_install_helm_chart_basic(self, mock_subprocess):
         """Test basic helm chart installation without values files."""
@@ -73,7 +73,7 @@ class TestInstallHelmChart:
 
         mock_process.wait.assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.install.asyncio.create_subprocess_exec")
     async def test_install_helm_chart_with_single_values_file(self, mock_subprocess):
         """Test helm chart installation with a single values file."""
@@ -106,7 +106,7 @@ class TestInstallHelmChart:
 
         mock_process.wait.assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.install.asyncio.create_subprocess_exec")
     async def test_install_helm_chart_with_multiple_values_files(self, mock_subprocess):
         """Test helm chart installation with multiple values files."""
@@ -144,7 +144,7 @@ class TestInstallHelmChart:
 
         mock_process.wait.assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.install.asyncio.create_subprocess_exec")
     async def test_install_helm_chart_with_kubeconfig_and_context(self, mock_subprocess):
         """Test helm chart installation with kubeconfig and context."""
@@ -179,7 +179,7 @@ class TestInstallHelmChart:
 
         mock_process.wait.assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.install.asyncio.create_subprocess_exec")
     async def test_install_helm_chart_with_all_options(self, mock_subprocess):
         """Test helm chart installation with all options including values files, kubeconfig, and context."""
@@ -228,7 +228,7 @@ class TestInstallHelmChart:
 
         mock_process.wait.assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.install.asyncio.create_subprocess_exec")
     async def test_install_helm_chart_empty_values_files_list(self, mock_subprocess):
         """Test helm chart installation with empty values files list."""

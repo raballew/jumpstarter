@@ -10,7 +10,7 @@ from jumpstarter_kubernetes.cluster.helm import install_jumpstarter_helm_chart
 class TestInstallJumpstarterHelmChart:
     """Test Jumpstarter Helm chart installation."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.helm.install_helm_chart")
     async def test_install_jumpstarter_helm_chart_all_params(self, mock_install_helm_chart):
         from unittest.mock import MagicMock
@@ -54,7 +54,7 @@ class TestInstallJumpstarterHelmChart:
         assert mock_callback.progress.call_count >= 7  # Multiple progress messages
         assert mock_callback.success.call_count == 1  # One success message
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.helm.install_helm_chart")
     async def test_install_jumpstarter_helm_chart_with_none_values(self, mock_install_helm_chart):
         mock_install_helm_chart.return_value = None
@@ -92,7 +92,7 @@ class TestInstallJumpstarterHelmChart:
 
         # Verify success message with correct values
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.helm.install_helm_chart")
     async def test_install_jumpstarter_helm_chart_secure_mode(self, mock_install_helm_chart):
         mock_install_helm_chart.return_value = None
@@ -114,7 +114,7 @@ class TestInstallJumpstarterHelmChart:
 
         # Verify gRPC mode is correctly displayed
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.helm.install_helm_chart")
     async def test_install_jumpstarter_helm_chart_custom_endpoints(self, mock_install_helm_chart):
         mock_install_helm_chart.return_value = None
@@ -136,7 +136,7 @@ class TestInstallJumpstarterHelmChart:
 
         # Verify custom endpoints are displayed correctly
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.helm.install_helm_chart")
     async def test_install_jumpstarter_helm_chart_install_helm_chart_error(self, mock_install_helm_chart):
         # Test that exceptions from install_helm_chart propagate
@@ -160,7 +160,7 @@ class TestInstallJumpstarterHelmChart:
 
         # Exception was raised correctly - test complete
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.helm.install_helm_chart")
     async def test_install_jumpstarter_helm_chart_minimal_params(self, mock_install_helm_chart):
         mock_install_helm_chart.return_value = None
@@ -198,7 +198,7 @@ class TestInstallJumpstarterHelmChart:
 
         # Verify appropriate echo calls were made
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.helm.install_helm_chart")
     async def test_install_jumpstarter_helm_chart_with_values_files(self, mock_install_helm_chart):
         """Test that values_files parameter is passed through correctly."""

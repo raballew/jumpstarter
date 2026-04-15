@@ -68,7 +68,7 @@ class TestClusterCreation:
     # The functionality is now tested through the new create_kind_cluster_with_options
     # and create_minikube_cluster_with_options functions in their respective modules.
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kind.kind_installed")
     @patch("jumpstarter_kubernetes.cluster.kind.create_kind_cluster")
     async def test_create_kind_cluster_with_options_success(self, mock_create_kind, mock_kind_installed):
@@ -84,7 +84,7 @@ class TestClusterCreation:
 
         mock_create_kind.assert_called_once()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kind.kind_installed")
     async def test_create_kind_cluster_with_options_not_installed(self, mock_kind_installed):
         """Test that ToolNotInstalledError is raised when kind is not installed."""
@@ -98,7 +98,7 @@ class TestClusterCreation:
                 "kind", "test-cluster", "", False, None, callback
             )
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.minikube.minikube_installed")
     @patch("jumpstarter_kubernetes.cluster.minikube.create_minikube_cluster")
     async def test_create_minikube_cluster_with_options_success(self, mock_create_minikube, mock_minikube_installed):

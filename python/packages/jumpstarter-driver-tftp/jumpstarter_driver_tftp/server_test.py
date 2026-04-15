@@ -48,7 +48,7 @@ async def create_test_client(server_port):
     return transport, protocol
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_server_startup_and_shutdown(tftp_server):
     """Test that server starts up and shuts down cleanly."""
     server, temp_dir, server_port = tftp_server
@@ -63,7 +63,7 @@ async def test_server_startup_and_shutdown(tftp_server):
     assert True
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_read_request_for_existing_file(tftp_server):
     """Test reading an existing file from the server."""
     server, temp_dir, server_port = tftp_server
@@ -91,7 +91,7 @@ async def test_read_request_for_existing_file(tftp_server):
         await server_task
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_read_request_for_nonexistent_file(tftp_server):
     """Test reading a non-existent file returns appropriate error."""
     server, temp_dir, server_port = tftp_server
@@ -112,7 +112,7 @@ async def test_read_request_for_nonexistent_file(tftp_server):
         await server_task
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_write_request_rejection(tftp_server):
     """Test that write requests are properly rejected (server is read-only)."""
     server, temp_dir, server_port = tftp_server
@@ -132,7 +132,7 @@ async def test_write_request_rejection(tftp_server):
         await server_task
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_invalid_packet_handling(tftp_server):
     server, temp_dir, server_port = tftp_server
     server_task = asyncio.create_task(server.start())
@@ -150,7 +150,7 @@ async def test_invalid_packet_handling(tftp_server):
         await server_task
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_path_traversal_prevention(tftp_server):
     """Test that path traversal attempts are blocked."""
     server, temp_dir, server_port = tftp_server
@@ -173,7 +173,7 @@ async def test_path_traversal_prevention(tftp_server):
         await server_task
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_options_negotiation(tftp_server):
     """Test that options (blksize, timeout) are properly negotiated."""
     server, temp_dir, server_port = tftp_server
@@ -204,7 +204,7 @@ async def test_options_negotiation(tftp_server):
         await server_task
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_retry_mechanism(tftp_server):
     server, _, server_port = tftp_server
 
@@ -252,7 +252,7 @@ async def test_retry_mechanism(tftp_server):
             transport.close()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_invalid_options_handling(tftp_server):
     server, temp_dir, server_port = tftp_server
     server_task = asyncio.create_task(server.start())

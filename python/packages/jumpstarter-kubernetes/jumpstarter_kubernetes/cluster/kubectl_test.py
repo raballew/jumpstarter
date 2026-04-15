@@ -19,7 +19,7 @@ from jumpstarter_kubernetes.exceptions import JumpstarterKubernetesError
 class TestCheckKubernetesAccess:
     """Test Kubernetes cluster access checking."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_kubernetes_access_success(self, mock_run_command):
         mock_run_command.return_value = (0, "cluster info", "")
@@ -29,7 +29,7 @@ class TestCheckKubernetesAccess:
         assert result is True
         mock_run_command.assert_called_once_with(["kubectl", "cluster-info", "--request-timeout=5s"])
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_kubernetes_access_with_context(self, mock_run_command):
         mock_run_command.return_value = (0, "cluster info", "")
@@ -41,7 +41,7 @@ class TestCheckKubernetesAccess:
             ["kubectl", "--context", "test-context", "cluster-info", "--request-timeout=5s"]
         )
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_kubernetes_access_custom_kubectl(self, mock_run_command):
         mock_run_command.return_value = (0, "cluster info", "")
@@ -51,7 +51,7 @@ class TestCheckKubernetesAccess:
         assert result is True
         mock_run_command.assert_called_once_with(["custom-kubectl", "cluster-info", "--request-timeout=5s"])
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_kubernetes_access_failure(self, mock_run_command):
         mock_run_command.return_value = (1, "", "connection refused")
@@ -60,7 +60,7 @@ class TestCheckKubernetesAccess:
 
         assert result is False
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_kubernetes_access_runtime_error(self, mock_run_command):
         mock_run_command.side_effect = RuntimeError("Command failed")
@@ -73,7 +73,7 @@ class TestCheckKubernetesAccess:
 class TestGetKubectlContexts:
     """Test kubectl context retrieval."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_get_kubectl_contexts_success(self, mock_run_command):
         kubectl_config = {
@@ -109,7 +109,7 @@ class TestGetKubectlContexts:
             "current": False,
         }
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_get_kubectl_contexts_with_namespace(self, mock_run_command):
         kubectl_config = {
@@ -129,7 +129,7 @@ class TestGetKubectlContexts:
         assert len(result) == 1
         assert result[0]["namespace"] == "custom-ns"
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_get_kubectl_contexts_no_current_context(self, mock_run_command):
         kubectl_config = {
@@ -143,7 +143,7 @@ class TestGetKubectlContexts:
         assert len(result) == 1
         assert result[0]["current"] is False
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_get_kubectl_contexts_missing_cluster(self, mock_run_command):
         kubectl_config = {
@@ -158,7 +158,7 @@ class TestGetKubectlContexts:
         assert len(result) == 1
         assert result[0]["server"] == ""
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_get_kubectl_contexts_command_failure(self, mock_run_command):
         from jumpstarter_kubernetes.exceptions import KubeconfigError
@@ -168,7 +168,7 @@ class TestGetKubectlContexts:
         with pytest.raises(KubeconfigError, match="Failed to get kubectl config: permission denied"):
             await get_kubectl_contexts()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_get_kubectl_contexts_invalid_json(self, mock_run_command):
         from jumpstarter_kubernetes.exceptions import KubeconfigError
@@ -178,7 +178,7 @@ class TestGetKubectlContexts:
         with pytest.raises(KubeconfigError, match="Failed to parse kubectl config"):
             await get_kubectl_contexts()
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_get_kubectl_contexts_custom_kubectl(self, mock_run_command):
         kubectl_config = {"contexts": [], "clusters": []}
@@ -192,7 +192,7 @@ class TestGetKubectlContexts:
 class TestCheckJumpstarterInstallation:
     """Test Jumpstarter installation checking."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_jumpstarter_installation_helm_found(self, mock_run_command):
         helm_releases = [
@@ -219,7 +219,7 @@ class TestCheckJumpstarterInstallation:
         assert result.chart_name == "jumpstarter-release"
         assert result.status == "deployed"
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_jumpstarter_installation_no_helm(self, mock_run_command):
         # Helm command fails, fallback to kubectl
@@ -234,7 +234,7 @@ class TestCheckJumpstarterInstallation:
         assert result.installed is False
         assert result.has_crds is False
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_jumpstarter_installation_namespace_found(self, mock_run_command):
         crds_response = {"items": [{"metadata": {"name": "exporter.jumpstarter.dev"}}]}
@@ -251,7 +251,7 @@ class TestCheckJumpstarterInstallation:
         assert result.has_crds is True
         assert result.status == "manual-install"
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     async def test_check_jumpstarter_installation_custom_namespace(self, mock_run_command):
         mock_run_command.side_effect = [
@@ -270,7 +270,7 @@ class TestCheckJumpstarterInstallation:
 class TestGetClusterInfo:
     """Test cluster info retrieval."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.get_kubectl_contexts")
     @patch("jumpstarter_kubernetes.cluster.kubectl.run_command")
     @patch("jumpstarter_kubernetes.cluster.kubectl.check_jumpstarter_installation")
@@ -301,7 +301,7 @@ class TestGetClusterInfo:
         assert result.version == "v1.28.0"
         assert result.jumpstarter.installed is True
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.get_kubectl_contexts")
     async def test_get_cluster_info_inaccessible(self, mock_get_contexts):
         # Mock get_kubectl_contexts to fail
@@ -313,7 +313,7 @@ class TestGetClusterInfo:
         assert "Failed to get cluster info:" in result.error
         assert "Failed to get kubectl config: connection refused" in result.error
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.get_kubectl_contexts")
     async def test_get_cluster_info_invalid_json(self, mock_get_contexts):
         # Mock get_kubectl_contexts to fail with JSON parse error
@@ -330,7 +330,7 @@ class TestGetClusterInfo:
 class TestListClusters:
     """Test cluster listing functionality."""
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.get_kubectl_contexts")
     @patch("jumpstarter_kubernetes.cluster.kubectl.get_cluster_info")
     async def test_list_clusters_success(self, mock_get_cluster_info, mock_get_contexts):
@@ -363,7 +363,7 @@ class TestListClusters:
         assert len(result.items) == 1
         assert result.items[0].name == "test-context"
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.get_kubectl_contexts")
     async def test_list_clusters_no_contexts(self, mock_get_contexts):
         mock_get_contexts.return_value = []
@@ -372,7 +372,7 @@ class TestListClusters:
 
         assert len(result.items) == 0
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.get_kubectl_contexts")
     async def test_list_clusters_context_error(self, mock_get_contexts):
         mock_get_contexts.side_effect = JumpstarterKubernetesError("No kubeconfig found")
@@ -382,7 +382,7 @@ class TestListClusters:
         assert len(result.items) == 1
         assert result.items[0].error == "Failed to list clusters: No kubeconfig found"
 
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     @patch("jumpstarter_kubernetes.cluster.kubectl.get_kubectl_contexts")
     async def test_list_clusters_custom_parameters(self, mock_get_contexts):
         mock_get_contexts.return_value = []
