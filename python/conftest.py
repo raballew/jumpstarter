@@ -5,6 +5,11 @@ import pytest
 
 os.environ["TERM"] = "dumb"
 
+
+@pytest.fixture(params=["asyncio"])
+def anyio_backend(request):
+    return request.param
+
 try:
     from jumpstarter.common.utils import serve
     from jumpstarter.config.exporter import ExporterConfigV1Alpha1, ExporterConfigV1Alpha1DriverInstance
