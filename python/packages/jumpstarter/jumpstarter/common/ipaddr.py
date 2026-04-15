@@ -1,7 +1,9 @@
-import asyncio
 import logging
 import socket
+import subprocess
 from ipaddress import ip_address
+
+import anyio
 
 
 def get_ip_address(logger: logging.Logger | None = None) -> str:
@@ -27,21 +29,15 @@ def get_ip_address(logger: logging.Logger | None = None) -> str:
 
 
 async def get_minikube_ip(profile: str = None, minikube: str = "minikube"):
-    # Create the subprocess with optional profile
     cmd = [minikube, "ip"]
     if profile:
         cmd.extend(["-p", profile])
 
-    process = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    result = await anyio.run_process(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
 
-    # Wait for it to complete and get the output
-    stdout, stderr = await process.communicate()
+    output = result.stdout.decode().strip()
 
-    # Decode and strip whitespace
-    result = stdout.decode().strip()
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.decode())
 
-    # Optional: check if command was successful
-    if process.returncode != 0:
-        raise RuntimeError(stderr.decode())
-
-    return result
+    return output

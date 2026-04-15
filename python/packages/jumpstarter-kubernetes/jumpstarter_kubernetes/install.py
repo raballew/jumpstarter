@@ -1,6 +1,7 @@
-import asyncio
 import shutil
 from typing import Literal, Optional
+
+import anyio
 
 
 def helm_installed(name: str) -> bool:
@@ -61,9 +62,7 @@ async def install_helm_chart(
             args.append("-f")
             args.append(values_file)
 
-    # Attempt to install Jumpstarter using Helm
-    process = await asyncio.create_subprocess_exec(*args)
-    await process.wait()
+    await anyio.run_process(args, check=False)
 
 
 async def uninstall_helm_chart(
@@ -86,6 +85,4 @@ async def uninstall_helm_chart(
         args.append("--kube-context")
         args.append(context)
 
-    # Attempt to install Jumpstarter using Helm
-    process = await asyncio.create_subprocess_exec(*args)
-    await process.wait()
+    await anyio.run_process(args, check=False)

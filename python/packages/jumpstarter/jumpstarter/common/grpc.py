@@ -8,8 +8,8 @@ from contextlib import contextmanager
 from typing import Any, Sequence, Tuple
 from urllib.parse import urlparse
 
+import anyio
 import grpc
-from anyio import fail_after
 
 from jumpstarter.common.exceptions import ConfigurationError, ConnectionError
 
@@ -24,15 +24,16 @@ async def _try_connect_and_extract_cert(
 
     Returns the certificate chain in PEM format as bytes.
     Raises exception on failure.
+
+    [ASSUMPTION: asyncio.open_connection is kept here because anyio's connect_tcp
+    does not expose the raw ssl_object needed for get_unverified_chain(). This is
+    the only place where asyncio is required for SSL introspection.]
     """
     logger.debug(f"Attempting TLS connection to {ip_address}:{port} (timeout={timeout}s)")
-    _, writer = await asyncio.wait_for(
-        asyncio.open_connection(ip_address, port, ssl=ssl_context, server_hostname=hostname),
-        timeout=timeout,
-    )
+    with anyio.fail_after(timeout):
+        _, writer = await asyncio.open_connection(ip_address, port, ssl=ssl_context, server_hostname=hostname)
     logger.debug(f"Successfully connected to {ip_address}:{port}")
     try:
-        # Extract certificates
         cert_chain = writer.get_extra_info("ssl_object")._sslobj.get_unverified_chain()
         root_certificates = ""
         for cert in cert_chain:
@@ -48,7 +49,7 @@ async def _ssl_channel_credentials_insecure(target: str, timeout: float) -> grpc
     """
     Extract TLS certificates from server without verification (insecure mode).
 
-    Tries to connect to all resolved IPs in parallel and returns credentials
+    Tries to connect to all resolved IPs concurrently and returns credentials
     from the first successful connection.
     """
     try:
@@ -58,27 +59,21 @@ async def _ssl_channel_credentials_insecure(target: str, timeout: float) -> grpc
         raise ConfigurationError(f"Failed parsing {target}") from e
 
     try:
-        with fail_after(timeout):
+        with anyio.fail_after(timeout):
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
 
-            # Resolve all IP addresses for the hostname
-            loop = asyncio.get_running_loop()
-            addr_info = await loop.getaddrinfo(
+            addr_info = await anyio.getaddrinfo(
                 parsed.hostname, port, family=socket.AF_UNSPEC, type=socket.SOCK_STREAM
             )
 
-            # Log resolved IPs
             resolved_ips = [sockaddr[0] for _, _, _, _, sockaddr in addr_info]
             logger.debug(
                 f"Resolved {parsed.hostname} to {len(resolved_ips)} IP(s): {', '.join(resolved_ips)}"
             )
 
-            # Try all IPs in parallel - race for first success
-            # Wrap tasks to include IP info with results/exceptions
             async def try_with_ip(ip_address: str):
-                """Wrapper that returns (ip, result) on success or (ip, exception) on failure."""
                 try:
                     result = await _try_connect_and_extract_cert(
                         ip_address, port, ssl_context, parsed.hostname, timeout
@@ -93,7 +88,6 @@ async def _ssl_channel_credentials_insecure(target: str, timeout: float) -> grpc
                 task = asyncio.create_task(try_with_ip(ip_address))
                 tasks.append(task)
 
-            # Process tasks as they complete
             errors = {}
 
             try:
@@ -101,23 +95,19 @@ async def _ssl_channel_credentials_insecure(target: str, timeout: float) -> grpc
                     ip_address, root_certificates, error = await future
 
                     if error is None:
-                        # Success! Return immediately (cleanup in finally)
                         logger.debug(f"Using certificates from {ip_address}:{port}")
                         return grpc.ssl_channel_credentials(root_certificates=root_certificates)
 
-                    # This IP failed - log and continue trying other IPs
                     if isinstance(error, ssl.SSLError):
                         logger.error(f"SSL error on {ip_address}:{port}: {error}")
                     else:
                         logger.warning(f"Failed to connect to {ip_address}:{port}: {type(error).__name__}: {error}")
                     errors[ip_address] = error
 
-                # All IPs failed
                 raise ConnectionError(
                     f"Failed connecting to {parsed.hostname}:{port} - all IPs exhausted. Errors: {errors}"
                 )
             finally:
-                # Cancel any remaining tasks
                 for task in tasks:
                     if not task.done():
                         task.cancel()
@@ -156,7 +146,6 @@ def aio_secure_channel(
 def _override_default_grpc_options(grpc_options: dict[str, str | int] | None) -> Sequence[Tuple[str, Any]]:
     defaults = (
         ("grpc.lb_policy_name", "round_robin"),
-        # we keep a low keepalive time to avoid idle timeouts on cloud load balancers
         ("grpc.keepalive_time_ms", 20000),
         ("grpc.keepalive_timeout_ms", 180000),
         ("grpc.http2.max_pings_without_data", 0),
@@ -174,10 +163,8 @@ def translate_grpc_exceptions():
         yield
     except grpc.aio.AioRpcError as e:
         if e.code().name == "UNAVAILABLE":
-            # tls or other connection errors
             raise ConnectionError(f"grpc error: {e.details()}") from None
         if e.code().name == "UNKNOWN":
-            # an error returned from our functions
             raise ConnectionError(f"grpc controller responded: {e.details()}") from None
         else:
             raise ConnectionError("grpc error") from e

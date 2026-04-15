@@ -1,20 +1,20 @@
 """Common utilities and types for cluster operations."""
 
-import asyncio
 import os
+import subprocess
 from typing import Literal, Optional
+
+import anyio
 
 from ..exceptions import ClusterTypeValidationError
 
 ClusterType = Literal["kind"] | Literal["minikube"] | Literal["k3s"]
 InstallMethod = Literal["operator", "helm"]
 
-# NodePort assignments (must match kind_cluster.yaml extraPortMappings and operator CR)
 GRPC_NODEPORT = 30010
 ROUTER_NODEPORT = 30011
 LOGIN_NODEPORT = 30014
 
-# Kind host port mappings (kind extraPortMappings map these to the NodePorts above)
 KIND_GRPC_HOST_PORT = 8082
 KIND_ROUTER_HOST_PORT = 8083
 
@@ -41,7 +41,6 @@ def get_extra_certs_path(extra_certs: Optional[str]) -> Optional[str]:
     """
     if extra_certs is None:
         return None
-    # Expand ~ and environment variables (like $HOME, $VAR) before making absolute
     expanded_path = os.path.expanduser(os.path.expandvars(extra_certs))
     return os.path.abspath(expanded_path)
 
@@ -68,21 +67,18 @@ async def run_command(cmd: list[str]) -> tuple[int, str, str]:
     """Run a command and return exit code, stdout, stderr."""
     import builtins
 
-    # Guard against empty command list
     if not cmd:
         raise ValueError("Command list cannot be empty")
 
     try:
-        process = await asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        result = await anyio.run_process(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False
         )
-        stdout, stderr = await process.communicate()
 
-        # Use safe decoding to avoid UnicodeDecodeError
-        stdout_str = stdout.decode(errors="replace").strip()
-        stderr_str = stderr.decode(errors="replace").strip()
+        stdout_str = result.stdout.decode(errors="replace").strip()
+        stderr_str = result.stderr.decode(errors="replace").strip()
 
-        return process.returncode, stdout_str, stderr_str
+        return result.returncode, stdout_str, stderr_str
     except builtins.FileNotFoundError as e:
         raise RuntimeError(f"Command not found: {cmd[0]}") from e
     except PermissionError as e:
@@ -95,13 +91,12 @@ async def run_command_with_output(cmd: list[str]) -> int:
     """Run a command with real-time output streaming and return exit code."""
     import builtins
 
-    # Guard against empty command list
     if not cmd:
         raise ValueError("Command list cannot be empty")
 
     try:
-        process = await asyncio.create_subprocess_exec(*cmd)
-        return await process.wait()
+        result = await anyio.run_process(cmd, check=False)
+        return result.returncode
     except builtins.FileNotFoundError as e:
         raise RuntimeError(f"Command not found: {cmd[0]}") from e
     except PermissionError as e:
