@@ -31,7 +31,6 @@ addopts = "--cov --cov-report=html --cov-report=xml"
 log_cli = true
 log_cli_level = "INFO"
 testpaths = ["jumpstarter_driver_ridesx"]
-asyncio_mode = "auto"
 
 
 [build-system]
@@ -42,7 +41,7 @@ build-backend = "hatchling.build"
 dev = [
     "pytest-cov>=6.0.0",
     "pytest>=8.3.3",
-    "pytest-asyncio>=0.0.0",
+    "pytest-anyio>=0.0.0",
 ]
 
 [tool.hatch.build.hooks.pin_jumpstarter]

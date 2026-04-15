@@ -18,7 +18,7 @@ dev = [
     "pytest>=8.3.2",
     "pytest-cov>=6.0.0",
     "pytest-anyio>=0.0.0",
-    "pytest-asyncio>=0.0.0",
+    "pytest-anyio>=0.0.0",
     "jumpstarter-testing",
 ]
 
@@ -37,7 +37,6 @@ source_archive = "https://github.com/jumpstarter-dev/repo/archive/{commit_hash}.
 log_cli = true
 log_cli_level = "INFO"
 testpaths = ["jumpstarter_driver_tftp"]
-asyncio_mode = "auto"
 
 [build-system]
 requires = ["hatchling", "hatch-vcs", "hatch-pin-jumpstarter"]

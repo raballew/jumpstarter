@@ -41,7 +41,6 @@ testpaths = ["jumpstarter_driver_flashers"]
 
 [tool.uv.sources]
 jumpstarter-driver-uboot = { workspace = true }
-#asyncio_mode = "auto"
 
 [build-system]
 requires = ["hatchling", "hatch-vcs", "hatch-pin-jumpstarter"]
