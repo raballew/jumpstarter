@@ -62,7 +62,7 @@ async def install_helm_chart(
             args.append("-f")
             args.append(values_file)
 
-    await anyio.run_process(args, check=False)
+    await anyio.run_process(args, stdout=None, stderr=None, check=False)
 
 
 async def uninstall_helm_chart(
@@ -85,4 +85,4 @@ async def uninstall_helm_chart(
         args.append("--kube-context")
         args.append(context)
 
-    await anyio.run_process(args, check=False)
+    await anyio.run_process(args, stdout=None, stderr=None, check=False)
