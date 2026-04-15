@@ -121,60 +121,53 @@ class Shell(Driver):
 
         return combined_env
 
-    async def _read_stream_with_timeout(self, stream, timeout=0.01, max_bytes=1024):
-        """Read data from a stream with a timeout, returning empty bytes if no data is available."""
+    async def _read_stream_nonblocking(self, stream, max_bytes=1024):
+        """Read available data from a stream with a short timeout, returning empty bytes if none available."""
         if stream is None:
             return b""
         try:
-            with anyio.move_on_after(timeout):
+            with anyio.move_on_after(0.01):
                 return await stream.receive(max_bytes)
         except EndOfStream:
             pass
         return b""
 
+    async def _drain_stream(self, stream):
+        """Read all remaining data from a stream until EOF."""
+        if stream is None:
+            return b""
+        chunks = []
+        try:
+            while True:
+                chunk = await stream.receive(65536)
+                if chunk:
+                    chunks.append(chunk)
+        except EndOfStream:
+            pass
+        return b"".join(chunks)
+
     async def _read_process_output(self, process, read_all=False):
         """Read data from stdout and stderr streams."""
         stdout_data = ""
         stderr_data = ""
-
-        if process.stdout:
-            try:
-                if read_all:
-                    chunks = []
-                    try:
-                        while True:
-                            chunk = await process.stdout.receive(65536)
-                            if chunk:
-                                chunks.append(chunk)
-                    except EndOfStream:
-                        pass
-                    raw = b"".join(chunks)
-                else:
-                    raw = await self._read_stream_with_timeout(process.stdout)
-                if raw:
-                    stdout_data = raw.decode('utf-8', errors='replace')
-            except Exception:
-                pass
-
-        if process.stderr:
-            try:
-                if read_all:
-                    chunks = []
-                    try:
-                        while True:
-                            chunk = await process.stderr.receive(65536)
-                            if chunk:
-                                chunks.append(chunk)
-                    except EndOfStream:
-                        pass
-                    raw = b"".join(chunks)
-                else:
-                    raw = await self._read_stream_with_timeout(process.stderr)
-                if raw:
-                    stderr_data = raw.decode('utf-8', errors='replace')
-            except Exception:
-                pass
-
+        try:
+            if read_all:
+                raw = await self._drain_stream(process.stdout)
+            else:
+                raw = await self._read_stream_nonblocking(process.stdout)
+            if raw:
+                stdout_data = raw.decode('utf-8', errors='replace')
+        except Exception:
+            pass
+        try:
+            if read_all:
+                raw = await self._drain_stream(process.stderr)
+            else:
+                raw = await self._read_stream_nonblocking(process.stderr)
+            if raw:
+                stderr_data = raw.decode('utf-8', errors='replace')
+        except Exception:
+            pass
         return stdout_data, stderr_data
 
     async def _run_inline_shell_script(
