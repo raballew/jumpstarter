@@ -73,44 +73,35 @@ async def _ssl_channel_credentials_insecure(target: str, timeout: float) -> grpc
                 f"Resolved {parsed.hostname} to {len(resolved_ips)} IP(s): {', '.join(resolved_ips)}"
             )
 
+            first_result: list[grpc.ChannelCredentials] = []
+            errors: dict[str, Exception] = {}
+
             async def try_with_ip(ip_address: str):
                 try:
                     result = await _try_connect_and_extract_cert(
                         ip_address, port, ssl_context, parsed.hostname, timeout
                     )
-                    return (ip_address, result, None)
+                    first_result.append(grpc.ssl_channel_credentials(root_certificates=result))
+                    logger.debug(f"Using certificates from {ip_address}:{port}")
+                    tg.cancel_scope.cancel()
                 except Exception as e:
-                    return (ip_address, None, e)
-
-            tasks = []
-            for _family, _type, _proto, _canonname, sockaddr in addr_info:
-                ip_address = sockaddr[0]
-                task = asyncio.create_task(try_with_ip(ip_address))
-                tasks.append(task)
-
-            errors = {}
-
-            try:
-                for future in asyncio.as_completed(tasks):
-                    ip_address, root_certificates, error = await future
-
-                    if error is None:
-                        logger.debug(f"Using certificates from {ip_address}:{port}")
-                        return grpc.ssl_channel_credentials(root_certificates=root_certificates)
-
-                    if isinstance(error, ssl.SSLError):
-                        logger.error(f"SSL error on {ip_address}:{port}: {error}")
+                    if isinstance(e, ssl.SSLError):
+                        logger.error(f"SSL error on {ip_address}:{port}: {e}")
                     else:
-                        logger.warning(f"Failed to connect to {ip_address}:{port}: {type(error).__name__}: {error}")
-                    errors[ip_address] = error
+                        logger.warning(f"Failed to connect to {ip_address}:{port}: {type(e).__name__}: {e}")
+                    errors[ip_address] = e
 
-                raise ConnectionError(
-                    f"Failed connecting to {parsed.hostname}:{port} - all IPs exhausted. Errors: {errors}"
-                )
-            finally:
-                for task in tasks:
-                    if not task.done():
-                        task.cancel()
+            async with anyio.create_task_group() as tg:
+                for _family, _type, _proto, _canonname, sockaddr in addr_info:
+                    ip_address = sockaddr[0]
+                    tg.start_soon(try_with_ip, ip_address)
+
+            if first_result:
+                return first_result[0]
+
+            raise ConnectionError(
+                f"Failed connecting to {parsed.hostname}:{port} - all IPs exhausted. Errors: {errors}"
+            )
     except socket.gaierror as e:
         raise ConnectionError(f"Failed resolving {parsed.hostname}") from e
     except TimeoutError as e:
