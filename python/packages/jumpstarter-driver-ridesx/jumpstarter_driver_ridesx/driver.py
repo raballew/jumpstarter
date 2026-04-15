@@ -1,6 +1,7 @@
-import asyncio
 import os
 import subprocess
+
+import anyio
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -362,7 +363,7 @@ class RideSXDriver(Driver):
                     chunk = await stream.receive()
                     data += chunk
                 self.logger.debug(f"prompt returned after command: {command}")
-                await asyncio.sleep(delay)
+                await anyio.sleep(delay)
         self.logger.info("device should now be in fastboot mode")
 
 
@@ -408,7 +409,7 @@ class RideSXPowerDriver(Driver):
         """Power cycle the device"""
         self.logger.info(f"Power cycling device with {delay}s delay")
         await self.off()
-        await asyncio.sleep(delay)
+        await anyio.sleep(delay)
         await self.on()
 
     @export
@@ -434,4 +435,4 @@ async def _send_power_commands_sequence(serial, logger, commands):
     for command, delay in commands:
         await _send_power_command(serial, logger, command)
         if delay > 0:
-            await asyncio.sleep(delay)
+            await anyio.sleep(delay)
