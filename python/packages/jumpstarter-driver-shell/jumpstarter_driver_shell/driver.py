@@ -1,11 +1,12 @@
-import asyncio
 import os
 import signal
 import subprocess
+import time
 from dataclasses import dataclass, field
 from typing import AsyncGenerator
 
 import anyio
+from anyio import EndOfStream
 
 from jumpstarter.driver import Driver, export
 
@@ -120,37 +121,58 @@ class Shell(Driver):
 
         return combined_env
 
-    async def _read_process_output(self, process, read_all=False):
-        """Read data from stdout and stderr streams.
+    async def _read_stream_with_timeout(self, stream, timeout=0.01, max_bytes=1024):
+        """Read data from a stream with a timeout, returning empty bytes if no data is available."""
+        if stream is None:
+            return b""
+        try:
+            with anyio.move_on_after(timeout):
+                return await stream.receive(max_bytes)
+        except EndOfStream:
+            pass
+        return b""
 
-        [ASSUMPTION: asyncio subprocess stream reading is kept here because
-        anyio.open_process returns different stream types that don't support
-        the same read patterns (read with size limit and timeout). This uses
-        asyncio.wait_for for non-blocking reads with timeout.]
-        """
+    async def _read_process_output(self, process, read_all=False):
+        """Read data from stdout and stderr streams."""
         stdout_data = ""
         stderr_data = ""
 
         if process.stdout:
             try:
                 if read_all:
-                    chunk = await process.stdout.read()
+                    chunks = []
+                    try:
+                        while True:
+                            chunk = await process.stdout.receive(65536)
+                            if chunk:
+                                chunks.append(chunk)
+                    except EndOfStream:
+                        pass
+                    raw = b"".join(chunks)
                 else:
-                    chunk = await asyncio.wait_for(process.stdout.read(1024), timeout=0.01)
-                if chunk:
-                    stdout_data = chunk.decode('utf-8', errors='replace')
-            except (TimeoutError, Exception):
+                    raw = await self._read_stream_with_timeout(process.stdout)
+                if raw:
+                    stdout_data = raw.decode('utf-8', errors='replace')
+            except Exception:
                 pass
 
         if process.stderr:
             try:
                 if read_all:
-                    chunk = await process.stderr.read()
+                    chunks = []
+                    try:
+                        while True:
+                            chunk = await process.stderr.receive(65536)
+                            if chunk:
+                                chunks.append(chunk)
+                    except EndOfStream:
+                        pass
+                    raw = b"".join(chunks)
                 else:
-                    chunk = await asyncio.wait_for(process.stderr.read(1024), timeout=0.01)
-                if chunk:
-                    stderr_data = chunk.decode('utf-8', errors='replace')
-            except (TimeoutError, Exception):
+                    raw = await self._read_stream_with_timeout(process.stderr)
+                if raw:
+                    stderr_data = raw.decode('utf-8', errors='replace')
+            except Exception:
                 pass
 
         return stdout_data, stderr_data
@@ -158,27 +180,20 @@ class Shell(Driver):
     async def _run_inline_shell_script(
         self, method, script, *args, env_vars=None, timeout=None
     ) -> AsyncGenerator[tuple[str, str, int | None], None]:
-        """
-        Run the given shell script with live streaming output.
-
-        [ASSUMPTION: asyncio.create_subprocess_exec is kept here because the
-        shell driver requires start_new_session for process group management
-        and uses asyncio stream reading patterns for real-time output streaming.]
-        """
+        """Run the given shell script with live streaming output."""
         combined_env = self._validate_script_params(script, args, env_vars)
         cmd = self.shell + [script, method] + list(args)
 
-        self.logger.debug( f"running {method} with cmd: {cmd} and env: {combined_env} " f"and args: {args}")
-        process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        self.logger.debug(f"running {method} with cmd: {cmd} and env: {combined_env} and args: {args}")
+        process = await anyio.open_process(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             env=combined_env,
             cwd=self.cwd,
             start_new_session=True,
         )
 
-        import time
         start_time = time.monotonic()
 
         if timeout is None:
@@ -190,9 +205,11 @@ class Shell(Driver):
                     os.killpg(process.pid, signal.SIGTERM)
                 except (ProcessLookupError, OSError):
                     pass
-                try:
-                    await asyncio.wait_for(process.wait(), timeout=5.0)
-                except TimeoutError:
+                terminated = False
+                with anyio.move_on_after(5.0):
+                    await process.wait()
+                    terminated = True
+                if not terminated:
                     try:
                         os.killpg(process.pid, signal.SIGKILL)
                         self.logger.warning(f"SIGTERM failed to terminate {process.pid}, sending SIGKILL")
