@@ -95,7 +95,7 @@ async def run_command_with_output(cmd: list[str]) -> int:
         raise ValueError("Command list cannot be empty")
 
     try:
-        result = await anyio.run_process(cmd, check=False)
+        result = await anyio.run_process(cmd, stdout=None, stderr=None, check=False)
         return result.returncode
     except builtins.FileNotFoundError as e:
         raise RuntimeError(f"Command not found: {cmd[0]}") from e

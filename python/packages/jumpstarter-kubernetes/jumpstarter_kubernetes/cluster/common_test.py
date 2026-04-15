@@ -234,7 +234,7 @@ class TestRunCommand:
             returncode = await run_command_with_output(["echo", "test"])
 
             assert returncode == 0
-            mock_run.assert_called_once_with(["echo", "test"], check=False)
+            mock_run.assert_called_once_with(["echo", "test"], stdout=None, stderr=None, check=False)
 
     @pytest.mark.anyio
     async def test_run_command_with_output_not_found(self):
