@@ -10,7 +10,6 @@ import os
 import sys
 
 import anyio
-
 from jumpstarter_kubernetes.controller import get_latest_compatible_controller_version
 
 os.environ["TERM"] = "dumb"

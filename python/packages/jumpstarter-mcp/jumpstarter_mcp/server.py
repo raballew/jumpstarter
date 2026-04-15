@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from asyncio import CancelledError
 from io import TextIOWrapper
 
 import anyio

@@ -1,12 +1,11 @@
 import os
 import subprocess
-
-import anyio
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict
 
+import anyio
 from jumpstarter_driver_opendal.driver import Opendal
 
 from jumpstarter.common.exceptions import ConfigurationError

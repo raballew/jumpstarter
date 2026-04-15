@@ -1,7 +1,7 @@
 """Tests for Helm installation functions."""
 
 import subprocess
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 

@@ -3,7 +3,7 @@
 import os
 import subprocess
 import tempfile
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -216,7 +216,11 @@ class TestRunCommand:
 
     @pytest.mark.anyio
     async def test_run_command_not_found(self):
-        with patch("jumpstarter_kubernetes.cluster.common.anyio.run_process", side_effect=FileNotFoundError("command not found")):
+        mock_side_effect = FileNotFoundError("command not found")
+        with patch(
+            "jumpstarter_kubernetes.cluster.common.anyio.run_process",
+            side_effect=mock_side_effect,
+        ):
             with pytest.raises(RuntimeError, match="Command not found: nonexistent"):
                 await run_command(["nonexistent"])
 
@@ -234,7 +238,11 @@ class TestRunCommand:
 
     @pytest.mark.anyio
     async def test_run_command_with_output_not_found(self):
-        with patch("jumpstarter_kubernetes.cluster.common.anyio.run_process", side_effect=FileNotFoundError("command not found")):
+        mock_side_effect = FileNotFoundError("command not found")
+        with patch(
+            "jumpstarter_kubernetes.cluster.common.anyio.run_process",
+            side_effect=mock_side_effect,
+        ):
             with pytest.raises(RuntimeError, match="Command not found: nonexistent"):
                 await run_command_with_output(["nonexistent"])
 
