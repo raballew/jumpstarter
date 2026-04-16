@@ -123,16 +123,16 @@ $ exit
 
 ## Related Drivers
 
-- [OpenDAL](../../reference/package-apis/drivers/opendal.md) -- Storage
+- [OpenDAL](../../reference/package-apis/drivers/opendal.md) - Storage
   access layer
-- [Flashers](../../reference/package-apis/drivers/flashers.md) -- Flash memory
+- [Flashers](../../reference/package-apis/drivers/flashers.md) - Flash memory
   programming
-- [Network](../../reference/package-apis/drivers/network.md) -- Network
+- [Network](../../reference/package-apis/drivers/network.md) - Network
   interfaces
-- [Power](../../reference/package-apis/drivers/power.md) -- Power control
-- [PySerial](../../reference/package-apis/drivers/pyserial.md) -- Serial
+- [Power](../../reference/package-apis/drivers/power.md) - Power control
+- [PySerial](../../reference/package-apis/drivers/pyserial.md) - Serial
   console access
-- [QEMU](../../reference/package-apis/drivers/qemu.md) -- Virtual device
+- [QEMU](../../reference/package-apis/drivers/qemu.md) - Virtual device
   testing
 
 ## Next Steps

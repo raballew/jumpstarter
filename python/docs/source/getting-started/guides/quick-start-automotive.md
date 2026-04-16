@@ -81,14 +81,14 @@ $ exit
 
 ## Related Drivers
 
-- [UDS over DoIP](../../reference/package-apis/drivers/uds-doip.md) -- UDS
+- [UDS over DoIP](../../reference/package-apis/drivers/uds-doip.md) - UDS
   diagnostics over Ethernet
-- [UDS over CAN](../../reference/package-apis/drivers/uds-can.md) -- UDS
+- [UDS over CAN](../../reference/package-apis/drivers/uds-can.md) - UDS
   diagnostics over CAN bus
-- [DoIP](../../reference/package-apis/drivers/doip.md) -- Raw DoIP protocol
-- [SOME/IP](../../reference/package-apis/drivers/someip.md) -- SOME/IP
+- [DoIP](../../reference/package-apis/drivers/doip.md) - Raw DoIP protocol
+- [SOME/IP](../../reference/package-apis/drivers/someip.md) - SOME/IP
   service-oriented communication
-- [XCP](../../reference/package-apis/drivers/xcp.md) -- Measurement and
+- [XCP](../../reference/package-apis/drivers/xcp.md) - Measurement and
   calibration protocol
 
 ## Next Steps

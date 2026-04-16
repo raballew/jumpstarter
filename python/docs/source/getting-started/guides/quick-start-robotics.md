@@ -115,13 +115,13 @@ $ exit
 
 ## Related Drivers
 
-- [PySerial](../../reference/package-apis/drivers/pyserial.md) -- Serial port
+- [PySerial](../../reference/package-apis/drivers/pyserial.md) - Serial port
   communication
-- [Power](../../reference/package-apis/drivers/power.md) -- Power control
-- [gpiod](../../reference/package-apis/drivers/gpiod.md) -- GPIO hardware control
-- [Network](../../reference/package-apis/drivers/network.md) -- Network
+- [Power](../../reference/package-apis/drivers/power.md) - Power control
+- [gpiod](../../reference/package-apis/drivers/gpiod.md) - GPIO hardware control
+- [Network](../../reference/package-apis/drivers/network.md) - Network
   interfaces
-- [CAN](../../reference/package-apis/drivers/can.md) -- Controller Area
+- [CAN](../../reference/package-apis/drivers/can.md) - Controller Area
   Network communication
 
 ## Next Steps
