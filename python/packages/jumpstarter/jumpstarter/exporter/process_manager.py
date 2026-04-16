@@ -109,7 +109,10 @@ class ProcessManager:
         self._temp_dirs.clear()
 
     def check_health(self) -> dict[str, bool]:
-        return {managed.driver_class_path: managed.process.is_alive() for managed in self._managed}
+        return {
+            f"{managed.driver_class_path}:{managed.process.pid}": managed.process.is_alive()
+            for managed in self._managed
+        }
 
 
 @dataclass(kw_only=True)

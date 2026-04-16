@@ -116,15 +116,39 @@ class TestProcessManagerCrashDetection:
         sandbox_policy = SandboxPolicy(enabled=True)
 
         managed = manager.spawn(driver_class_path, {}, sandbox_policy)
+        health_key = f"{driver_class_path}:{managed.process.pid}"
 
         health = manager.check_health()
-        assert health[driver_class_path] is True
+        assert health[health_key] is True
 
         os.kill(managed.process.pid, signal.SIGKILL)
         managed.process.join(timeout=5)
 
         health = manager.check_health()
-        assert health[driver_class_path] is False
+        assert health[health_key] is False
+
+        manager.close()
+
+    def test_check_health_distinguishes_processes_with_same_class_path(self):
+        from jumpstarter.exporter.process_manager import ProcessManager
+
+        manager = ProcessManager()
+
+        driver_class_path = "jumpstarter_driver_composite.driver.Composite"
+        sandbox_policy = SandboxPolicy(enabled=True)
+
+        managed1 = manager.spawn(driver_class_path, {}, sandbox_policy)
+        managed2 = manager.spawn(driver_class_path, {}, sandbox_policy)
+
+        os.kill(managed1.process.pid, signal.SIGKILL)
+        managed1.process.join(timeout=5)
+
+        health = manager.check_health()
+        alive_count = sum(1 for alive in health.values() if alive)
+        dead_count = sum(1 for alive in health.values() if not alive)
+
+        assert alive_count == 1
+        assert dead_count == 1
 
         manager.close()
 
