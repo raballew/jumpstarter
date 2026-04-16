@@ -8,12 +8,13 @@ from uuid import UUID, uuid4
 
 from jumpstarter_protocol import jumpstarter_pb2
 
+from jumpstarter.common.exceptions import ConfigurationError
 from jumpstarter.common.sandbox import SandboxPolicy
 
 logger = logging.getLogger(__name__)
 
 
-def _child_process_entry(driver_class_path: str, driver_config: dict, socket_path: str, ready_event):
+def _child_process_entry(driver_class_path: str, driver_config: dict, socket_path: str, ready_event, success_flag):
     from concurrent import futures
 
     import grpc
@@ -31,6 +32,7 @@ def _child_process_entry(driver_class_path: str, driver_config: dict, socket_pat
         server.add_insecure_port(f"unix://{socket_path}")
         server.start()
 
+        success_flag.value = 1
         ready_event.set()
 
         server.wait_for_termination()
@@ -57,15 +59,22 @@ class ProcessManager:
         socket_path = str(Path(temp_dir) / "driver.sock")
 
         ready_event = multiprocessing.Event()
+        success_flag = multiprocessing.Value("i", 0)
 
         process = multiprocessing.Process(
             target=_child_process_entry,
-            args=(driver_class_path, driver_config, socket_path, ready_event),
+            args=(driver_class_path, driver_config, socket_path, ready_event, success_flag),
             daemon=True,
         )
         process.start()
 
         ready_event.wait(timeout=30)
+
+        if success_flag.value != 1:
+            process.join(timeout=5)
+            raise ConfigurationError(
+                f"Driver process for '{driver_class_path}' failed to start (exit code: {process.exitcode})"
+            )
 
         managed = ManagedProcess(
             process=process,
