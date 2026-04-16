@@ -29,15 +29,15 @@ export:
       url: "/dev/ttyUSB0"
       baudrate: 115200
   power:
-    type: jumpstarter_driver_power.driver.PowerRelay
+    type: jumpstarter_driver_gpiod.driver.PowerSwitch
     config:
-      gpio_chip: "/dev/gpiochip0"
-      gpio_line: 17
+      device: "/dev/gpiochip0"
+      line: 17
   gpio:
-    type: jumpstarter_driver_gpiod.driver.Gpiod
+    type: jumpstarter_driver_gpiod.driver.DigitalOutput
     config:
-      chip: "/dev/gpiochip0"
-      lines: [18, 19, 20, 21]
+      device: "/dev/gpiochip0"
+      line: 18
 ```
 
 ## Starting a Session
@@ -88,18 +88,18 @@ import time
 from jumpstarter_testing import JumpstarterTest
 
 class TestRoboticsController(JumpstarterTest):
-    def test_board_boots(self):
-        self.client.power.on()
+    def test_board_boots(self, client):
+        client.power.on()
         time.sleep(5)
-        self.client.serial.write(b"STATUS\n")
-        response = self.client.serial.read(1024)
+        client.serial.write(b"STATUS\n")
+        response = client.serial.read(1024)
         assert b"READY" in response
-        self.client.power.off()
+        client.power.off()
 
-    def test_gpio_output(self):
-        self.client.gpio.set_value(18, 1)
-        value = self.client.gpio.get_value(18)
-        assert value == 1
+    def test_gpio_output(self, client):
+        client.gpio.on()
+        value = client.gpio.read_pin()
+        assert value == "active"
 ```
 
 Run the tests:
