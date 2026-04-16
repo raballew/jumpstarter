@@ -397,78 +397,6 @@ func TestListenQueueReconnectCreatesNewChannel(t *testing.T) {
 	}
 }
 
-func TestListenQueueDialTokenDeliveredToNewListener(t *testing.T) {
-	svc := &ControllerService{}
-	leaseName := "test-lease-dial-token"
-
-	g1 := &listenQueue{ch: make(chan *pb.ListenResponse, 8), done: make(chan struct{})}
-	svc.swapListenQueue(leaseName, g1)
-
-	g2 := &listenQueue{ch: make(chan *pb.ListenResponse, 8), done: make(chan struct{})}
-	svc.swapListenQueue(leaseName, g2)
-
-	response := &pb.ListenResponse{RouterEndpoint: "test-endpoint", RouterToken: "test-token"}
-	err := svc.sendToListener(context.Background(), leaseName, response)
-	if err != nil {
-		t.Fatalf("sendToListener should succeed for active queue: %v", err)
-	}
-
-	select {
-	case got := <-g2.ch:
-		if got.RouterEndpoint != "test-endpoint" || got.RouterToken != "test-token" {
-			t.Fatal("dial token was corrupted")
-		}
-	default:
-		t.Fatal("dial token was not delivered to the new listener")
-	}
-
-	select {
-	case <-g1.ch:
-		t.Fatal("dial token was delivered to the old listener")
-	default:
-	}
-}
-
-func TestListenQueueReconnectPreventsStaleCleanup(t *testing.T) {
-	svc := &ControllerService{}
-	leaseName := "test-lease-stale-cleanup"
-
-	originalWrapper := &listenQueue{
-		ch:   make(chan *pb.ListenResponse, 8),
-		done: make(chan struct{}),
-	}
-	svc.swapListenQueue(leaseName, originalWrapper)
-
-	reconnectWrapper := &listenQueue{
-		ch:   make(chan *pb.ListenResponse, 8),
-		done: make(chan struct{}),
-	}
-	svc.swapListenQueue(leaseName, reconnectWrapper)
-
-	// Original wrapper's deferred CompareAndDelete should be a no-op.
-	svc.listenQueues.CompareAndDelete(leaseName, originalWrapper)
-
-	got, ok := svc.listenQueues.Load(leaseName)
-	if !ok {
-		t.Fatal("stale Listen cleanup deleted queue that reconnected Listen is using")
-	}
-	if got != reconnectWrapper {
-		t.Fatal("queue entry does not match the reconnected wrapper")
-	}
-
-	token := &pb.ListenResponse{RouterEndpoint: "ep", RouterToken: testRouterToken}
-	reconnectWrapper.ch <- token
-
-	select {
-	case msg := <-reconnectWrapper.ch:
-		if msg.RouterEndpoint != "ep" || msg.RouterToken != testRouterToken {
-			t.Fatal("token was corrupted after stale cleanup attempt")
-		}
-	default:
-		t.Fatal("token was lost after stale cleanup attempt")
-	}
-}
-
 func TestListenQueueConcurrentSwapSupersedes(t *testing.T) {
 	svc := &ControllerService{}
 	leaseName := "test-lease-concurrent-swap"
@@ -775,52 +703,6 @@ func TestDialSendToListenerRejectsDoneQueue(t *testing.T) {
 	}
 }
 
-func TestDialSendToListenerSerializesWithSwap(t *testing.T) {
-	// Verify that swapListenQueue followed by sendToListener always delivers
-	// to the new queue (or returns an error), never to the superseded queue.
-	// This tests the scenario where the swap completes before the send.
-	iterations := 500
-
-	for i := 0; i < iterations; i++ {
-		svc := &ControllerService{}
-		leaseName := "test-lease-serialized"
-
-		g1 := &listenQueue{
-			ch:   make(chan *pb.ListenResponse, 8),
-			done: make(chan struct{}),
-		}
-		svc.swapListenQueue(leaseName, g1)
-
-		g2 := &listenQueue{
-			ch:   make(chan *pb.ListenResponse, 8),
-			done: make(chan struct{}),
-		}
-
-		svc.swapListenQueue(leaseName, g2)
-
-		response := &pb.ListenResponse{RouterEndpoint: "ep", RouterToken: testRouterToken}
-		err := svc.sendToListener(context.Background(), leaseName, response)
-		if err != nil {
-			t.Fatalf("iteration %d: sendToListener should succeed for active g2: %v", i, err)
-		}
-
-		select {
-		case <-g1.ch:
-			t.Fatalf("iteration %d: token delivered to superseded g1", i)
-		default:
-		}
-
-		select {
-		case got := <-g2.ch:
-			if got.RouterEndpoint != "ep" || got.RouterToken != testRouterToken {
-				t.Fatalf("iteration %d: token corrupted on g2", i)
-			}
-		default:
-			t.Fatalf("iteration %d: token not delivered to active g2", i)
-		}
-	}
-}
-
 func TestDialSendToListenerConcurrentWithSwapNeverLandsOnSuperseded(t *testing.T) {
 	// Race swapListenQueue against sendToListener using goroutines.
 	// The per-lease mutex guarantees that the Load+send in sendToListener
@@ -942,23 +824,18 @@ func TestListenQueueSupersessionSignaling(t *testing.T) {
 	}
 	svc.swapListenQueue(leaseName, g2Queue)
 
-	// Verify G1's done channel is closed.
 	select {
 	case <-g1Queue.done:
-		// expected
 	default:
 		t.Fatal("G1 done channel was not closed after supersession")
 	}
 
-	// Verify G2's done channel is still open.
 	select {
 	case <-g2Queue.done:
 		t.Fatal("G2 done channel should not be closed")
 	default:
-		// expected
 	}
 
-	// CompareAndDelete by G1 should be a no-op (G2 is current).
 	svc.listenQueues.CompareAndDelete(leaseName, g1Queue)
 	v, ok := svc.listenQueues.Load(leaseName)
 	if !ok {
@@ -966,6 +843,17 @@ func TestListenQueueSupersessionSignaling(t *testing.T) {
 	}
 	if v != g2Queue {
 		t.Fatal("queue entry does not match G2's queue")
+	}
+
+	token := &pb.ListenResponse{RouterEndpoint: "ep", RouterToken: testRouterToken}
+	g2Queue.ch <- token
+	select {
+	case msg := <-g2Queue.ch:
+		if msg.RouterEndpoint != "ep" || msg.RouterToken != testRouterToken {
+			t.Fatal("token was corrupted after stale cleanup attempt")
+		}
+	default:
+		t.Fatal("token was lost after stale cleanup attempt")
 	}
 }
 
@@ -1036,25 +924,6 @@ func TestListenQueueDialReturnsUnavailableWhenNoListener(t *testing.T) {
 	_, ok := svc.listenQueues.Load(leaseName)
 	if ok {
 		t.Fatal("expected no entry for nonexistent lease")
-	}
-}
-
-func TestListenQueueDialReturnsUnavailableWhenDoneClosed(t *testing.T) {
-	svc := &ControllerService{}
-	leaseName := "test-lease-done-closed"
-
-	q := &listenQueue{
-		ch:   make(chan *pb.ListenResponse, 8),
-		done: make(chan struct{}),
-	}
-	svc.swapListenQueue(leaseName, q)
-	q.closeDone()
-
-	err := svc.sendToListener(context.Background(), leaseName, &pb.ListenResponse{
-		RouterEndpoint: "ep", RouterToken: testRouterToken,
-	})
-	if err == nil {
-		t.Fatal("sendToListener should return error for done queue")
 	}
 }
 
@@ -1272,92 +1141,52 @@ func TestListenQueueListenLoopDeliversTokensAndExitsOnDone(t *testing.T) {
 	}
 }
 
-func TestSendToListenerReturnsResourceExhaustedWithCancelledContextAndBufferFull(t *testing.T) {
-	svc := &ControllerService{}
-	leaseName := "test-lease-ctx-cancel-buffer-full"
-
-	q := &listenQueue{
-		ch:   make(chan *pb.ListenResponse, 8),
-		done: make(chan struct{}),
-	}
-	svc.swapListenQueue(leaseName, q)
-
-	for i := 0; i < 8; i++ {
-		q.ch <- &pb.ListenResponse{RouterEndpoint: "fill", RouterToken: "fill"}
+func TestSendToListenerReturnsResourceExhaustedWhenBufferFull(t *testing.T) {
+	tests := []struct {
+		name      string
+		cancelCtx bool
+	}{
+		{name: "active context", cancelCtx: false},
+		{name: "cancelled context", cancelCtx: true},
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &ControllerService{}
+			leaseName := "test-lease-buffer-full-" + tt.name
 
-	err := svc.sendToListener(ctx, leaseName, &pb.ListenResponse{
-		RouterEndpoint: "ep", RouterToken: testRouterToken,
-	})
-	if err == nil {
-		t.Fatal("sendToListener should return error when buffer is full")
-	}
+			q := &listenQueue{
+				ch:   make(chan *pb.ListenResponse, 8),
+				done: make(chan struct{}),
+			}
+			svc.swapListenQueue(leaseName, q)
 
-	st, ok := status.FromError(err)
-	if !ok {
-		t.Fatalf("expected gRPC status error, got %v", err)
-	}
-	if st.Code() != codes.ResourceExhausted {
-		t.Fatalf("expected ResourceExhausted, got %v", st.Code())
-	}
-}
+			for i := 0; i < 8; i++ {
+				q.ch <- &pb.ListenResponse{RouterEndpoint: "fill", RouterToken: "fill"}
+			}
 
-func TestSendToListenerReturnsImmediatelyDuringBackpressure(t *testing.T) {
-	svc := &ControllerService{}
-	leaseName := "test-lease-backpressure-immediate"
+			ctx := context.Background()
+			if tt.cancelCtx {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithCancel(ctx)
+				cancel()
+			}
 
-	q := &listenQueue{
-		ch:   make(chan *pb.ListenResponse, 8),
-		done: make(chan struct{}),
-	}
-	svc.swapListenQueue(leaseName, q)
+			err := svc.sendToListener(ctx, leaseName, &pb.ListenResponse{
+				RouterEndpoint: "ep", RouterToken: testRouterToken,
+			})
+			if err == nil {
+				t.Fatal("sendToListener should return error when buffer is full")
+			}
 
-	for i := 0; i < 8; i++ {
-		q.ch <- &pb.ListenResponse{RouterEndpoint: "fill", RouterToken: "fill"}
-	}
-
-	err := svc.sendToListener(context.Background(), leaseName, &pb.ListenResponse{
-		RouterEndpoint: "ep", RouterToken: testRouterToken,
-	})
-	if err == nil {
-		t.Fatal("sendToListener should return error when buffer is full")
-	}
-
-	st, ok := status.FromError(err)
-	if !ok {
-		t.Fatalf("expected gRPC status error, got %v", err)
-	}
-	if st.Code() != codes.ResourceExhausted {
-		t.Fatalf("expected ResourceExhausted, got %v", st.Code())
-	}
-}
-
-func TestListenQueueDialFlowSendsToActiveListener(t *testing.T) {
-	svc := &ControllerService{}
-	leaseName := "test-lease-dial-flow"
-
-	wrapper := &listenQueue{
-		ch:   make(chan *pb.ListenResponse, 8),
-		done: make(chan struct{}),
-	}
-	svc.swapListenQueue(leaseName, wrapper)
-
-	response := &pb.ListenResponse{RouterEndpoint: "dial-ep", RouterToken: "dial-tok"}
-	err := svc.sendToListener(context.Background(), leaseName, response)
-	if err != nil {
-		t.Fatalf("sendToListener should succeed for active listener: %v", err)
-	}
-
-	select {
-	case got := <-wrapper.ch:
-		if got.RouterEndpoint != "dial-ep" || got.RouterToken != "dial-tok" {
-			t.Fatal("received corrupted token")
-		}
-	default:
-		t.Fatal("token was not delivered to the active listener")
+			st, ok := status.FromError(err)
+			if !ok {
+				t.Fatalf("expected gRPC status error, got %v", err)
+			}
+			if st.Code() != codes.ResourceExhausted {
+				t.Fatalf("expected ResourceExhausted, got %v", st.Code())
+			}
+		})
 	}
 }
 
@@ -1521,36 +1350,6 @@ func TestLeaseLockPreservedWhenNewListenerTakesOver(t *testing.T) {
 
 	if _, ok := svc.leaseLocks.Load(leaseName); ok {
 		t.Fatal("lease lock should be cleaned up when last listener releases")
-	}
-}
-
-func TestSendToListenerReturnsResourceExhaustedWhenBufferFull(t *testing.T) {
-	svc := &ControllerService{}
-	leaseName := "test-lease-buffer-full-nonblocking"
-
-	q := &listenQueue{
-		ch:   make(chan *pb.ListenResponse, 8),
-		done: make(chan struct{}),
-	}
-	svc.swapListenQueue(leaseName, q)
-
-	for i := 0; i < 8; i++ {
-		q.ch <- &pb.ListenResponse{RouterEndpoint: "fill", RouterToken: "fill"}
-	}
-
-	err := svc.sendToListener(context.Background(), leaseName, &pb.ListenResponse{
-		RouterEndpoint: "ep", RouterToken: testRouterToken,
-	})
-	if err == nil {
-		t.Fatal("sendToListener should return error when buffer is full")
-	}
-
-	st, ok := status.FromError(err)
-	if !ok {
-		t.Fatalf("expected gRPC status error, got %v", err)
-	}
-	if st.Code() != codes.ResourceExhausted {
-		t.Fatalf("expected ResourceExhausted, got %v", st.Code())
 	}
 }
 
