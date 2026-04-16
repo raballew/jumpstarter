@@ -130,6 +130,7 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
             driver_class_path=root.type,
             description=root.description,
             managed_process=managed,
+            _manager=manager,
         )
 
     @classmethod
