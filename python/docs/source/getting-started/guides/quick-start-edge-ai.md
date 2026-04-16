@@ -24,17 +24,17 @@ metadata:
   name: edge-ai-device
 export:
   power:
-    type: jumpstarter_driver_power.driver.PowerRelay
+    type: jumpstarter_driver_gpiod.driver.PowerSwitch
     config:
-      gpio_chip: "/dev/gpiochip0"
-      gpio_line: 17
+      device: "/dev/gpiochip0"
+      line: 17
   serial:
     type: jumpstarter_driver_pyserial.driver.PySerial
     config:
       url: "/dev/ttyUSB0"
       baudrate: 115200
   storage:
-    type: jumpstarter_driver_opendal.driver.OpenDAL
+    type: jumpstarter_driver_opendal.driver.Opendal
     config:
       scheme: "fs"
       root: "/mnt/device-storage"
@@ -96,18 +96,18 @@ import time
 from jumpstarter_testing import JumpstarterTest
 
 class TestEdgeAIDevice(JumpstarterTest):
-    def test_device_boots_after_flash(self):
-        self.client.power.off()
+    def test_device_boots_after_flash(self, client):
+        client.power.off()
         time.sleep(1)
-        self.client.power.on()
+        client.power.on()
         time.sleep(15)
-        self.client.serial.write(b"uname -a\n")
-        response = self.client.serial.read(1024)
+        client.serial.write(b"uname -a\n")
+        response = client.serial.read(1024)
         assert b"Linux" in response
 
-    def test_inference_runtime_available(self):
-        self.client.serial.write(b"which inference-engine\n")
-        response = self.client.serial.read(1024)
+    def test_inference_runtime_available(self, client):
+        client.serial.write(b"which inference-engine\n")
+        response = client.serial.read(1024)
         assert b"/usr/bin/inference-engine" in response
 ```
 
