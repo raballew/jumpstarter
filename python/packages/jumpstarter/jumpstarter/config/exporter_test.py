@@ -239,3 +239,35 @@ export:
     from jumpstarter.common.sandbox import SandboxPolicy
 
     assert reloaded.export["power"].root.sandbox == SandboxPolicy(enabled=True)
+
+
+def test_instantiate_without_sandbox_returns_driver_directly():
+    """When sandbox is disabled, instantiate should return the driver class directly."""
+    driver_instance_config = ExporterConfigV1Alpha1DriverInstance(
+        type="jumpstarter_driver_composite.driver.Composite",
+    )
+
+    driver = driver_instance_config.instantiate()
+
+    from jumpstarter_driver_composite.driver import Composite
+
+    assert isinstance(driver, Composite)
+
+
+def test_instantiate_with_sandbox_enabled_returns_driver_proxy():
+    """When sandbox.enabled=True, instantiate should return a DriverProxy."""
+    from jumpstarter.common.sandbox import SandboxPolicy
+
+    driver_instance_config = ExporterConfigV1Alpha1DriverInstance(
+        type="jumpstarter_driver_composite.driver.Composite",
+        sandbox=SandboxPolicy(enabled=True),
+    )
+
+    result = driver_instance_config.instantiate()
+
+    from jumpstarter.exporter.process_manager import DriverProxy
+
+    assert isinstance(result, DriverProxy)
+    assert result.driver_class_path == "jumpstarter_driver_composite.driver.Composite"
+
+    result.close()

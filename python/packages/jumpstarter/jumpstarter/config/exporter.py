@@ -87,6 +87,9 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
     def instantiate(self) -> "Driver":
         match self.root:
             case ExporterConfigV1Alpha1DriverInstanceBase():
+                if self.root.sandbox.enabled:
+                    return self._instantiate_sandboxed()
+
                 try:
                     driver_class = import_class(self.root.type, [], True)
                 except MissingDriverError:
@@ -114,6 +117,20 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
                 from jumpstarter_driver_composite.driver import Proxy
 
                 return Proxy(ref=self.root.ref)
+
+    def _instantiate_sandboxed(self):
+        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+
+        root = self.root
+        manager = ProcessManager()
+        managed = manager.spawn(root.type, root.config, root.sandbox)
+
+        return DriverProxy(
+            socket_path=managed.socket_path,
+            driver_class_path=root.type,
+            description=root.description,
+            managed_process=managed,
+        )
 
     @classmethod
     def from_path(cls, path: str) -> ExporterConfigV1Alpha1DriverInstance:
