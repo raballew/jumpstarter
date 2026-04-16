@@ -122,12 +122,16 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
         from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
 
         root = self.root
+        driver_class = import_class(root.type, [], True)
+        client_class_path = driver_class.client()
+
         manager = ProcessManager()
         managed = manager.spawn(root.type, root.config, root.sandbox)
 
         return DriverProxy(
             socket_path=managed.socket_path,
             driver_class_path=root.type,
+            client_class_path=client_class_path,
             description=root.description,
             managed_process=managed,
             _manager=manager,

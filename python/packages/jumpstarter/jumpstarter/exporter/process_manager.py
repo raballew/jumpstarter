@@ -120,12 +120,12 @@ class DriverProxy:
     uuid: UUID = field(default_factory=uuid4)
     labels: dict = field(default_factory=dict)
     description: str | None = None
+    client_class_path: str = "jumpstarter_driver_composite.client.CompositeClient"
     managed_process: ManagedProcess | None = None
     _manager: ProcessManager | None = None
 
-    @classmethod
-    def client(cls) -> str:
-        return "jumpstarter_driver_composite.client.CompositeClient"
+    def client(self) -> str:
+        return self.client_class_path
 
     def report(self, *, parent=None, name=None):
         return jumpstarter_pb2.DriverInstanceReport(
