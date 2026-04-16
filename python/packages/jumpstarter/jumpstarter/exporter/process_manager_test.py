@@ -152,7 +152,7 @@ class TestDriverProxy:
         report = proxy.report()
         assert report.labels["jumpstarter.dev/sandbox"] == "true"
 
-    def test_proxy_close_is_safe_without_process(self):
+    def test_proxy_close_is_safe_without_manager(self):
         from jumpstarter.exporter.process_manager import DriverProxy
 
         proxy = DriverProxy(
@@ -161,6 +161,27 @@ class TestDriverProxy:
         )
 
         proxy.close()
+
+    def test_proxy_close_terminates_child_process(self):
+        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+
+        proxy = DriverProxy(
+            socket_path=managed.socket_path,
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+            managed_process=managed,
+            _manager=manager,
+        )
+
+        assert managed.process.is_alive()
+
+        proxy.close()
+
+        managed.process.join(timeout=5)
+        assert not managed.process.is_alive()
 
     def test_proxy_enumerate_returns_self(self):
         from jumpstarter.exporter.process_manager import DriverProxy

@@ -121,6 +121,7 @@ class DriverProxy:
     labels: dict = field(default_factory=dict)
     description: str | None = None
     managed_process: ManagedProcess | None = None
+    _manager: ProcessManager | None = None
 
     @classmethod
     def client(cls) -> str:
@@ -143,7 +144,9 @@ class DriverProxy:
         return [(self.uuid, parent, name, self)]
 
     def close(self):
-        pass
+        if self._manager is not None:
+            self._manager.close()
+            self._manager = None
 
     def reset(self):
         pass
