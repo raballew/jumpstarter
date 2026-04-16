@@ -1,6 +1,5 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class SandboxPolicy:
+class SandboxPolicy(BaseModel):
     enabled: bool = False
