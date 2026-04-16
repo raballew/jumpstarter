@@ -154,3 +154,88 @@ export:
     assert "afterLease:" in yaml_output
     assert "before_lease:" not in yaml_output
     assert "after_lease:" not in yaml_output
+
+
+def test_exporter_config_without_sandbox_defaults_to_disabled(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    """Drivers without sandbox config should default to sandbox disabled."""
+    monkeypatch.setattr(ExporterConfigV1Alpha1, "BASE_PATH", tmp_path)
+
+    path = tmp_path / "test-no-sandbox.yaml"
+    text = """apiVersion: jumpstarter.dev/v1alpha1
+kind: ExporterConfig
+metadata:
+  namespace: default
+  name: test-no-sandbox
+endpoint: "jumpstarter.my-lab.com:1443"
+token: "test-token"
+export:
+  power:
+    type: "jumpstarter_driver_power.driver.PduPower"
+"""
+    path.write_text(text, encoding="utf-8")
+
+    config = ExporterConfigV1Alpha1.load("test-no-sandbox")
+    driver_config = config.export["power"].root
+
+    from jumpstarter.common.sandbox import SandboxPolicy
+
+    assert driver_config.sandbox == SandboxPolicy(enabled=False)
+
+
+def test_exporter_config_with_sandbox_enabled(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    """Drivers with sandbox.enabled: true should parse correctly."""
+    monkeypatch.setattr(ExporterConfigV1Alpha1, "BASE_PATH", tmp_path)
+
+    path = tmp_path / "test-sandbox.yaml"
+    text = """apiVersion: jumpstarter.dev/v1alpha1
+kind: ExporterConfig
+metadata:
+  namespace: default
+  name: test-sandbox
+endpoint: "jumpstarter.my-lab.com:1443"
+token: "test-token"
+export:
+  power:
+    type: "jumpstarter_driver_power.driver.PduPower"
+    sandbox:
+      enabled: true
+"""
+    path.write_text(text, encoding="utf-8")
+
+    config = ExporterConfigV1Alpha1.load("test-sandbox")
+    driver_config = config.export["power"].root
+
+    from jumpstarter.common.sandbox import SandboxPolicy
+
+    assert driver_config.sandbox == SandboxPolicy(enabled=True)
+
+
+def test_exporter_config_sandbox_roundtrip(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    """Sandbox config should survive save/load round-trip."""
+    monkeypatch.setattr(ExporterConfigV1Alpha1, "BASE_PATH", tmp_path)
+
+    path = tmp_path / "test-sandbox-rt.yaml"
+    text = """apiVersion: jumpstarter.dev/v1alpha1
+kind: ExporterConfig
+metadata:
+  namespace: default
+  name: test-sandbox-rt
+endpoint: "jumpstarter.my-lab.com:1443"
+token: "test-token"
+export:
+  power:
+    type: "jumpstarter_driver_power.driver.PduPower"
+    sandbox:
+      enabled: true
+"""
+    path.write_text(text, encoding="utf-8")
+
+    config = ExporterConfigV1Alpha1.load("test-sandbox-rt")
+
+    path.unlink()
+    ExporterConfigV1Alpha1.save(config)
+    reloaded = ExporterConfigV1Alpha1.load("test-sandbox-rt")
+
+    from jumpstarter.common.sandbox import SandboxPolicy
+
+    assert reloaded.export["power"].root.sandbox == SandboxPolicy(enabled=True)

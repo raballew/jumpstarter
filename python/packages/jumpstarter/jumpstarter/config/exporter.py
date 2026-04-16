@@ -15,6 +15,7 @@ from .tls import TLSConfigV1Alpha1
 from jumpstarter.common.exceptions import ConfigurationError, MissingDriverError
 from jumpstarter.common.grpc import aio_secure_channel, ssl_channel_credentials
 from jumpstarter.common.importlib import import_class
+from jumpstarter.common.sandbox import SandboxPolicy
 
 if TYPE_CHECKING:
     from jumpstarter.driver import Driver
@@ -73,6 +74,7 @@ class ExporterConfigV1Alpha1DriverInstanceBase(BaseModel):
     methods_description: dict[str, str] = Field(default_factory=dict)
     config: dict[str, Any] = Field(default_factory=dict)
     children: dict[str, ExporterConfigV1Alpha1DriverInstance] = Field(default_factory=dict)
+    sandbox: SandboxPolicy = Field(default_factory=SandboxPolicy)
 
 
 class ExporterConfigV1Alpha1DriverInstance(RootModel):
