@@ -4,7 +4,7 @@ import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import mkdtemp
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from jumpstarter_protocol import jumpstarter_pb2
 
@@ -108,7 +108,7 @@ class DriverProxy:
     socket_path: str
     driver_class_path: str
     children: dict = field(default_factory=dict)
-    uuid: UUID = field(default_factory=lambda: __import__("uuid").uuid4())
+    uuid: UUID = field(default_factory=uuid4)
     labels: dict = field(default_factory=dict)
     description: str | None = None
     managed_process: ManagedProcess | None = None
