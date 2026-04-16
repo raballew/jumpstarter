@@ -136,10 +136,22 @@ class TestDriverProxy:
         proxy = DriverProxy(
             socket_path="/tmp/fake.sock",
             driver_class_path="jumpstarter_driver_composite.driver.Composite",
+            client_class_path="jumpstarter_driver_composite.client.CompositeClient",
         )
 
         report = proxy.report()
         assert "jumpstarter.dev/client" in report.labels
+
+    def test_proxy_client_uses_provided_class_path(self):
+        from jumpstarter.exporter.process_manager import DriverProxy
+
+        proxy = DriverProxy(
+            socket_path="/tmp/fake.sock",
+            driver_class_path="some_driver.driver.MyDriver",
+            client_class_path="some_driver.client.MyClient",
+        )
+
+        assert proxy.client() == "some_driver.client.MyClient"
 
     def test_proxy_report_includes_sandbox_label(self):
         from jumpstarter.exporter.process_manager import DriverProxy
