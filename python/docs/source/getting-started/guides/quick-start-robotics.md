@@ -55,9 +55,10 @@ Inside the Jumpstarter shell, use the CLI to control the robotics board:
 ```console
 $ j power on
 ok
-$ j serial write "STATUS\n"
-$ j serial read
+$ echo "STATUS" | j serial pipe --no-output
+$ j serial pipe
 READY
+^C
 $ j power off
 ok
 ```

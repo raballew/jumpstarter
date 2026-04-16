@@ -9,7 +9,7 @@ automate flashing, booting, and validating an edge AI device.
 Install the Jumpstarter CLI and the relevant drivers:
 
 ```console
-$ pip install jumpstarter-cli jumpstarter-driver-opendal jumpstarter-driver-network jumpstarter-driver-power jumpstarter-driver-pyserial
+$ pip install jumpstarter-cli jumpstarter-driver-opendal jumpstarter-driver-network jumpstarter-driver-power jumpstarter-driver-pyserial jumpstarter-driver-gpiod
 ```
 
 ## Exporter Configuration
@@ -61,7 +61,7 @@ Inside the Jumpstarter shell, use the CLI and Python API to manage the device:
 ```console
 $ j power on
 ok
-$ j storage write firmware.img /device/firmware.img
+$ j storage write-from-path /device/firmware.img firmware.img
 $ j power off
 ok
 ```
