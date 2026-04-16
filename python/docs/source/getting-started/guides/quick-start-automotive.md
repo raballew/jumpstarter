@@ -68,7 +68,7 @@ class TestEcuDiagnostics(JumpstarterTest):
         assert len(did_values) == 1
 
     def test_session_transition(self, client):
-        client.uds.change_session("extendedDiagnosticSession")
+        client.uds.change_session("extended")
 ```
 
 Run the tests:
