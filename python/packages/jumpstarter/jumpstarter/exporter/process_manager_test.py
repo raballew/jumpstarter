@@ -1,11 +1,7 @@
 import os
 import signal
 
-import pytest
-
 from jumpstarter.common.sandbox import SandboxPolicy
-
-pytestmark = pytest.mark.anyio
 
 
 class TestProcessManagerSpawn:
