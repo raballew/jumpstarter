@@ -51,8 +51,8 @@ Inside the Jumpstarter shell, use the Python API to interact with the ECU:
 from jumpstarter.common.utils import env
 
 with env() as client:
-    response = client.uds.read_data_by_identifier(0xF190)
-    print(f"VIN: {response.hex()}")
+    did_values = client.uds.read_data_by_identifier([0xF190])
+    print(f"VIN: {did_values[0].value}")
 ```
 
 ## Running Tests
@@ -63,12 +63,12 @@ Write a pytest test file (`test_ecu.py`) for automated ECU validation:
 from jumpstarter_testing import JumpstarterTest
 
 class TestEcuDiagnostics(JumpstarterTest):
-    def test_read_vin(self):
-        response = self.client.uds.read_data_by_identifier(0xF190)
-        assert len(response) == 17
+    def test_read_vin(self, client):
+        did_values = client.uds.read_data_by_identifier([0xF190])
+        assert len(did_values) == 1
 
-    def test_session_transition(self):
-        self.client.uds.diagnostic_session_control(0x03)
+    def test_session_transition(self, client):
+        client.uds.change_session("extendedDiagnosticSession")
 ```
 
 Run the tests:
