@@ -138,7 +138,7 @@ class TestProcessManagerCrashDetection:
         sandbox_policy = SandboxPolicy(enabled=True)
 
         managed1 = manager.spawn(driver_class_path, {}, sandbox_policy)
-        managed2 = manager.spawn(driver_class_path, {}, sandbox_policy)
+        manager.spawn(driver_class_path, {}, sandbox_policy)
 
         os.kill(managed1.process.pid, signal.SIGKILL)
         managed1.process.join(timeout=5)
