@@ -1,6 +1,9 @@
 import os
 import signal
 
+import pytest
+
+from jumpstarter.common.exceptions import ConfigurationError
 from jumpstarter.common.sandbox import SandboxPolicy
 
 
@@ -19,6 +22,18 @@ class TestProcessManagerSpawn:
         assert managed.process.is_alive()
         assert managed.process.pid != os.getpid()
         assert managed.socket_path != ""
+
+        manager.close()
+
+    def test_spawn_raises_on_child_startup_failure(self):
+        from jumpstarter.exporter.process_manager import ProcessManager
+
+        manager = ProcessManager()
+
+        sandbox_policy = SandboxPolicy(enabled=True)
+
+        with pytest.raises(ConfigurationError):
+            manager.spawn("nonexistent.module.NoSuchDriver", {}, sandbox_policy)
 
         manager.close()
 
