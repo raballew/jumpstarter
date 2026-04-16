@@ -90,14 +90,24 @@ Each package's `pyproject.toml` includes:
 
 ## Examples Structure
 
+Examples cover multiple industry verticals and testing patterns:
+
 ```
 python/examples/
-├── automotive/                  # Automotive testing example
+├── automotive/                  # Automotive ECU diagnostics example
 │   ├── jumpstarter_example_automotive/
 │   ├── pyproject.toml
 │   └── README.md
-└── soc-pytest/                 # SoC testing example
-    ├── jumpstarter_example_soc_pytest/
+├── android-emulator/            # Android emulator example
+│   ├── jumpstarter_example_android_emulator/
+│   ├── pyproject.toml
+│   └── README.md
+├── soc-pytest/                  # SoC testing example
+│   ├── jumpstarter_example_soc_pytest/
+│   ├── pyproject.toml
+│   └── README.md
+└── xcp-ecu/                     # XCP measurement and calibration example
+    ├── jumpstarter_example_xcp_ecu/
     ├── pyproject.toml
     └── README.md
 ```

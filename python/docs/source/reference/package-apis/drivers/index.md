@@ -68,9 +68,9 @@ Drivers that handle media streams:
 * **[UStreamer](ustreamer.md)** (`jumpstarter-driver-ustreamer`) - Video
   streaming functionality
 
-### Automotive Diagnostics Drivers
+### Diagnostics Protocol Drivers
 
-Drivers for automotive diagnostic protocols:
+Drivers for vehicle and industrial diagnostic protocols:
 
 * **[DoIP](doip.md)** (`jumpstarter-driver-doip`) - Raw Diagnostics over Internet
   Protocol (ISO-13400)
