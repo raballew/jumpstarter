@@ -27,11 +27,6 @@ development workflow. The guides cover:
 - [Quick Start: Edge AI](quick-start-edge-ai.md): Edge AI appliance testing
   with storage, network, and power drivers
 
-### Migration
-
-- [Migration Guide: Domain-Neutral Branding](migration-from-automotive-branding.md):
-  What changed for existing users
-
 
 ```{toctree}
 :maxdepth: 1
@@ -46,5 +41,4 @@ pytest-usage.md
 quick-start-automotive.md
 quick-start-robotics.md
 quick-start-edge-ai.md
-migration-from-automotive-branding.md
 ```
