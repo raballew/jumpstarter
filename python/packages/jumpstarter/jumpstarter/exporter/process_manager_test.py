@@ -153,6 +153,19 @@ class TestProcessManagerCrashDetection:
         manager.close()
 
 
+class TestDriverProxyConformsToDriverLike:
+    def test_proxy_instance_satisfies_driver_like_protocol(self):
+        from jumpstarter.common.driver_protocol import DriverLike
+        from jumpstarter.exporter.process_manager import DriverProxy
+
+        proxy = DriverProxy(
+            socket_path="/tmp/fake.sock",
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+        )
+
+        assert isinstance(proxy, DriverLike)
+
+
 class TestDriverProxy:
     def test_proxy_has_report_with_correct_client(self):
         from jumpstarter.exporter.process_manager import DriverProxy
