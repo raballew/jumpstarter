@@ -72,9 +72,10 @@ with env() as client:
     client.power.on()
     time.sleep(2)
 
-    client.serial.write(b"STATUS\n")
-    response = client.serial.read(1024)
-    print(f"Board status: {response.decode()}")
+    serial = client.serial.open()
+    serial.sendline("STATUS")
+    serial.expect("READY")
+    print(f"Board status: READY")
 
     client.power.off()
 ```
@@ -86,20 +87,21 @@ Write a pytest test file (`test_robotics.py`) for automated board validation:
 ```python
 import time
 from jumpstarter_testing import JumpstarterTest
+from jumpstarter_driver_gpiod.client import PinState
 
 class TestRoboticsController(JumpstarterTest):
     def test_board_boots(self, client):
         client.power.on()
         time.sleep(5)
-        client.serial.write(b"STATUS\n")
-        response = client.serial.read(1024)
-        assert b"READY" in response
+        serial = client.serial.open()
+        serial.sendline("STATUS")
+        serial.expect("READY")
         client.power.off()
 
     def test_gpio_output(self, client):
         client.gpio.on()
-        value = client.gpio.read_pin()
-        assert value == "active"
+        value = client.gpio.read()
+        assert value == PinState.ACTIVE
 ```
 
 Run the tests:

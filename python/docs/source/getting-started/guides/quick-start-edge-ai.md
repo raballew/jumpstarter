@@ -37,7 +37,8 @@ export:
     type: jumpstarter_driver_opendal.driver.Opendal
     config:
       scheme: "fs"
-      root: "/mnt/device-storage"
+      kwargs:
+        root: "/mnt/device-storage"
   network:
     type: jumpstarter_driver_network.driver.TcpNetwork
     config:
@@ -75,14 +76,15 @@ with env() as client:
     client.power.off()
     time.sleep(1)
 
-    client.storage.write("/firmware/model-v2.img", open("model-v2.img", "rb"))
+    client.storage.write_from_path("/firmware/model-v2.img", "model-v2.img")
 
     client.power.on()
     time.sleep(10)
 
-    client.serial.write(b"inference --model /opt/model.bin --input test.jpg\n")
-    result = client.serial.read(4096)
-    print(f"Inference result: {result.decode()}")
+    serial = client.serial.open()
+    serial.sendline("inference --model /opt/model.bin --input test.jpg")
+    serial.expect("inference complete")
+    print("Inference completed successfully")
 
     client.power.off()
 ```
@@ -101,14 +103,14 @@ class TestEdgeAIDevice(JumpstarterTest):
         time.sleep(1)
         client.power.on()
         time.sleep(15)
-        client.serial.write(b"uname -a\n")
-        response = client.serial.read(1024)
-        assert b"Linux" in response
+        serial = client.serial.open()
+        serial.sendline("uname -a")
+        serial.expect("Linux")
 
     def test_inference_runtime_available(self, client):
-        client.serial.write(b"which inference-engine\n")
-        response = client.serial.read(1024)
-        assert b"/usr/bin/inference-engine" in response
+        serial = client.serial.open()
+        serial.sendline("which inference-engine")
+        serial.expect("/usr/bin/inference-engine")
 ```
 
 Run the tests:
