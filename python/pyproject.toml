@@ -101,8 +101,16 @@ mosquitto = "mosquitto"
 
 [tool.coverage.run]
 branch = true
+relative_files = true
 omit = ["conftest.py", "test_*.py", "*_test.py", "*_pb2.py", "*_pb2_grpc.py"]
+
+[tool.coverage.report]
 skip_empty = true
+
+[tool.coverage.paths]
+source = [
+    "packages/*/",
+]
 
 [tool.pytest.ini_options]
 addopts = "--capture=no --doctest-modules --cov --cov-report=html --cov-report=xml"
