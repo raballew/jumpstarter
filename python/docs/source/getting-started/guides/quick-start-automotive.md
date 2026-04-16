@@ -10,7 +10,7 @@ diagnostic workflow against a simulated ECU.
 Install the Jumpstarter CLI and the automotive diagnostics drivers:
 
 ```console
-$ pip install jumpstarter-cli jumpstarter-driver-uds-doip
+$ pip install jumpstarter-cli jumpstarter-driver-uds-doip jumpstarter-testing pytest
 ```
 
 ## Exporter Configuration

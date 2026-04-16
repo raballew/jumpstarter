@@ -9,7 +9,7 @@ automate testing of a robotics controller board.
 Install the Jumpstarter CLI and the relevant drivers:
 
 ```console
-$ pip install jumpstarter-cli jumpstarter-driver-pyserial jumpstarter-driver-power jumpstarter-driver-gpiod
+$ pip install jumpstarter-cli jumpstarter-driver-pyserial jumpstarter-driver-power jumpstarter-driver-gpiod jumpstarter-testing pytest
 ```
 
 ## Exporter Configuration
