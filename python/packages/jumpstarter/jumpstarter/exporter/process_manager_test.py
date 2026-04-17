@@ -6,104 +6,77 @@ import pytest
 from jumpstarter.common.exceptions import ConfigurationError
 
 
+@pytest.fixture
+def process_manager():
+    from jumpstarter.exporter.process_manager import ProcessManager
+
+    manager = ProcessManager()
+    yield manager
+    manager.close()
+
+
 class TestProcessManagerSpawn:
-    def test_spawn_creates_child_process(self):
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
+    def test_spawn_creates_child_process(self, process_manager):
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
         driver_config = {}
 
-        managed = manager.spawn(driver_class_path, driver_config)
+        managed = process_manager.spawn(driver_class_path, driver_config)
 
         assert managed.process.is_alive()
         assert managed.process.pid != os.getpid()
         assert managed.socket_path != ""
 
-        manager.close()
-
-    def test_spawn_raises_on_child_startup_failure(self):
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
+    def test_spawn_raises_on_child_startup_failure(self, process_manager):
         with pytest.raises(ConfigurationError):
-            manager.spawn("nonexistent.module.NoSuchDriver", {})
+            process_manager.spawn("nonexistent.module.NoSuchDriver", {})
 
-        manager.close()
-
-    def test_spawn_cleans_temp_dir_on_failure(self):
+    def test_spawn_cleans_temp_dir_on_failure(self, process_manager):
         from pathlib import Path
 
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
         with pytest.raises(ConfigurationError):
-            manager.spawn("nonexistent.module.NoSuchDriver", {})
+            process_manager.spawn("nonexistent.module.NoSuchDriver", {})
 
-        for temp_dir in manager._temp_dirs:
+        for temp_dir in process_manager._temp_dirs:
             assert not Path(temp_dir).exists()
 
-        manager.close()
-
-    def test_spawn_creates_unique_socket_per_driver(self):
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
+    def test_spawn_creates_unique_socket_per_driver(self, process_manager):
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
 
-        managed1 = manager.spawn(driver_class_path, {})
-        managed2 = manager.spawn(driver_class_path, {})
+        managed1 = process_manager.spawn(driver_class_path, {})
+        managed2 = process_manager.spawn(driver_class_path, {})
 
         assert managed1.socket_path != managed2.socket_path
         assert managed1.process.pid != managed2.process.pid
 
-        manager.close()
-
 
 class TestProcessManagerClose:
-    def test_close_terminates_all_child_processes(self):
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
+    def test_close_terminates_all_child_processes(self, process_manager):
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
 
-        managed1 = manager.spawn(driver_class_path, {})
-        managed2 = manager.spawn(driver_class_path, {})
+        managed1 = process_manager.spawn(driver_class_path, {})
+        managed2 = process_manager.spawn(driver_class_path, {})
 
-        manager.close()
+        process_manager.close()
 
         managed1.process.join(timeout=5)
         managed2.process.join(timeout=5)
         assert not managed1.process.is_alive()
         assert not managed2.process.is_alive()
 
-    def test_close_is_idempotent(self):
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
+    def test_close_is_idempotent(self, process_manager):
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
 
-        manager.spawn(driver_class_path, {})
+        process_manager.spawn(driver_class_path, {})
 
-        manager.close()
-        manager.close()
+        process_manager.close()
+        process_manager.close()
 
 
 class TestProcessManagerCrashDetection:
-    def test_is_alive_returns_false_after_process_killed(self):
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
+    def test_is_alive_returns_false_after_process_killed(self, process_manager):
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
 
-        managed = manager.spawn(driver_class_path, {})
+        managed = process_manager.spawn(driver_class_path, {})
 
         assert managed.process.is_alive()
 
@@ -112,50 +85,36 @@ class TestProcessManagerCrashDetection:
 
         assert not managed.process.is_alive()
 
-        manager.close()
-
-    def test_check_health_reports_dead_process(self):
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
+    def test_check_health_reports_dead_process(self, process_manager):
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
 
-        managed = manager.spawn(driver_class_path, {})
+        managed = process_manager.spawn(driver_class_path, {})
         health_key = f"{driver_class_path}:{managed.process.pid}"
 
-        health = manager.check_health()
+        health = process_manager.check_health()
         assert health[health_key] is True
 
         os.kill(managed.process.pid, signal.SIGKILL)
         managed.process.join(timeout=5)
 
-        health = manager.check_health()
+        health = process_manager.check_health()
         assert health[health_key] is False
 
-        manager.close()
-
-    def test_check_health_distinguishes_processes_with_same_class_path(self):
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-
+    def test_check_health_distinguishes_processes_with_same_class_path(self, process_manager):
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
 
-        managed1 = manager.spawn(driver_class_path, {})
-        manager.spawn(driver_class_path, {})
+        managed1 = process_manager.spawn(driver_class_path, {})
+        process_manager.spawn(driver_class_path, {})
 
         os.kill(managed1.process.pid, signal.SIGKILL)
         managed1.process.join(timeout=5)
 
-        health = manager.check_health()
+        health = process_manager.check_health()
         alive_count = sum(1 for alive in health.values() if alive)
         dead_count = sum(1 for alive in health.values() if not alive)
 
         assert alive_count == 1
         assert dead_count == 1
-
-        manager.close()
 
 
 class TestDriverProxyConformsToDriverLike:
@@ -225,17 +184,16 @@ class TestDriverProxy:
 
         proxy.close()
 
-    def test_proxy_close_terminates_child_process(self):
-        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+    def test_proxy_close_terminates_child_process(self, process_manager):
+        from jumpstarter.exporter.process_manager import DriverProxy
 
-        manager = ProcessManager()
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
+        managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         proxy = DriverProxy(
             socket_path=managed.socket_path,
             driver_class_path="jumpstarter_driver_composite.driver.Composite",
             managed_process=managed,
-            _manager=manager,
+            _manager=process_manager,
         )
 
         assert managed.process.is_alive()
@@ -259,33 +217,27 @@ class TestDriverProxy:
 
 
 class TestDriverProxyGrpcForwarding:
-    def test_proxy_channel_attribute_connects_to_child(self):
-        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+    def test_proxy_channel_attribute_connects_to_child(self, process_manager):
+        from jumpstarter.exporter.process_manager import DriverProxy
 
-        manager = ProcessManager()
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
+        managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         proxy = DriverProxy(
             socket_path=managed.socket_path,
             driver_class_path="jumpstarter_driver_composite.driver.Composite",
             managed_process=managed,
-            _manager=manager,
+            _manager=process_manager,
         )
 
         assert proxy._channel is not None
         assert proxy._stub is not None
 
-        manager.close()
-
-    def test_proxy_get_report_via_grpc(self):
+    def test_proxy_get_report_via_grpc(self, process_manager):
         import grpc
         from google.protobuf.empty_pb2 import Empty
         from jumpstarter_protocol import jumpstarter_pb2_grpc
 
-        from jumpstarter.exporter.process_manager import ProcessManager
-
-        manager = ProcessManager()
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
+        managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         channel = grpc.insecure_channel(f"unix://{managed.socket_path}")
         stub = jumpstarter_pb2_grpc.ExporterServiceStub(channel)
@@ -295,23 +247,21 @@ class TestDriverProxyGrpcForwarding:
         assert len(response.reports) > 0
 
         channel.close()
-        manager.close()
 
-    def test_proxy_forwards_get_report_through_stub(self):
+    def test_proxy_forwards_get_report_through_stub(self, process_manager):
         import asyncio
 
         from google.protobuf.empty_pb2 import Empty
 
-        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+        from jumpstarter.exporter.process_manager import DriverProxy
 
-        manager = ProcessManager()
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
+        managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         proxy = DriverProxy(
             socket_path=managed.socket_path,
             driver_class_path="jumpstarter_driver_composite.driver.Composite",
             managed_process=managed,
-            _manager=manager,
+            _manager=process_manager,
         )
 
         response = asyncio.run(proxy.GetReport(Empty(), None))
@@ -319,20 +269,17 @@ class TestDriverProxyGrpcForwarding:
         assert len(response.reports) > 0
 
         proxy.close()
-        manager.close()
 
-    def test_proxy_close_then_manager_close_is_safe(self):
-        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+    def test_proxy_close_then_manager_close_is_safe(self, process_manager):
+        from jumpstarter.exporter.process_manager import DriverProxy
 
-        manager = ProcessManager()
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
+        managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         proxy = DriverProxy(
             socket_path=managed.socket_path,
             driver_class_path="jumpstarter_driver_composite.driver.Composite",
             managed_process=managed,
-            _manager=manager,
+            _manager=process_manager,
         )
 
         proxy.close()
-        manager.close()
