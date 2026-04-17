@@ -22,8 +22,7 @@ class _ChildProcessServicer(jumpstarter_pb2_grpc.ExporterServiceServicer):
     async def GetReport(self, request, context):
         return jumpstarter_pb2.GetReportResponse(
             reports=[
-                instance.report(parent=parent, name=name)
-                for (_, parent, name, instance) in self._driver.enumerate()
+                instance.report(parent=parent, name=name) for (_, parent, name, instance) in self._driver.enumerate()
             ],
         )
 
@@ -80,10 +79,11 @@ class ProcessManager:
         self._temp_dirs.append(temp_dir)
         socket_path = str(Path(temp_dir) / "driver.sock")
 
-        ready_event = multiprocessing.Event()
-        success_flag = multiprocessing.Value("i", 0)
+        ctx = multiprocessing.get_context("forkserver")
+        ready_event = ctx.Event()
+        success_flag = ctx.Value("i", 0)
 
-        process = multiprocessing.Process(
+        process = ctx.Process(
             target=_child_process_entry,
             args=(driver_class_path, driver_config, socket_path, ready_event, success_flag),
             daemon=True,
@@ -157,12 +157,15 @@ class DriverProxy:
     client_class_path: str = "jumpstarter_driver_composite.client.CompositeClient"
     managed_process: ManagedProcess | None = None
     _manager: ProcessManager | None = None
-    _channel: grpc.Channel | None = field(default=None, init=False, repr=False)
+    _channel: grpc.aio.Channel | None = field(default=None, init=False, repr=False)
     _stub: jumpstarter_pb2_grpc.ExporterServiceStub | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self):
-        if self.managed_process is not None:
-            self._channel = grpc.insecure_channel(f"unix://{self.socket_path}")
+        pass
+
+    def _ensure_channel(self):
+        if self._channel is None and self.managed_process is not None:
+            self._channel = grpc.aio.insecure_channel(f"unix://{self.socket_path}")
             self._stub = jumpstarter_pb2_grpc.ExporterServiceStub(self._channel)
 
     def client(self) -> str:
@@ -185,18 +188,25 @@ class DriverProxy:
         return [(self.uuid, parent, name, self)]
 
     async def DriverCall(self, request, context):
-        return self._stub.DriverCall(request)
+        self._ensure_channel()
+        return await self._stub.DriverCall(request)
 
     async def StreamingDriverCall(self, request, context):
-        for response in self._stub.StreamingDriverCall(request):
+        self._ensure_channel()
+        async for response in self._stub.StreamingDriverCall(request):
             yield response
 
     async def GetReport(self, request, context):
-        return self._stub.GetReport(request)
+        self._ensure_channel()
+        return await self._stub.GetReport(request)
 
     def close(self):
         if self._channel is not None:
-            self._channel.close()
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(self._channel.close())
+            except RuntimeError:
+                asyncio.run(self._channel.close())
             self._channel = None
             self._stub = None
         if self._manager is not None and self.managed_process is not None:

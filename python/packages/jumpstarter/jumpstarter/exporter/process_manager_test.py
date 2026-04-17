@@ -217,7 +217,7 @@ class TestDriverProxy:
 
 
 class TestDriverProxyGrpcForwarding:
-    def test_proxy_channel_attribute_connects_to_child(self, process_manager):
+    def test_proxy_channel_is_lazy_initialized(self, process_manager):
         from jumpstarter.exporter.process_manager import DriverProxy
 
         managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
@@ -229,8 +229,8 @@ class TestDriverProxyGrpcForwarding:
             _manager=process_manager,
         )
 
-        assert proxy._channel is not None
-        assert proxy._stub is not None
+        assert proxy._channel is None
+        assert proxy._stub is None
 
     def test_proxy_get_report_via_grpc(self, process_manager):
         import grpc
@@ -264,32 +264,67 @@ class TestDriverProxyGrpcForwarding:
             _manager=process_manager,
         )
 
-        response = asyncio.run(proxy.GetReport(Empty(), None))
-        assert response.reports is not None
-        assert len(response.reports) > 0
+        async def _test():
+            response = await proxy.GetReport(Empty(), None)
+            assert response.reports is not None
+            assert len(response.reports) > 0
+            proxy.close()
 
-        proxy.close()
+        asyncio.run(_test())
 
-    def test_proxy_forwards_driver_call_through_stub(self, process_manager):
+    def test_proxy_forwards_driver_call_through_proxy_method(self, process_manager):
+        import asyncio
+
         import grpc
-        from jumpstarter_protocol import jumpstarter_pb2, jumpstarter_pb2_grpc
+        from jumpstarter_protocol import jumpstarter_pb2
+
+        from jumpstarter.exporter.process_manager import DriverProxy
 
         managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
-        channel = grpc.insecure_channel(f"unix://{managed.socket_path}")
-        stub = jumpstarter_pb2_grpc.ExporterServiceStub(channel)
+        proxy = DriverProxy(
+            socket_path=managed.socket_path,
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+            managed_process=managed,
+            _manager=process_manager,
+        )
 
         request = jumpstarter_pb2.DriverCallRequest(
             uuid=str(managed.driver_class_path),
             method="nonexistent_method",
         )
 
-        with pytest.raises(grpc.RpcError) as exc_info:
-            stub.DriverCall(request)
+        async def _test():
+            with pytest.raises(grpc.RpcError) as exc_info:
+                await proxy.DriverCall(request, None)
+            assert exc_info.value.code() == grpc.StatusCode.NOT_FOUND
+            proxy.close()
 
-        assert exc_info.value.code() == grpc.StatusCode.NOT_FOUND
+        asyncio.run(_test())
 
-        channel.close()
+    def test_proxy_uses_async_channel(self, process_manager):
+        import asyncio
+
+        import grpc.aio
+        from google.protobuf.empty_pb2 import Empty
+
+        from jumpstarter.exporter.process_manager import DriverProxy
+
+        managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
+
+        proxy = DriverProxy(
+            socket_path=managed.socket_path,
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+            managed_process=managed,
+            _manager=process_manager,
+        )
+
+        async def _test():
+            await proxy.GetReport(Empty(), None)
+            assert isinstance(proxy._channel, grpc.aio.Channel)
+            proxy.close()
+
+        asyncio.run(_test())
 
     def test_proxy_close_then_manager_close_is_safe(self, process_manager):
         from jumpstarter.exporter.process_manager import DriverProxy
