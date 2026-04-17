@@ -93,6 +93,7 @@ class ProcessManager:
 
         if success_flag.value != 1:
             process.join(timeout=5)
+            shutil.rmtree(temp_dir, ignore_errors=True)
             raise ConfigurationError(
                 f"Driver process for '{driver_class_path}' failed to start (exit code: {process.exitcode})"
             )
