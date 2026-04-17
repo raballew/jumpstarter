@@ -54,6 +54,23 @@ class TestProcessManagerSpawn:
         manager.close()
 
 
+class TestProcessManagerSocketPathValidation:
+    def test_spawn_raises_when_socket_path_exceeds_unix_limit(self):
+        from unittest.mock import patch
+
+        from jumpstarter.exporter.process_manager import ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+
+        long_prefix = "/tmp/" + "a" * 200 + "/"
+        with patch("jumpstarter.exporter.process_manager.mkdtemp", return_value=long_prefix):
+            with pytest.raises(ConfigurationError, match="socket path exceeds"):
+                manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+
+        manager.close()
+
+
 class TestProcessManagerClose:
     def test_close_terminates_all_child_processes(self):
         from jumpstarter.exporter.process_manager import ProcessManager

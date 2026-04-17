@@ -53,10 +53,19 @@ class ProcessManager:
         self._managed: list[ManagedProcess] = []
         self._temp_dirs: list[str] = []
 
+    UNIX_SOCKET_PATH_LIMIT = 108
+
     def spawn(self, driver_class_path: str, driver_config: dict, sandbox_policy: SandboxPolicy) -> ManagedProcess:
         temp_dir = mkdtemp(prefix="jumpstarter-sandbox-")
-        self._temp_dirs.append(temp_dir)
         socket_path = str(Path(temp_dir) / "driver.sock")
+
+        if len(socket_path.encode("utf-8")) >= self.UNIX_SOCKET_PATH_LIMIT:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            raise ConfigurationError(
+                f"Unix socket path exceeds the {self.UNIX_SOCKET_PATH_LIMIT}-byte limit: {socket_path}"
+            )
+
+        self._temp_dirs.append(temp_dir)
 
         ready_event = multiprocessing.Event()
         success_flag = multiprocessing.Value("i", 0)
