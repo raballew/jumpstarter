@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import multiprocessing
 import shutil
@@ -18,7 +19,7 @@ class _ChildProcessServicer(jumpstarter_pb2_grpc.ExporterServiceServicer):
     def __init__(self, driver_instance):
         self._driver = driver_instance
 
-    def GetReport(self, request, context):
+    async def GetReport(self, request, context):
         return jumpstarter_pb2.GetReportResponse(
             reports=[
                 instance.report(parent=parent, name=name)
@@ -26,39 +27,40 @@ class _ChildProcessServicer(jumpstarter_pb2_grpc.ExporterServiceServicer):
             ],
         )
 
-    def DriverCall(self, request, context):
-        return self._driver.DriverCall(request, context)
+    async def DriverCall(self, request, context):
+        return await self._driver.DriverCall(request, context)
 
-    def StreamingDriverCall(self, request, context):
-        return self._driver.StreamingDriverCall(request, context)
+    async def StreamingDriverCall(self, request, context):
+        async for response in self._driver.StreamingDriverCall(request, context):
+            yield response
 
 
 def _child_process_entry(driver_class_path: str, driver_config: dict, socket_path: str, ready_event, success_flag):
-    from concurrent import futures
-
-    import grpc
     from jumpstarter_protocol import jumpstarter_pb2_grpc, router_pb2_grpc
 
     from jumpstarter.common.importlib import import_class
 
-    try:
-        driver_class = import_class(driver_class_path, [], True)
-        driver_instance = driver_class(**driver_config)
-        servicer = _ChildProcessServicer(driver_instance)
+    async def _run_server():
+        try:
+            driver_class = import_class(driver_class_path, [], True)
+            driver_instance = driver_class(**driver_config)
+            servicer = _ChildProcessServicer(driver_instance)
 
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
-        jumpstarter_pb2_grpc.add_ExporterServiceServicer_to_server(servicer, server)
-        router_pb2_grpc.add_RouterServiceServicer_to_server(driver_instance, server)
-        server.add_insecure_port(f"unix://{socket_path}")
-        server.start()
+            server = grpc.aio.server()
+            jumpstarter_pb2_grpc.add_ExporterServiceServicer_to_server(servicer, server)
+            router_pb2_grpc.add_RouterServiceServicer_to_server(driver_instance, server)
+            server.add_insecure_port(f"unix://{socket_path}")
+            await server.start()
 
-        success_flag.value = 1
-        ready_event.set()
+            success_flag.value = 1
+            ready_event.set()
 
-        server.wait_for_termination()
-    except Exception:
-        logger.exception("Child process failed for driver %s", driver_class_path)
-        ready_event.set()
+            await server.wait_for_termination()
+        except Exception:
+            logger.exception("Child process failed for driver %s", driver_class_path)
+            ready_event.set()
+
+    asyncio.run(_run_server())
 
 
 @dataclass

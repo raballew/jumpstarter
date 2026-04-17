@@ -270,6 +270,27 @@ class TestDriverProxyGrpcForwarding:
 
         proxy.close()
 
+    def test_proxy_forwards_driver_call_through_stub(self, process_manager):
+        import grpc
+        from jumpstarter_protocol import jumpstarter_pb2, jumpstarter_pb2_grpc
+
+        managed = process_manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
+
+        channel = grpc.insecure_channel(f"unix://{managed.socket_path}")
+        stub = jumpstarter_pb2_grpc.ExporterServiceStub(channel)
+
+        request = jumpstarter_pb2.DriverCallRequest(
+            uuid=str(managed.driver_class_path),
+            method="nonexistent_method",
+        )
+
+        with pytest.raises(grpc.RpcError) as exc_info:
+            stub.DriverCall(request)
+
+        assert exc_info.value.code() == grpc.StatusCode.NOT_FOUND
+
+        channel.close()
+
     def test_proxy_close_then_manager_close_is_safe(self, process_manager):
         from jumpstarter.exporter.process_manager import DriverProxy
 
