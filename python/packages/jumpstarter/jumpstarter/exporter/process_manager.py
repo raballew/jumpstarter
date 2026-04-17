@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 _ERROR_BUFFER_SIZE = 4096
 
 
-def _child_process_entry(driver_class_path: str, driver_config: dict, socket_path: str, ready_event, success_flag, error_buffer):
+def _child_process_entry(
+    driver_class_path: str, driver_config: dict, socket_path: str, ready_event, success_flag, error_buffer
+):
     from concurrent import futures
 
     import grpc
