@@ -165,6 +165,26 @@ class TestDriverProxyConformsToDriverLike:
 
         assert isinstance(proxy, DriverLike)
 
+    def test_proxy_method_signatures_match_driver_like_protocol(self):
+        import inspect
+
+        from jumpstarter.common.driver_protocol import DriverLike
+        from jumpstarter.exporter.process_manager import DriverProxy
+
+        protocol_hints = {
+            name: inspect.signature(method)
+            for name, method in inspect.getmembers(DriverLike, predicate=inspect.isfunction)
+            if not name.startswith("_")
+        }
+
+        for method_name, protocol_sig in protocol_hints.items():
+            proxy_method = getattr(DriverProxy, method_name)
+            proxy_sig = inspect.signature(proxy_method)
+            assert proxy_sig.parameters.keys() == protocol_sig.parameters.keys(), (
+                f"DriverProxy.{method_name} parameters {list(proxy_sig.parameters.keys())} "
+                f"do not match DriverLike.{method_name} {list(protocol_sig.parameters.keys())}"
+            )
+
 
 class TestDriverProxy:
     def test_proxy_has_report_with_correct_client(self):
