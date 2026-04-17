@@ -36,11 +36,14 @@ def _child_process_entry(
         router_pb2_grpc.add_RouterServiceServicer_to_server(driver_instance, server)
         server.add_insecure_port(f"unix://{socket_path}")
         server.start()
+        try:
+            success_flag.value = 1
+            ready_event.set()
 
-        success_flag.value = 1
-        ready_event.set()
-
-        server.wait_for_termination()
+            server.wait_for_termination()
+        except Exception:
+            server.stop(grace=0)
+            raise
     except Exception as exc:
         logger.exception("Child process failed for driver %s", driver_class_path)
         message = str(exc).encode("utf-8")[:_ERROR_BUFFER_SIZE]

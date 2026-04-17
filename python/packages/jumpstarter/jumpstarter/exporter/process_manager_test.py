@@ -1,5 +1,7 @@
+import multiprocessing
 import os
 import signal
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -344,3 +346,34 @@ class TestDriverProxy:
         entries = proxy.enumerate()
         assert len(entries) == 1
         assert entries[0][3] is proxy
+
+
+class TestChildProcessEntryServerCleanup:
+    def test_server_stopped_when_wait_for_termination_raises(self):
+        import grpc as grpc_module
+
+        from jumpstarter.exporter.process_manager import _child_process_entry
+
+        mock_server = MagicMock()
+        mock_server.wait_for_termination.side_effect = RuntimeError("unexpected termination")
+
+        ready_event = multiprocessing.Event()
+        success_flag = multiprocessing.Value("i", 0)
+        error_buffer = multiprocessing.Array("c", 4096)
+
+        original_grpc_server = grpc_module.server
+        try:
+            grpc_module.server = MagicMock(return_value=mock_server)
+            with patch("jumpstarter.common.importlib.import_class", return_value=MagicMock()):
+                _child_process_entry(
+                    "fake.module.FakeDriver",
+                    {},
+                    "/tmp/fake.sock",
+                    ready_event,
+                    success_flag,
+                    error_buffer,
+                )
+        finally:
+            grpc_module.server = original_grpc_server
+
+        mock_server.stop.assert_called_once_with(grace=0)
