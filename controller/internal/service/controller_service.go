@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	goruntime "runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -109,6 +110,7 @@ func (s *ControllerService) acquireLeaseLock(leaseName string) *sync.Mutex {
 		newRefs := atomic.AddInt32(&ll.refs, 1)
 		if newRefs <= 1 {
 			atomic.AddInt32(&ll.refs, -1)
+			goruntime.Gosched()
 			continue
 		}
 		return &ll.mu
