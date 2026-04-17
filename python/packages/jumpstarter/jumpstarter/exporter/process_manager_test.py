@@ -296,3 +296,47 @@ class TestDriverProxyGrpcForwarding:
 
         channel.close()
         manager.close()
+
+    def test_proxy_forwards_get_report_through_stub(self):
+        import asyncio
+
+        from google.protobuf.empty_pb2 import Empty
+
+        from jumpstarter.common.sandbox import SandboxPolicy
+        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+
+        proxy = DriverProxy(
+            socket_path=managed.socket_path,
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+            managed_process=managed,
+            _manager=manager,
+        )
+
+        response = asyncio.run(proxy.GetReport(Empty(), None))
+        assert response.reports is not None
+        assert len(response.reports) > 0
+
+        proxy.close()
+        manager.close()
+
+    def test_proxy_close_then_manager_close_is_safe(self):
+        from jumpstarter.common.sandbox import SandboxPolicy
+        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+
+        proxy = DriverProxy(
+            socket_path=managed.socket_path,
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+            managed_process=managed,
+            _manager=manager,
+        )
+
+        proxy.close()
+        manager.close()
