@@ -6,12 +6,32 @@ from pathlib import Path
 from tempfile import mkdtemp
 from uuid import UUID, uuid4
 
-from jumpstarter_protocol import jumpstarter_pb2
+import grpc
+from jumpstarter_protocol import jumpstarter_pb2, jumpstarter_pb2_grpc
 
 from jumpstarter.common.exceptions import ConfigurationError
 from jumpstarter.common.sandbox import SandboxPolicy
 
 logger = logging.getLogger(__name__)
+
+
+class _ChildProcessServicer(jumpstarter_pb2_grpc.ExporterServiceServicer):
+    def __init__(self, driver_instance):
+        self._driver = driver_instance
+
+    def GetReport(self, request, context):
+        return jumpstarter_pb2.GetReportResponse(
+            reports=[
+                instance.report(parent=parent, name=name)
+                for (_, parent, name, instance) in self._driver.enumerate()
+            ],
+        )
+
+    def DriverCall(self, request, context):
+        return self._driver.DriverCall(request, context)
+
+    def StreamingDriverCall(self, request, context):
+        return self._driver.StreamingDriverCall(request, context)
 
 
 def _child_process_entry(driver_class_path: str, driver_config: dict, socket_path: str, ready_event, success_flag):
@@ -25,9 +45,10 @@ def _child_process_entry(driver_class_path: str, driver_config: dict, socket_pat
     try:
         driver_class = import_class(driver_class_path, [], True)
         driver_instance = driver_class(**driver_config)
+        servicer = _ChildProcessServicer(driver_instance)
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
-        jumpstarter_pb2_grpc.add_ExporterServiceServicer_to_server(driver_instance, server)
+        jumpstarter_pb2_grpc.add_ExporterServiceServicer_to_server(servicer, server)
         router_pb2_grpc.add_RouterServiceServicer_to_server(driver_instance, server)
         server.add_insecure_port(f"unix://{socket_path}")
         server.start()
@@ -134,6 +155,13 @@ class DriverProxy:
     client_class_path: str = "jumpstarter_driver_composite.client.CompositeClient"
     managed_process: ManagedProcess | None = None
     _manager: ProcessManager | None = None
+    _channel: grpc.Channel | None = field(default=None, init=False, repr=False)
+    _stub: jumpstarter_pb2_grpc.ExporterServiceStub | None = field(default=None, init=False, repr=False)
+
+    def __post_init__(self):
+        if self.managed_process is not None:
+            self._channel = grpc.insecure_channel(f"unix://{self.socket_path}")
+            self._stub = jumpstarter_pb2_grpc.ExporterServiceStub(self._channel)
 
     def client(self) -> str:
         return self.client_class_path
@@ -154,7 +182,21 @@ class DriverProxy:
             root = self
         return [(self.uuid, parent, name, self)]
 
+    async def DriverCall(self, request, context):
+        return self._stub.DriverCall(request)
+
+    async def StreamingDriverCall(self, request, context):
+        for response in self._stub.StreamingDriverCall(request):
+            yield response
+
+    async def GetReport(self, request, context):
+        return self._stub.GetReport(request)
+
     def close(self):
+        if self._channel is not None:
+            self._channel.close()
+            self._channel = None
+            self._stub = None
         if self._manager is not None and self.managed_process is not None:
             self._manager.terminate(self.managed_process)
             self.managed_process = None

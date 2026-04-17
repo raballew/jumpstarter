@@ -243,3 +243,47 @@ class TestDriverProxy:
         entries = proxy.enumerate()
         assert len(entries) == 1
         assert entries[0][3] is proxy
+
+
+class TestDriverProxyGrpcForwarding:
+    def test_proxy_channel_attribute_connects_to_child(self):
+        from jumpstarter.common.sandbox import SandboxPolicy
+        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+
+        proxy = DriverProxy(
+            socket_path=managed.socket_path,
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+            managed_process=managed,
+            _manager=manager,
+        )
+
+        assert proxy._channel is not None
+        assert proxy._stub is not None
+
+        manager.close()
+
+    def test_proxy_get_report_via_grpc(self):
+        import grpc
+        from google.protobuf.empty_pb2 import Empty
+        from jumpstarter_protocol import jumpstarter_pb2_grpc
+
+        from jumpstarter.common.sandbox import SandboxPolicy
+        from jumpstarter.exporter.process_manager import ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+
+        channel = grpc.insecure_channel(f"unix://{managed.socket_path}")
+        stub = jumpstarter_pb2_grpc.ExporterServiceStub(channel)
+
+        response = stub.GetReport(Empty())
+        assert response.reports is not None
+        assert len(response.reports) > 0
+
+        channel.close()
+        manager.close()
