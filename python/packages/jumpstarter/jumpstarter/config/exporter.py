@@ -126,7 +126,11 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
         client_class_path = driver_class.client()
 
         manager = ProcessManager()
-        managed = manager.spawn(root.type, root.config, root.sandbox)
+        try:
+            managed = manager.spawn(root.type, root.config, root.sandbox)
+        except Exception:
+            manager.close()
+            raise
 
         return DriverProxy(
             socket_path=managed.socket_path,

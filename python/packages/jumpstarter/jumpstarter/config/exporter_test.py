@@ -271,3 +271,27 @@ def test_instantiate_with_sandbox_enabled_returns_driver_proxy():
     assert result.driver_class_path == "jumpstarter_driver_composite.driver.Composite"
 
     result.close()
+
+
+def test_instantiate_sandboxed_cleans_up_on_spawn_failure():
+    from unittest.mock import patch
+
+    from jumpstarter.common.exceptions import ConfigurationError
+    from jumpstarter.common.sandbox import SandboxPolicy
+
+    driver_instance_config = ExporterConfigV1Alpha1DriverInstance(
+        type="jumpstarter_driver_composite.driver.Composite",
+        sandbox=SandboxPolicy(enabled=True),
+    )
+
+    with patch(
+        "jumpstarter.exporter.process_manager.ProcessManager.spawn",
+        side_effect=ConfigurationError("simulated spawn failure"),
+    ):
+        with patch(
+            "jumpstarter.exporter.process_manager.ProcessManager.close"
+        ) as mock_close:
+            with pytest.raises(ConfigurationError, match="simulated spawn failure"):
+                driver_instance_config.instantiate()
+
+            mock_close.assert_called_once()
