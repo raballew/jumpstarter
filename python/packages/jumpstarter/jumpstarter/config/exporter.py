@@ -230,18 +230,22 @@ class ExporterConfigV1Alpha1(BaseModel):
         # dynamic import to avoid circular imports
         from jumpstarter.common import ExporterStatus
         from jumpstarter.exporter import Session
+        from jumpstarter.exporter.process_manager import ProcessManager
 
-        with Session(
-            root_device=ExporterConfigV1Alpha1DriverInstance(
-                type="jumpstarter_driver_composite.driver.Composite",
-                description=self.description,
-                children=self.export,
-            ).instantiate(),
-        ) as session:
-            async with session.serve_unix_async() as path:
-                # For local usage, set status to LEASE_READY since there's no lease/hook flow
-                session.update_status(ExporterStatus.LEASE_READY)
-                yield path
+        process_manager = ProcessManager()
+        try:
+            with Session(
+                root_device=ExporterConfigV1Alpha1DriverInstance(
+                    type="jumpstarter_driver_composite.driver.Composite",
+                    description=self.description,
+                    children=self.export,
+                ).instantiate(process_manager=process_manager),
+            ) as session:
+                async with session.serve_unix_async() as path:
+                    session.update_status(ExporterStatus.LEASE_READY)
+                    yield path
+        finally:
+            process_manager.close()
 
     @contextmanager
     def serve_unix(self):
@@ -257,9 +261,12 @@ class ExporterConfigV1Alpha1(BaseModel):
         use exporter.serve_standalone_tcp() instead of exporter.serve().
         """
         # dynamic import to avoid circular imports
+        from functools import partial
+
         from anyio import CancelScope
 
         from jumpstarter.exporter import Exporter
+        from jumpstarter.exporter.process_manager import ProcessManager
 
         async def channel_factory() -> grpc.aio.Channel:
             if self.endpoint is None or self.token is None:
@@ -273,7 +280,6 @@ class ExporterConfigV1Alpha1(BaseModel):
         async def dummy_channel_factory() -> grpc.aio.Channel:
             raise RuntimeError("channel_factory must not be called in standalone mode")
 
-        # Create hook executor if hooks are configured
         hook_executor = None
         if self.hooks.before_lease or self.hooks.after_lease:
             from jumpstarter.exporter.hooks import HookExecutor
@@ -282,29 +288,31 @@ class ExporterConfigV1Alpha1(BaseModel):
                 config=self.hooks,
             )
 
+        process_manager = ProcessManager()
+        device_config = ExporterConfigV1Alpha1DriverInstance(
+            type="jumpstarter_driver_composite.driver.Composite",
+            description=self.description,
+            children=self.export,
+        )
+
         exporter = None
         entered = False
         try:
             exporter = Exporter(
                 channel_factory=dummy_channel_factory if standalone else channel_factory,
-                device_factory=ExporterConfigV1Alpha1DriverInstance(
-                    type="jumpstarter_driver_composite.driver.Composite",
-                    description=self.description,
-                    children=self.export,
-                ).instantiate,
+                device_factory=partial(device_config.instantiate, process_manager=process_manager),
                 tls=self.tls,
                 grpc_options=self.grpcOptions,
                 hook_executor=hook_executor,
             )
-            # Initialize the exporter (registration, etc.)
             await exporter.__aenter__()
             entered = True
             yield exporter
         finally:
-            # Shield all cleanup operations from abrupt cancellation for clean shutdown
             if exporter and entered:
                 with CancelScope(shield=True):
                     await exporter.__aexit__(None, None, None)
+            process_manager.close()
 
     async def serve(self):
         async with self.create_exporter() as exporter:
