@@ -232,6 +232,23 @@ class TestDriverProxy:
         managed.process.join(timeout=5)
         assert not managed.process.is_alive()
 
+    def test_proxy_close_is_idempotent_with_managed_process(self):
+        from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+
+        proxy = DriverProxy(
+            socket_path=managed.socket_path,
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+            managed_process=managed,
+            _manager=manager,
+        )
+
+        proxy.close()
+        proxy.close()
+
     def test_proxy_enumerate_returns_self(self):
         from jumpstarter.exporter.process_manager import DriverProxy
 
