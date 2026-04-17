@@ -14,7 +14,10 @@ from jumpstarter.common.sandbox import SandboxPolicy
 logger = logging.getLogger(__name__)
 
 
-def _child_process_entry(driver_class_path: str, driver_config: dict, socket_path: str, ready_event, success_flag):
+_ERROR_BUFFER_SIZE = 4096
+
+
+def _child_process_entry(driver_class_path: str, driver_config: dict, socket_path: str, ready_event, success_flag, error_buffer):
     from concurrent import futures
 
     import grpc
@@ -36,8 +39,10 @@ def _child_process_entry(driver_class_path: str, driver_config: dict, socket_pat
         ready_event.set()
 
         server.wait_for_termination()
-    except Exception:
+    except Exception as exc:
         logger.exception("Child process failed for driver %s", driver_class_path)
+        message = str(exc).encode("utf-8")[:_ERROR_BUFFER_SIZE]
+        error_buffer.value = message
         ready_event.set()
 
 
@@ -69,10 +74,11 @@ class ProcessManager:
 
         ready_event = multiprocessing.Event()
         success_flag = multiprocessing.Value("i", 0)
+        error_buffer = multiprocessing.Array("c", _ERROR_BUFFER_SIZE)
 
         process = multiprocessing.Process(
             target=_child_process_entry,
-            args=(driver_class_path, driver_config, socket_path, ready_event, success_flag),
+            args=(driver_class_path, driver_config, socket_path, ready_event, success_flag, error_buffer),
             daemon=True,
         )
         process.start()
@@ -83,8 +89,11 @@ class ProcessManager:
             process.join(timeout=5)
             self._temp_dirs.remove(temp_dir)
             shutil.rmtree(temp_dir, ignore_errors=True)
+            child_error = error_buffer.value.decode("utf-8", errors="replace").strip()
+            detail = f": {child_error}" if child_error else ""
             raise ConfigurationError(
-                f"Driver process for '{driver_class_path}' failed to start (exit code: {process.exitcode})"
+                f"Driver process for '{driver_class_path}' failed to start "
+                f"(exit code: {process.exitcode}){detail}"
             )
 
         managed = ManagedProcess(

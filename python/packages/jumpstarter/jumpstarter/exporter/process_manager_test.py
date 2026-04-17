@@ -37,6 +37,22 @@ class TestProcessManagerSpawn:
 
         manager.close()
 
+    def test_spawn_error_includes_child_exception_message(self):
+        from jumpstarter.exporter.process_manager import ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            manager.spawn("nonexistent.module.NoSuchDriver", {}, sandbox_policy)
+
+        error_message = str(exc_info.value)
+        assert "No module named" in error_message, (
+            f"Expected child exception details in parent error, got: {error_message}"
+        )
+
+        manager.close()
+
     def test_spawn_cleans_temp_dir_on_child_startup_failure(self):
         from pathlib import Path
 
