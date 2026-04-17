@@ -290,3 +290,63 @@ def test_instantiate_sandboxed_raises_when_children_non_empty():
 
     with pytest.raises(ConfigurationError, match="do not support children"):
         driver_instance_config.instantiate()
+
+
+def test_instantiate_sandboxed_uses_shared_process_manager():
+    from jumpstarter.common.sandbox import SandboxPolicy
+    from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+
+    manager = ProcessManager()
+
+    config1 = ExporterConfigV1Alpha1DriverInstance(
+        type="jumpstarter_driver_composite.driver.Composite",
+        sandbox=SandboxPolicy(enabled=True),
+    )
+    config2 = ExporterConfigV1Alpha1DriverInstance(
+        type="jumpstarter_driver_composite.driver.Composite",
+        sandbox=SandboxPolicy(enabled=True),
+    )
+
+    result1 = config1.instantiate(process_manager=manager)
+    result2 = config2.instantiate(process_manager=manager)
+
+    assert isinstance(result1, DriverProxy)
+    assert isinstance(result2, DriverProxy)
+    assert result1._manager is manager
+    assert result2._manager is manager
+
+    health = manager.check_health()
+    assert len(health) == 2
+    assert all(alive for alive in health.values())
+
+    manager.close()
+
+
+def test_instantiate_sandboxed_proxy_close_does_not_kill_sibling():
+    from jumpstarter.common.sandbox import SandboxPolicy
+    from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
+
+    manager = ProcessManager()
+
+    config1 = ExporterConfigV1Alpha1DriverInstance(
+        type="jumpstarter_driver_composite.driver.Composite",
+        sandbox=SandboxPolicy(enabled=True),
+    )
+    config2 = ExporterConfigV1Alpha1DriverInstance(
+        type="jumpstarter_driver_composite.driver.Composite",
+        sandbox=SandboxPolicy(enabled=True),
+    )
+
+    result1 = config1.instantiate(process_manager=manager)
+    result2 = config2.instantiate(process_manager=manager)
+
+    assert isinstance(result1, DriverProxy)
+    assert isinstance(result2, DriverProxy)
+
+    result1.close()
+
+    health = manager.check_health()
+    alive_count = sum(1 for alive in health.values() if alive)
+    assert alive_count >= 1
+
+    manager.close()

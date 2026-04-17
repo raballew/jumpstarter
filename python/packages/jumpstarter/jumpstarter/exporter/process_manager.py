@@ -92,16 +92,24 @@ class ProcessManager:
 
         return managed
 
+    def _terminate_process(self, managed: ManagedProcess):
+        if managed.process.is_alive():
+            logger.info("Terminating driver process pid=%d", managed.process.pid)
+            managed.process.terminate()
+            managed.process.join(timeout=5)
+            if managed.process.is_alive():
+                logger.warning("Force killing driver process pid=%d", managed.process.pid)
+                managed.process.kill()
+                managed.process.join(timeout=2)
+
+    def terminate(self, managed: ManagedProcess):
+        self._terminate_process(managed)
+        if managed in self._managed:
+            self._managed.remove(managed)
+
     def close(self):
         for managed in self._managed:
-            if managed.process.is_alive():
-                logger.info("Terminating driver process pid=%d", managed.process.pid)
-                managed.process.terminate()
-                managed.process.join(timeout=5)
-                if managed.process.is_alive():
-                    logger.warning("Force killing driver process pid=%d", managed.process.pid)
-                    managed.process.kill()
-                    managed.process.join(timeout=2)
+            self._terminate_process(managed)
         self._managed.clear()
 
         for temp_dir in self._temp_dirs:
@@ -147,9 +155,9 @@ class DriverProxy:
         return [(self.uuid, parent, name, self)]
 
     def close(self):
-        if self._manager is not None:
-            self._manager.close()
-            self._manager = None
+        if self._manager is not None and self.managed_process is not None:
+            self._manager.terminate(self.managed_process)
+            self.managed_process = None
 
     def reset(self):
         pass

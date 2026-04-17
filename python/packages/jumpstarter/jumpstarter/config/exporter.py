@@ -84,11 +84,11 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
         | ExporterConfigV1Alpha1DriverInstanceProxy
     )
 
-    def instantiate(self) -> "Driver":
+    def instantiate(self, *, process_manager=None) -> "Driver":
         match self.root:
             case ExporterConfigV1Alpha1DriverInstanceBase():
                 if self.root.sandbox.enabled:
-                    return self._instantiate_sandboxed()
+                    return self._instantiate_sandboxed(process_manager=process_manager)
 
                 try:
                     driver_class = import_class(self.root.type, [], True)
@@ -118,7 +118,7 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
 
                 return Proxy(ref=self.root.ref)
 
-    def _instantiate_sandboxed(self):
+    def _instantiate_sandboxed(self, *, process_manager=None):
         from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
 
         root = self.root
@@ -132,7 +132,7 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
         driver_class = import_class(root.type, [], True)
         client_class_path = driver_class.client()
 
-        manager = ProcessManager()
+        manager = process_manager if process_manager is not None else ProcessManager()
         managed = manager.spawn(root.type, root.config, root.sandbox)
 
         return DriverProxy(
