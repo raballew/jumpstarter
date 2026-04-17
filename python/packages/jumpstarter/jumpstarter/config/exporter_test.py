@@ -2,11 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from jumpstarter.common.exceptions import ConfigurationError
-
 from .common import ObjectMeta
 from .exporter import ExporterConfigV1Alpha1, ExporterConfigV1Alpha1DriverInstance
 from .tls import TLSConfigV1Alpha1
+from jumpstarter.common.exceptions import ConfigurationError
 
 pytestmark = pytest.mark.anyio
 
