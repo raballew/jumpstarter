@@ -37,6 +37,24 @@ class TestProcessManagerSpawn:
 
         manager.close()
 
+    def test_spawn_cleans_temp_dir_on_child_startup_failure(self):
+        from pathlib import Path
+
+        from jumpstarter.exporter.process_manager import ProcessManager
+
+        manager = ProcessManager()
+        sandbox_policy = SandboxPolicy(enabled=True)
+
+        with pytest.raises(ConfigurationError):
+            manager.spawn("nonexistent.module.NoSuchDriver", {}, sandbox_policy)
+
+        for temp_dir in manager._temp_dirs:
+            assert not Path(temp_dir).exists(), f"temp dir {temp_dir} was not cleaned up after spawn failure"
+
+        assert len(manager._temp_dirs) == 0
+
+        manager.close()
+
     def test_spawn_creates_unique_socket_per_driver(self):
         from jumpstarter.exporter.process_manager import ProcessManager
 
