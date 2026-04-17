@@ -10,7 +10,6 @@ import grpc
 from jumpstarter_protocol import jumpstarter_pb2, jumpstarter_pb2_grpc
 
 from jumpstarter.common.exceptions import ConfigurationError
-from jumpstarter.common.sandbox import SandboxPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +73,7 @@ class ProcessManager:
         self._managed: list[ManagedProcess] = []
         self._temp_dirs: list[str] = []
 
-    def spawn(self, driver_class_path: str, driver_config: dict, sandbox_policy: SandboxPolicy) -> ManagedProcess:
+    def spawn(self, driver_class_path: str, driver_config: dict) -> ManagedProcess:
         temp_dir = mkdtemp(prefix="jumpstarter-sandbox-")
         self._temp_dirs.append(temp_dir)
         socket_path = str(Path(temp_dir) / "driver.sock")

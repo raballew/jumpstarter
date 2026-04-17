@@ -4,7 +4,6 @@ import signal
 import pytest
 
 from jumpstarter.common.exceptions import ConfigurationError
-from jumpstarter.common.sandbox import SandboxPolicy
 
 
 class TestProcessManagerSpawn:
@@ -15,9 +14,8 @@ class TestProcessManagerSpawn:
 
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
         driver_config = {}
-        sandbox_policy = SandboxPolicy(enabled=True)
 
-        managed = manager.spawn(driver_class_path, driver_config, sandbox_policy)
+        managed = manager.spawn(driver_class_path, driver_config)
 
         assert managed.process.is_alive()
         assert managed.process.pid != os.getpid()
@@ -30,10 +28,8 @@ class TestProcessManagerSpawn:
 
         manager = ProcessManager()
 
-        sandbox_policy = SandboxPolicy(enabled=True)
-
         with pytest.raises(ConfigurationError):
-            manager.spawn("nonexistent.module.NoSuchDriver", {}, sandbox_policy)
+            manager.spawn("nonexistent.module.NoSuchDriver", {})
 
         manager.close()
 
@@ -44,10 +40,8 @@ class TestProcessManagerSpawn:
 
         manager = ProcessManager()
 
-        sandbox_policy = SandboxPolicy(enabled=True)
-
         with pytest.raises(ConfigurationError):
-            manager.spawn("nonexistent.module.NoSuchDriver", {}, sandbox_policy)
+            manager.spawn("nonexistent.module.NoSuchDriver", {})
 
         for temp_dir in manager._temp_dirs:
             assert not Path(temp_dir).exists()
@@ -60,10 +54,9 @@ class TestProcessManagerSpawn:
         manager = ProcessManager()
 
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
-        sandbox_policy = SandboxPolicy(enabled=True)
 
-        managed1 = manager.spawn(driver_class_path, {}, sandbox_policy)
-        managed2 = manager.spawn(driver_class_path, {}, sandbox_policy)
+        managed1 = manager.spawn(driver_class_path, {})
+        managed2 = manager.spawn(driver_class_path, {})
 
         assert managed1.socket_path != managed2.socket_path
         assert managed1.process.pid != managed2.process.pid
@@ -78,10 +71,9 @@ class TestProcessManagerClose:
         manager = ProcessManager()
 
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
-        sandbox_policy = SandboxPolicy(enabled=True)
 
-        managed1 = manager.spawn(driver_class_path, {}, sandbox_policy)
-        managed2 = manager.spawn(driver_class_path, {}, sandbox_policy)
+        managed1 = manager.spawn(driver_class_path, {})
+        managed2 = manager.spawn(driver_class_path, {})
 
         manager.close()
 
@@ -96,9 +88,8 @@ class TestProcessManagerClose:
         manager = ProcessManager()
 
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
-        sandbox_policy = SandboxPolicy(enabled=True)
 
-        manager.spawn(driver_class_path, {}, sandbox_policy)
+        manager.spawn(driver_class_path, {})
 
         manager.close()
         manager.close()
@@ -111,9 +102,8 @@ class TestProcessManagerCrashDetection:
         manager = ProcessManager()
 
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
-        sandbox_policy = SandboxPolicy(enabled=True)
 
-        managed = manager.spawn(driver_class_path, {}, sandbox_policy)
+        managed = manager.spawn(driver_class_path, {})
 
         assert managed.process.is_alive()
 
@@ -130,9 +120,8 @@ class TestProcessManagerCrashDetection:
         manager = ProcessManager()
 
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
-        sandbox_policy = SandboxPolicy(enabled=True)
 
-        managed = manager.spawn(driver_class_path, {}, sandbox_policy)
+        managed = manager.spawn(driver_class_path, {})
         health_key = f"{driver_class_path}:{managed.process.pid}"
 
         health = manager.check_health()
@@ -152,10 +141,9 @@ class TestProcessManagerCrashDetection:
         manager = ProcessManager()
 
         driver_class_path = "jumpstarter_driver_composite.driver.Composite"
-        sandbox_policy = SandboxPolicy(enabled=True)
 
-        managed1 = manager.spawn(driver_class_path, {}, sandbox_policy)
-        manager.spawn(driver_class_path, {}, sandbox_policy)
+        managed1 = manager.spawn(driver_class_path, {})
+        manager.spawn(driver_class_path, {})
 
         os.kill(managed1.process.pid, signal.SIGKILL)
         managed1.process.join(timeout=5)
@@ -241,8 +229,7 @@ class TestDriverProxy:
         from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
 
         manager = ProcessManager()
-        sandbox_policy = SandboxPolicy(enabled=True)
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         proxy = DriverProxy(
             socket_path=managed.socket_path,
@@ -273,12 +260,10 @@ class TestDriverProxy:
 
 class TestDriverProxyGrpcForwarding:
     def test_proxy_channel_attribute_connects_to_child(self):
-        from jumpstarter.common.sandbox import SandboxPolicy
         from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
 
         manager = ProcessManager()
-        sandbox_policy = SandboxPolicy(enabled=True)
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         proxy = DriverProxy(
             socket_path=managed.socket_path,
@@ -297,12 +282,10 @@ class TestDriverProxyGrpcForwarding:
         from google.protobuf.empty_pb2 import Empty
         from jumpstarter_protocol import jumpstarter_pb2_grpc
 
-        from jumpstarter.common.sandbox import SandboxPolicy
         from jumpstarter.exporter.process_manager import ProcessManager
 
         manager = ProcessManager()
-        sandbox_policy = SandboxPolicy(enabled=True)
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         channel = grpc.insecure_channel(f"unix://{managed.socket_path}")
         stub = jumpstarter_pb2_grpc.ExporterServiceStub(channel)
@@ -319,12 +302,10 @@ class TestDriverProxyGrpcForwarding:
 
         from google.protobuf.empty_pb2 import Empty
 
-        from jumpstarter.common.sandbox import SandboxPolicy
         from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
 
         manager = ProcessManager()
-        sandbox_policy = SandboxPolicy(enabled=True)
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         proxy = DriverProxy(
             socket_path=managed.socket_path,
@@ -341,12 +322,10 @@ class TestDriverProxyGrpcForwarding:
         manager.close()
 
     def test_proxy_close_then_manager_close_is_safe(self):
-        from jumpstarter.common.sandbox import SandboxPolicy
         from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
 
         manager = ProcessManager()
-        sandbox_policy = SandboxPolicy(enabled=True)
-        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {}, sandbox_policy)
+        managed = manager.spawn("jumpstarter_driver_composite.driver.Composite", {})
 
         proxy = DriverProxy(
             socket_path=managed.socket_path,
