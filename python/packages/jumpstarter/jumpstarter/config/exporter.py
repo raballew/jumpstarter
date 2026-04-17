@@ -122,6 +122,13 @@ class ExporterConfigV1Alpha1DriverInstance(RootModel):
         from jumpstarter.exporter.process_manager import DriverProxy, ProcessManager
 
         root = self.root
+
+        if root.children:
+            raise ConfigurationError(
+                f"Sandboxed drivers do not support children configuration. "
+                f"Driver '{root.type}' has sandbox enabled with non-empty children."
+            )
+
         driver_class = import_class(root.type, [], True)
         client_class_path = driver_class.client()
 

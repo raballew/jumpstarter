@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from jumpstarter.common.exceptions import ConfigurationError
+
 from .common import ObjectMeta
 from .exporter import ExporterConfigV1Alpha1, ExporterConfigV1Alpha1DriverInstance
 from .tls import TLSConfigV1Alpha1
@@ -271,3 +273,20 @@ def test_instantiate_with_sandbox_enabled_returns_driver_proxy():
     assert result.driver_class_path == "jumpstarter_driver_composite.driver.Composite"
 
     result.close()
+
+
+def test_instantiate_sandboxed_raises_when_children_non_empty():
+    from jumpstarter.common.sandbox import SandboxPolicy
+
+    driver_instance_config = ExporterConfigV1Alpha1DriverInstance(
+        type="jumpstarter_driver_composite.driver.Composite",
+        sandbox=SandboxPolicy(enabled=True),
+        children={
+            "child": ExporterConfigV1Alpha1DriverInstance(
+                type="jumpstarter_driver_composite.driver.Composite",
+            ),
+        },
+    )
+
+    with pytest.raises(ConfigurationError, match="do not support children"):
+        driver_instance_config.instantiate()
