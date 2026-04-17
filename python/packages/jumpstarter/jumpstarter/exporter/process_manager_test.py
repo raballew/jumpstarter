@@ -269,6 +269,19 @@ class TestDriverProxy:
         proxy.close()
         proxy.close()
 
+    def test_proxy_does_not_implement_stream(self):
+        from jumpstarter.exporter.process_manager import DriverProxy
+
+        proxy = DriverProxy(
+            socket_path="/tmp/fake.sock",
+            driver_class_path="jumpstarter_driver_composite.driver.Composite",
+        )
+
+        assert not hasattr(proxy, "Stream"), (
+            "DriverProxy must not implement Stream - "
+            "the child process handles streaming natively via RouterServiceServicer"
+        )
+
     def test_proxy_enumerate_returns_self(self):
         from jumpstarter.exporter.process_manager import DriverProxy
 
