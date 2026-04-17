@@ -165,6 +165,15 @@ class TestDriverProxyConformsToDriverLike:
 
         assert isinstance(proxy, DriverLike)
 
+    def test_driver_instance_satisfies_driver_like_protocol(self):
+        from jumpstarter_driver_composite.driver import Composite
+
+        from jumpstarter.common.driver_protocol import DriverLike
+
+        driver = Composite()
+
+        assert isinstance(driver, DriverLike)
+
 
 class TestDriverProxy:
     def test_proxy_has_report_with_correct_client(self):
