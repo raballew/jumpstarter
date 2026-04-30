@@ -88,9 +88,6 @@ def _collect_all_imports() -> (
     return all_imports
 
 
-ALL_IMPORTS = _collect_all_imports()
-
-
 def _import_id(item: tuple[Path, int, str, list[str]]) -> str:
     md_file, line_num, module_path, names = item
     relative = md_file.relative_to(DOCS_SOURCE_DIR)
@@ -99,7 +96,22 @@ def _import_id(item: tuple[Path, int, str, list[str]]) -> str:
     return f"{relative}:{line_num} import {module_path}"
 
 
-@pytest.mark.parametrize("import_entry", ALL_IMPORTS, ids=_import_id)
+def _lazy_collect_all_imports() -> list[tuple[Path, int, str, list[str]]]:
+    if not hasattr(_lazy_collect_all_imports, "_cached"):
+        _lazy_collect_all_imports._cached = _collect_all_imports()
+    return _lazy_collect_all_imports._cached
+
+
+def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
+    if "import_entry" in metafunc.fixturenames:
+        all_imports = _lazy_collect_all_imports()
+        metafunc.parametrize(
+            "import_entry",
+            all_imports,
+            ids=_import_id,
+        )
+
+
 def test_documented_import_is_resolvable(
     import_entry: tuple[Path, int, str, list[str]],
 ) -> None:
