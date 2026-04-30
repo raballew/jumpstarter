@@ -359,14 +359,12 @@ Jumpstarter integrates with pytest through the `jumpstarter-testing` package:
 from jumpstarter_testing.pytest import JumpstarterTest
 
 class TestMyDevice(JumpstarterTest):
-    # Optional: specify which exporter to use based on labels
-    exporter_selector = "vendor=acme,model=widget-v2"
+    selector = "vendor=acme,model=widget-v2"
 
-    def test_power_cycle(self):
-        # Access the device driver through the provided client
-        self.client.power.on()
-        assert self.client.serial.read_until("boot complete") is not None
-        self.client.power.off()
+    def test_power_cycle(self, client):
+        client.power.on()
+        assert client.serial.read_until("boot complete") is not None
+        client.power.off()
 ```
 
 ### Robot Framework Integration
