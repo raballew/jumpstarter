@@ -24,6 +24,7 @@ help:
 	@echo "  pkg-test-all       - Run tests for all packages"
 	@echo "  pkg-test-<pkg>     - Run tests for a specific package"
 	@echo "  docs-test          - Run documentation tests"
+	@echo "  docs-verify        - Verify documentation imports are resolvable"
 	@echo ""
 	@echo "Linting and type checking:"
 	@echo "  ty                 - Run ty type checking on all packages"
@@ -58,6 +59,9 @@ docs-serve-all: clean-docs docs-all
 
 docs-test:
 	uv run --isolated --all-packages --group docs $(MAKE) -C docs doctest
+
+docs-verify:
+	uv run --isolated --all-packages --group docs pytest docs/doc_verification_test.py -v
 
 docs-linkcheck:
 	uv run --isolated --all-packages --group docs $(MAKE) -C docs linkcheck
@@ -108,7 +112,7 @@ clean-docs:
 
 clean: clean-docs clean-venv clean-build clean-test
 
-test: pkg-test-all docs-test
+test: pkg-test-all docs-test docs-verify
 
 ty: pkg-ty-all
 
@@ -119,7 +123,7 @@ lint-fix:
 	uv run ruff check --fix
 
 .PHONY: default help docs docs-all docs-serve docs-serve-all docs-clean docs-test \
-	docs-linkcheck pkg-test-all pkg-ty-all build generate sync \
+	docs-verify docs-linkcheck pkg-test-all pkg-ty-all build generate sync \
 	clean-venv clean-build clean-test clean-all test-all ty-all docs \
 	lint lint-fix \
 	pkg-ty-jumpstarter \
