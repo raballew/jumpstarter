@@ -47,11 +47,16 @@ def _extract_jumpstarter_imports(
 
     for block_start, block_content in blocks:
         for offset, line in enumerate(block_content.splitlines()):
-            from_match = JUMPSTARTER_IMPORT_PATTERN.match(line)
+            line_without_comment = line.split("#")[0]
+            from_match = JUMPSTARTER_IMPORT_PATTERN.match(
+                line_without_comment
+            )
             if from_match:
                 module_path = from_match.group(1)
                 names = [
-                    n.strip() for n in from_match.group(2).split(",")
+                    n.strip().split()[0]
+                    for n in from_match.group(2).split(",")
+                    if n.strip()
                 ]
                 line_number = block_start + offset + 1
                 results.append((line_number, module_path, names))
@@ -115,6 +120,38 @@ def test_documented_import_is_resolvable(
                 f"{relative_path}:{line_num} - "
                 f"module '{module_path}' has no attribute '{name}'"
             )
+
+
+def test_import_parsing_strips_as_alias(tmp_path: Path) -> None:
+    md_file = tmp_path / "alias.md"
+    md_file.write_text(
+        "```python\n"
+        "from jumpstarter.common.utils import env as environment\n"
+        "```\n",
+        encoding="utf-8",
+    )
+    imports = _extract_jumpstarter_imports(md_file)
+    assert len(imports) == 1
+    _, _, names = imports[0]
+    assert names == ["env"], (
+        f"Expected ['env'] after stripping alias, got {names}"
+    )
+
+
+def test_import_parsing_strips_inline_comment(tmp_path: Path) -> None:
+    md_file = tmp_path / "comment.md"
+    md_file.write_text(
+        "```python\n"
+        "from jumpstarter.common.utils import env  # utility\n"
+        "```\n",
+        encoding="utf-8",
+    )
+    imports = _extract_jumpstarter_imports(md_file)
+    assert len(imports) == 1
+    _, _, names = imports[0]
+    assert names == ["env"], (
+        f"Expected ['env'] after stripping comment, got {names}"
+    )
 
 
 def test_jumpstarter_test_uses_selector_not_exporter_selector() -> None:
