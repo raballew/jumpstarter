@@ -942,7 +942,7 @@ class PySerial(Driver):
     @exportstream
     @asynccontextmanager
     async def connect(self):
-        reader, writer = await open_serial_connection(url=self.url, ...)
+        reader, writer = await open_serial_connection(url=self.url)
         async with AsyncSerial(reader, writer) as stream:
             yield stream
 ```

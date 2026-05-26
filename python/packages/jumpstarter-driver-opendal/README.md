@@ -42,12 +42,10 @@ The OpenDAL driver tracks all files and directories created during a session:
 ### Tracking API
 
 ```python
-# Get all created resources (files and directories)
-created_resources = await driver.get_created_resources()  # Returns set[str]
-
-# Example usage
-for path in created_resources:
-    print(f"Created: {path}")
+async def list_created_resources(driver):
+    created_resources = await driver.get_created_resources()  # Returns set[str]
+    for path in created_resources:
+        print(f"Created: {path}")
 ```
 
 #### Use Cases
