@@ -25,7 +25,7 @@ SKIP_DIRECTIVES = frozenset(
     ]
 )
 
-TESTABLE_LANGUAGES = frozenset(
+RECOGNIZED_LANGUAGES = frozenset(
     [
         "python",
         "yaml",
@@ -132,7 +132,7 @@ def extract_snippets(file_path: str) -> list[Snippet]:
         start_line = i
         content, i = _read_block_content(lines, i, fence_marker)
 
-        if content.strip() and lang in TESTABLE_LANGUAGES:
+        if content.strip() and lang in RECOGNIZED_LANGUAGES:
             snippets.append(
                 Snippet(language=lang, content=content, file_path=file_path, line_number=start_line + 1)
             )
