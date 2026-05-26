@@ -214,13 +214,18 @@ def validate_bash(snippet: Snippet) -> None:
     if not commands.strip():
         return
 
-    result = subprocess.run(
-        ["bash", "-n"],
-        input=commands,
-        capture_output=True,
-        text=True,
-        timeout=10,
-    )
+    try:
+        result = subprocess.run(
+            ["bash", "-n"],
+            input=commands,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except subprocess.TimeoutExpired:
+        pytest.fail(
+            f"Bash syntax check timed out in {snippet.file_path}:{snippet.line_number}"
+        )
     if result.returncode != 0:
         pytest.fail(
             f"Bash syntax error in {snippet.file_path}:{snippet.line_number}: {result.stderr.strip()}"
@@ -723,6 +728,17 @@ class TestValidateBash:
         commands = _extract_bash_commands(content)
         assert "jmp login \\" in commands
         assert "--endpoint" in commands
+
+
+class TestValidateBashTimeout:
+    def test_timeout_raises_pytest_fail(self, monkeypatch):
+        def mock_run(*args, **kwargs):
+            raise subprocess.TimeoutExpired(cmd=["bash", "-n"], timeout=10)
+
+        monkeypatch.setattr(subprocess, "run", mock_run)
+        snippet = Snippet("bash", "echo hello\n", "test.md", 5)
+        with pytest.raises(pytest.fail.Exception, match="timed out"):
+            validate_bash(snippet)
 
 
 class TestExtractBashCommands:
