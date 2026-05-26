@@ -822,6 +822,24 @@ class TestValidatorsAndSyntaxCheckableConsistency:
         assert _normalize_language("sh") == "bash"
 
 
+class TestConftestTypeAnnotations:
+    def test_pytest_terminal_summary_has_return_annotation(self):
+        import conftest
+        import inspect
+
+        sig = inspect.signature(conftest.pytest_terminal_summary)
+        assert sig.return_annotation is not inspect.Parameter.empty
+
+    def test_pytest_terminal_summary_has_parameter_annotations(self):
+        import conftest
+        import inspect
+
+        sig = inspect.signature(conftest.pytest_terminal_summary)
+        for name in ("terminalreporter", "exitstatus", "config"):
+            param = sig.parameters[name]
+            assert param.annotation is not inspect.Parameter.empty, f"Missing annotation for {name}"
+
+
 class TestCollectAllSnippetsIsPublic:
     def testcollect_all_snippets_is_callable(self):
         assert callable(collect_all_snippets)

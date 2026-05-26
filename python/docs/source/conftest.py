@@ -1,9 +1,18 @@
+from __future__ import annotations
+
 from collections import Counter
 
+import pytest
+from _pytest.config import Config
+from _pytest.terminal import TerminalReporter
 from doc_snippet_test import SYNTAX_CHECKABLE, collect_all_snippets
 
 
-def pytest_terminal_summary(terminalreporter, exitstatus, config):
+def pytest_terminal_summary(
+    terminalreporter: TerminalReporter,
+    exitstatus: int | pytest.ExitCode,
+    config: Config,
+) -> None:
     all_snippets = collect_all_snippets()
     total_by_language: Counter[str] = Counter()
     tested_by_language: Counter[str] = Counter()
