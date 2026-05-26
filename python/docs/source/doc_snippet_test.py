@@ -86,18 +86,25 @@ def _read_block_content(lines: list[str], start: int, fence_marker: str) -> tupl
     return "".join(content_lines), i
 
 
-def _parse_fence_opening(stripped: str) -> tuple[str, str] | None:
+@dataclass(frozen=True)
+class FenceOpening:
+    marker: str
+    language: str
+    is_directive: bool
+
+
+def _parse_fence_opening(stripped: str) -> FenceOpening | None:
     match = re.match(r"^(`{3,})\{testcode\}\s*$", stripped)
     if match:
-        return match.group(1), "testcode"
+        return FenceOpening(marker=match.group(1), language="testcode", is_directive=True)
 
     match = re.match(r"^(`{3,})\{code-block\}\s+(\S+)\s*$", stripped)
     if match:
-        return match.group(1), match.group(2)
+        return FenceOpening(marker=match.group(1), language=match.group(2), is_directive=True)
 
     match = re.match(r"^(`{3,})(\w[\w+-]*)\s*$", stripped)
     if match:
-        return match.group(1), match.group(2)
+        return FenceOpening(marker=match.group(1), language=match.group(2), is_directive=False)
 
     return None
 
@@ -120,7 +127,8 @@ def extract_snippets(file_path: str) -> list[Snippet]:
             i += 1
             continue
 
-        fence_marker, raw_lang = parsed
+        fence_marker = parsed.marker
+        raw_lang = parsed.language
         lang = "python" if raw_lang == "testcode" else _normalize_language(raw_lang)
 
         if _is_skip_directive(raw_lang):
@@ -128,7 +136,10 @@ def extract_snippets(file_path: str) -> list[Snippet]:
             i += 1
             continue
 
-        i = _skip_option_lines(lines, i + 1, fence_marker)
+        if parsed.is_directive:
+            i = _skip_option_lines(lines, i + 1, fence_marker)
+        else:
+            i += 1
         start_line = i
         content, i = _read_block_content(lines, i, fence_marker)
 
@@ -288,19 +299,19 @@ class TestIsSkipDirective:
 class TestParseFenceOpening:
     def test_standard_python_fence(self):
         result = _parse_fence_opening("```python")
-        assert result == ("```", "python")
+        assert result == FenceOpening(marker="```", language="python", is_directive=False)
 
     def test_testcode_directive(self):
         result = _parse_fence_opening("```{testcode}")
-        assert result == ("```", "testcode")
+        assert result == FenceOpening(marker="```", language="testcode", is_directive=True)
 
     def test_code_block_directive(self):
         result = _parse_fence_opening("```{code-block} yaml")
-        assert result == ("```", "yaml")
+        assert result == FenceOpening(marker="```", language="yaml", is_directive=True)
 
     def test_four_backtick_fence(self):
         result = _parse_fence_opening("````python")
-        assert result == ("````", "python")
+        assert result == FenceOpening(marker="````", language="python", is_directive=False)
 
     def test_non_fence_line_returns_none(self):
         assert _parse_fence_opening("some text") is None
@@ -311,12 +322,14 @@ class TestParseFenceOpening:
     def test_language_with_plus_chars(self):
         result = _parse_fence_opening("```c++")
         assert result is not None
-        assert result[1] == "c++"
+        assert result.language == "c++"
+        assert result.is_directive is False
 
     def test_language_with_hyphen(self):
         result = _parse_fence_opening("```objective-c")
         assert result is not None
-        assert result[1] == "objective-c"
+        assert result.language == "objective-c"
+        assert result.is_directive is False
 
 
 class TestSkipOptionLines:
@@ -560,6 +573,53 @@ class TestExtractSnippets:
         assert len(snippets) == 1
         assert "substitutions" not in snippets[0].content
         assert "key: value" in snippets[0].content
+
+    def test_plain_fence_preserves_colon_prefixed_lines(self, tmp_path):
+        md = tmp_path / "test.md"
+        md.write_text(
+            textwrap.dedent("""\
+            ```yaml
+            :key: value
+            other: data
+            ```
+            """),
+            encoding="utf-8",
+        )
+        snippets = extract_snippets(str(md))
+        assert len(snippets) == 1
+        assert ":key: value" in snippets[0].content
+
+    def test_code_block_directive_strips_options(self, tmp_path):
+        md = tmp_path / "test.md"
+        md.write_text(
+            textwrap.dedent("""\
+            ```{code-block} python
+            :linenos:
+            x = 1
+            ```
+            """),
+            encoding="utf-8",
+        )
+        snippets = extract_snippets(str(md))
+        assert len(snippets) == 1
+        assert "linenos" not in snippets[0].content
+        assert "x = 1" in snippets[0].content
+
+    def test_testcode_directive_strips_options(self, tmp_path):
+        md = tmp_path / "test.md"
+        md.write_text(
+            textwrap.dedent("""\
+            ```{testcode}
+            :skipif: True
+            x = 1
+            ```
+            """),
+            encoding="utf-8",
+        )
+        snippets = extract_snippets(str(md))
+        assert len(snippets) == 1
+        assert "skipif" not in snippets[0].content
+        assert "x = 1" in snippets[0].content
 
     def test_empty_code_block_is_skipped(self, tmp_path):
         md = tmp_path / "test.md"
