@@ -43,7 +43,7 @@ RECOGNIZED_LANGUAGES = frozenset(
     ]
 )
 
-SYNTAX_CHECKABLE = frozenset(["python", "yaml", "bash", "console", "shell"])
+SYNTAX_CHECKABLE = frozenset(["python", "yaml", "bash", "console"])
 
 
 @dataclass(frozen=True)
@@ -192,7 +192,7 @@ def _looks_like_usage_output(content: str) -> bool:
 def validate_bash(snippet: Snippet) -> None:
     if snippet.language == "console":
         commands = _extract_bash_commands(snippet.content)
-    elif snippet.language in ("bash", "shell") and _looks_like_usage_output(snippet.content):
+    elif snippet.language == "bash" and _looks_like_usage_output(snippet.content):
         return
     else:
         commands = snippet.content
@@ -221,7 +221,6 @@ VALIDATORS: dict[str, Callable[[Snippet], None]] = {
     "yaml": validate_yaml,
     "bash": validate_bash,
     "console": validate_bash,
-    "shell": validate_bash,
 }
 
 
@@ -726,6 +725,21 @@ class TestLooksLikeUsageOutput:
 
     def test_empty_content_not_detected(self):
         assert not _looks_like_usage_output("")
+
+
+class TestValidatorsAndSyntaxCheckableConsistency:
+    def test_syntax_checkable_matches_validators_keys(self):
+        assert SYNTAX_CHECKABLE == frozenset(VALIDATORS.keys())
+
+    def test_shell_not_in_syntax_checkable(self):
+        assert "shell" not in SYNTAX_CHECKABLE
+
+    def test_shell_not_in_validators(self):
+        assert "shell" not in VALIDATORS
+
+    def test_no_snippet_language_is_shell_after_normalization(self):
+        assert _normalize_language("shell") == "bash"
+        assert _normalize_language("sh") == "bash"
 
 
 class TestSnippetId:
