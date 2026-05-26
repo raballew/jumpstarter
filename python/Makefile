@@ -23,7 +23,8 @@ help:
 	@echo "  test               - Run all package tests and documentation tests"
 	@echo "  pkg-test-all       - Run tests for all packages"
 	@echo "  pkg-test-<pkg>     - Run tests for a specific package"
-	@echo "  docs-test          - Run documentation tests"
+	@echo "  docs-test          - Run documentation tests (doctests and snippet validation)"
+	@echo "  docs-snippet-test  - Run documentation snippet syntax validation"
 	@echo ""
 	@echo "Linting and type checking:"
 	@echo "  ty                 - Run ty type checking on all packages"
@@ -59,7 +60,10 @@ docs-serve: clean-docs docs-generate-crds
 docs-serve-all: clean-docs docs-all
 	uv run --isolated --all-packages --group docs $(MAKE) -C docs serve-multiversion
 
-docs-test: docs-generate-crds
+docs-snippet-test:
+	uv run --isolated --all-packages --group docs pytest docs/source/doc_snippet_test.py -o "addopts="
+
+docs-test: docs-generate-crds docs-snippet-test
 	uv run --isolated --all-packages --group docs $(MAKE) -C docs doctest
 
 docs-linkcheck: docs-generate-crds
@@ -121,7 +125,7 @@ lint:
 lint-fix:
 	uv run ruff check --fix
 
-.PHONY: default help docs docs-all docs-serve docs-serve-all docs-clean docs-test \
+.PHONY: default help docs docs-all docs-serve docs-serve-all docs-clean docs-test docs-snippet-test \
 	docs-linkcheck pkg-test-all pkg-ty-all build generate sync \
 	clean-venv clean-build clean-test clean-all test-all ty-all docs \
 	lint lint-fix \
