@@ -117,7 +117,10 @@ clean: clean-docs clean-venv clean-build clean-test
 
 test: pkg-test-all docs-test
 
-ty: pkg-ty-all
+docs-ty:
+	uv run --all-packages --group docs ty check docs/source/doc_snippet_test.py
+
+ty: pkg-ty-all docs-ty
 
 lint:
 	uv run ruff check
@@ -126,7 +129,7 @@ lint-fix:
 	uv run ruff check --fix
 
 .PHONY: default help docs docs-all docs-serve docs-serve-all docs-clean docs-test docs-snippet-test \
-	docs-linkcheck pkg-test-all pkg-ty-all build generate sync \
+	docs-linkcheck pkg-test-all pkg-ty-all docs-ty build generate sync \
 	clean-venv clean-build clean-test clean-all test-all ty-all docs \
 	lint lint-fix \
 	pkg-ty-jumpstarter \
