@@ -5,7 +5,7 @@ from collections import Counter
 import pytest
 from _pytest.config import Config
 from _pytest.terminal import TerminalReporter
-from doc_snippet_test import SYNTAX_CHECKABLE, collect_all_snippets
+from doc_snippet import SYNTAX_CHECKABLE, collect_all_snippets
 
 
 def pytest_terminal_summary(
