@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import textwrap
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import pytest
@@ -215,7 +216,7 @@ def validate_bash(snippet: Snippet) -> None:
         )
 
 
-VALIDATORS = {
+VALIDATORS: dict[str, Callable[[Snippet], None]] = {
     "python": validate_python,
     "yaml": validate_yaml,
     "bash": validate_bash,
@@ -736,7 +737,7 @@ class TestSnippetId:
         assert "python" in sid
 
 
-def _parametrize_snippets():
+def _parametrize_snippets() -> list[pytest.ParameterSet]:
     snippets = _get_syntax_checkable_snippets()
     return [pytest.param(s, id=_snippet_id(s)) for s in snippets]
 
