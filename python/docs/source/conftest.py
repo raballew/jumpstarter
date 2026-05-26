@@ -1,10 +1,10 @@
 from collections import Counter
 
-from doc_snippet_test import SYNTAX_CHECKABLE, _collect_all_snippets
+from doc_snippet_test import SYNTAX_CHECKABLE, collect_all_snippets
 
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
-    all_snippets = _collect_all_snippets()
+    all_snippets = collect_all_snippets()
     total_by_language: Counter[str] = Counter()
     tested_by_language: Counter[str] = Counter()
 

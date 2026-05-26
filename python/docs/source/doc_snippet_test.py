@@ -224,7 +224,7 @@ VALIDATORS: dict[str, Callable[[Snippet], None]] = {
 }
 
 
-def _collect_all_snippets() -> list[Snippet]:
+def collect_all_snippets() -> list[Snippet]:
     all_snippets = []
     for root, _dirs, files in os.walk(DOCS_DIR):
         for fname in sorted(files):
@@ -241,7 +241,7 @@ def _snippet_id(snippet: Snippet) -> str:
 
 
 def _get_syntax_checkable_snippets() -> list[Snippet]:
-    return [s for s in _collect_all_snippets() if s.language in SYNTAX_CHECKABLE]
+    return [s for s in collect_all_snippets() if s.language in SYNTAX_CHECKABLE]
 
 
 class TestNormalizeLanguage:
@@ -740,6 +740,19 @@ class TestValidatorsAndSyntaxCheckableConsistency:
     def test_no_snippet_language_is_shell_after_normalization(self):
         assert _normalize_language("shell") == "bash"
         assert _normalize_language("sh") == "bash"
+
+
+class TestCollectAllSnippetsIsPublic:
+    def testcollect_all_snippets_is_callable(self):
+        assert callable(collect_all_snippets)
+
+    def testcollect_all_snippets_returns_list(self, tmp_path, monkeypatch):
+        md = tmp_path / "test.md"
+        md.write_text("```python\nx = 1\n```\n", encoding="utf-8")
+        monkeypatch.setattr("doc_snippet_test.DOCS_DIR", str(tmp_path))
+        result = collect_all_snippets()
+        assert isinstance(result, list)
+        assert len(result) == 1
 
 
 class TestSnippetId:
