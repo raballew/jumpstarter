@@ -244,6 +244,149 @@ def _get_syntax_checkable_snippets() -> list[Snippet]:
     return [s for s in _collect_all_snippets() if s.language in SYNTAX_CHECKABLE]
 
 
+class TestNormalizeLanguage:
+    def test_sh_maps_to_bash(self):
+        assert _normalize_language("sh") == "bash"
+
+    def test_shell_maps_to_bash(self):
+        assert _normalize_language("shell") == "bash"
+
+    def test_python_unchanged(self):
+        assert _normalize_language("python") == "python"
+
+    def test_uppercase_is_lowered(self):
+        assert _normalize_language("YAML") == "yaml"
+
+    def test_whitespace_is_stripped(self):
+        assert _normalize_language("  python  ") == "python"
+
+    def test_shell_uppercase_maps_to_bash(self):
+        assert _normalize_language("Shell") == "bash"
+
+
+class TestIsSkipDirective:
+    def test_mermaid_is_skip(self):
+        assert _is_skip_directive("mermaid") is True
+
+    def test_toctree_is_skip(self):
+        assert _is_skip_directive("toctree") is True
+
+    def test_python_is_not_skip(self):
+        assert _is_skip_directive("python") is False
+
+    def test_braces_are_stripped(self):
+        assert _is_skip_directive("{mermaid}") is True
+
+    def test_whitespace_and_braces_stripped(self):
+        assert _is_skip_directive("  {note}  ") is True
+
+    def test_all_skip_directives_recognized(self):
+        for directive in SKIP_DIRECTIVES:
+            assert _is_skip_directive(directive) is True
+
+
+class TestParseFenceOpening:
+    def test_standard_python_fence(self):
+        result = _parse_fence_opening("```python")
+        assert result == ("```", "python")
+
+    def test_testcode_directive(self):
+        result = _parse_fence_opening("```{testcode}")
+        assert result == ("```", "testcode")
+
+    def test_code_block_directive(self):
+        result = _parse_fence_opening("```{code-block} yaml")
+        assert result == ("```", "yaml")
+
+    def test_four_backtick_fence(self):
+        result = _parse_fence_opening("````python")
+        assert result == ("````", "python")
+
+    def test_non_fence_line_returns_none(self):
+        assert _parse_fence_opening("some text") is None
+
+    def test_empty_backticks_return_none(self):
+        assert _parse_fence_opening("```") is None
+
+    def test_language_with_plus_chars(self):
+        result = _parse_fence_opening("```c++")
+        assert result is not None
+        assert result[1] == "c++"
+
+    def test_language_with_hyphen(self):
+        result = _parse_fence_opening("```objective-c")
+        assert result is not None
+        assert result[1] == "objective-c"
+
+
+class TestSkipOptionLines:
+    def test_single_option_line(self):
+        lines = [":skipif: True\n", "code here\n", "```\n"]
+        result = _skip_option_lines(lines, 0, "```")
+        assert result == 1
+
+    def test_multiple_option_lines(self):
+        lines = [":skipif: True\n", ":substitutions:\n", "code here\n", "```\n"]
+        result = _skip_option_lines(lines, 0, "```")
+        assert result == 2
+
+    def test_non_option_stops_skipping(self):
+        lines = ["code here\n", ":skipif: True\n", "```\n"]
+        result = _skip_option_lines(lines, 0, "```")
+        assert result == 0
+
+    def test_end_marker_stops_skipping(self):
+        lines = [":skipif: True\n", "```\n"]
+        result = _skip_option_lines(lines, 0, "```")
+        assert result == 1
+
+    def test_end_marker_encountered_during_options(self):
+        lines = ["```\n"]
+        result = _skip_option_lines(lines, 0, "```")
+        assert result == 0
+
+    def test_empty_lines_list(self):
+        result = _skip_option_lines([], 0, "```")
+        assert result == 0
+
+    def test_start_beyond_end(self):
+        lines = [":skipif: True\n"]
+        result = _skip_option_lines(lines, 5, "```")
+        assert result == 5
+
+
+class TestReadBlockContent:
+    def test_reads_until_fence_marker(self):
+        lines = ["line 1\n", "line 2\n", "```\n", "after\n"]
+        content, end = _read_block_content(lines, 0, "```")
+        assert content == "line 1\nline 2\n"
+        assert end == 2
+
+    def test_reads_to_end_of_file_when_no_marker(self):
+        lines = ["line 1\n", "line 2\n"]
+        content, end = _read_block_content(lines, 0, "```")
+        assert content == "line 1\nline 2\n"
+        assert end == 2
+
+    def test_empty_block(self):
+        lines = ["```\n"]
+        content, end = _read_block_content(lines, 0, "```")
+        assert content == ""
+        assert end == 0
+
+    def test_start_offset(self):
+        lines = ["skip\n", "line 1\n", "```\n"]
+        content, end = _read_block_content(lines, 1, "```")
+        assert content == "line 1\n"
+        assert end == 2
+
+    def test_four_backtick_fence(self):
+        lines = ["line 1\n", "````\n"]
+        content, end = _read_block_content(lines, 0, "````")
+        assert content == "line 1\n"
+        assert end == 1
+
+
 class TestExtractSnippets:
     def test_extracts_fenced_python_block(self, tmp_path):
         md = tmp_path / "test.md"
@@ -520,6 +663,29 @@ class TestValidateBash:
         commands = _extract_bash_commands(content)
         assert "jmp login \\" in commands
         assert "--endpoint" in commands
+
+
+class TestExtractBashCommands:
+    def test_empty_input(self):
+        assert _extract_bash_commands("") == ""
+
+    def test_only_output_lines(self):
+        content = "output line 1\noutput line 2\n"
+        assert _extract_bash_commands(content) == ""
+
+    def test_single_command(self):
+        content = "$ echo hello\n"
+        assert _extract_bash_commands(content) == "echo hello"
+
+    def test_continuation_not_preceded_by_backslash(self):
+        content = "$ echo hello\n    continuation without backslash\n"
+        result = _extract_bash_commands(content)
+        assert result == "echo hello"
+
+    def test_multiple_commands_with_output(self):
+        content = "$ echo a\noutput a\n$ echo b\noutput b\n"
+        lines = _extract_bash_commands(content).splitlines()
+        assert lines == ["echo a", "echo b"]
 
 
 class TestReplaceMystSubstitutions:
