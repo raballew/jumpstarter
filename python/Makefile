@@ -118,7 +118,7 @@ clean: clean-docs clean-venv clean-build clean-test
 test: pkg-test-all docs-test
 
 docs-ty:
-	uv run --all-packages --group docs ty check docs/source/doc_snippet_test.py
+	uv run --all-packages --group docs ty check docs/source/doc_snippet_test.py docs/source/conftest.py
 
 ty: pkg-ty-all docs-ty
 
