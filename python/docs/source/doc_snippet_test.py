@@ -822,17 +822,87 @@ class TestValidatorsAndSyntaxCheckableConsistency:
         assert _normalize_language("sh") == "bash"
 
 
+class _FakeTerminalReporter:
+    def __init__(self) -> None:
+        self.lines: list[str] = []
+        self.sections: list[str] = []
+
+    def section(self, title: str) -> None:
+        self.sections.append(title)
+
+    def write_line(self, line: str) -> None:
+        self.lines.append(line)
+
+
+class TestPytestTerminalSummary:
+    def test_reports_section_title(self, tmp_path, monkeypatch):
+        md = tmp_path / "test.md"
+        md.write_text("```python\nx = 1\n```\n", encoding="utf-8")
+        monkeypatch.setattr("doc_snippet_test.DOCS_DIR", str(tmp_path))
+
+        import conftest
+
+        reporter = _FakeTerminalReporter()
+        conftest.pytest_terminal_summary(reporter, 0, None)
+        assert reporter.sections == ["Documentation Snippet Coverage"]
+
+    def test_reports_language_counts(self, tmp_path, monkeypatch):
+        md = tmp_path / "test.md"
+        md.write_text("```python\nx = 1\n```\n\n```yaml\nkey: val\n```\n\n```json\n{}\n```\n", encoding="utf-8")
+        monkeypatch.setattr("doc_snippet_test.DOCS_DIR", str(tmp_path))
+
+        import conftest
+
+        reporter = _FakeTerminalReporter()
+        conftest.pytest_terminal_summary(reporter, 0, None)
+        python_line = [line for line in reporter.lines if "python:" in line]
+        assert len(python_line) == 1
+        assert "1/1" in python_line[0]
+        assert "[tested]" in python_line[0]
+
+        json_line = [line for line in reporter.lines if "json:" in line]
+        assert len(json_line) == 1
+        assert "0/1" in json_line[0]
+        assert "[recognized]" in json_line[0]
+
+    def test_reports_total_summary(self, tmp_path, monkeypatch):
+        md = tmp_path / "test.md"
+        md.write_text("```python\nx = 1\n```\n\n```json\n{}\n```\n", encoding="utf-8")
+        monkeypatch.setattr("doc_snippet_test.DOCS_DIR", str(tmp_path))
+
+        import conftest
+
+        reporter = _FakeTerminalReporter()
+        conftest.pytest_terminal_summary(reporter, 0, None)
+        total_lines = [line for line in reporter.lines if "Total:" in line]
+        assert len(total_lines) == 1
+        assert "1/2" in total_lines[0]
+
+    def test_empty_docs_dir(self, tmp_path, monkeypatch):
+        monkeypatch.setattr("doc_snippet_test.DOCS_DIR", str(tmp_path))
+
+        import conftest
+
+        reporter = _FakeTerminalReporter()
+        conftest.pytest_terminal_summary(reporter, 0, None)
+        total_lines = [line for line in reporter.lines if "Total:" in line]
+        assert len(total_lines) == 1
+        assert "0/0" in total_lines[0]
+
+
 class TestConftestTypeAnnotations:
     def test_pytest_terminal_summary_has_return_annotation(self):
-        import conftest
         import inspect
+
+        import conftest
 
         sig = inspect.signature(conftest.pytest_terminal_summary)
         assert sig.return_annotation is not inspect.Parameter.empty
 
     def test_pytest_terminal_summary_has_parameter_annotations(self):
-        import conftest
         import inspect
+
+        import conftest
 
         sig = inspect.signature(conftest.pytest_terminal_summary)
         for name in ("terminalreporter", "exitstatus", "config"):
