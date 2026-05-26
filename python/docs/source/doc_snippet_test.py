@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 import os
 import re
 import subprocess
 import textwrap
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import pytest
 import yaml
+
+if TYPE_CHECKING:
+    from _pytest.mark.structures import ParameterSet
 
 DOCS_DIR = os.path.join(os.path.dirname(__file__))
 
@@ -80,7 +86,7 @@ def _skip_option_lines(lines: list[str], start: int, end_marker: str) -> int:
 def _read_block_content(lines: list[str], start: int, fence_marker: str) -> tuple[str, int]:
     content_lines = []
     i = start
-    while i < len(lines) and not lines[i].strip().startswith(fence_marker):
+    while i < len(lines) and lines[i].strip() != fence_marker:
         content_lines.append(lines[i])
         i += 1
     return "".join(content_lines), i
@@ -403,6 +409,12 @@ class TestReadBlockContent:
         content, end = _read_block_content(lines, 0, "````")
         assert content == "line 1\n"
         assert end == 1
+
+    def test_longer_backtick_line_does_not_close_shorter_fence(self):
+        lines = ["line 1\n", "````\n", "line 2\n", "```\n"]
+        content, end = _read_block_content(lines, 0, "```")
+        assert content == "line 1\n````\nline 2\n"
+        assert end == 3
 
 
 class TestExtractSnippets:
@@ -932,7 +944,7 @@ class TestSnippetId:
         assert "python" in sid
 
 
-def _parametrize_snippets() -> list[pytest.ParameterSet]:
+def _parametrize_snippets() -> list[ParameterSet]:
     snippets = _get_syntax_checkable_snippets()
     return [pytest.param(s, id=_snippet_id(s)) for s in snippets]
 
