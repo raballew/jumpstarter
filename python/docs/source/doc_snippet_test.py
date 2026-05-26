@@ -731,6 +731,10 @@ class TestValidatorsAndSyntaxCheckableConsistency:
     def test_syntax_checkable_matches_validators_keys(self):
         assert SYNTAX_CHECKABLE == frozenset(VALIDATORS.keys())
 
+    def test_every_checkable_language_has_a_validator(self):
+        for lang in SYNTAX_CHECKABLE:
+            assert lang in VALIDATORS, f"Missing validator for {lang}"
+
     def test_shell_not_in_syntax_checkable(self):
         assert "shell" not in SYNTAX_CHECKABLE
 
@@ -771,7 +775,4 @@ def _parametrize_snippets() -> list[pytest.ParameterSet]:
 
 @pytest.mark.parametrize("snippet", _parametrize_snippets())
 def test_doc_snippet(snippet: Snippet):
-    validator = VALIDATORS.get(snippet.language)
-    if validator is None:
-        pytest.skip(f"No validator for language: {snippet.language}")
-    validator(snippet)
+    VALIDATORS[snippet.language](snippet)
