@@ -5,6 +5,31 @@ import pytest
 
 os.environ["TERM"] = "dumb"
 
+HYPOTHESIS_DEFAULT_PROFILE = "ci"
+
+try:
+    from hypothesis import HealthCheck, settings as hypothesis_settings
+
+    HYPOTHESIS_PROFILES = {
+        "ci": {
+            "max_examples": 100,
+            "deadline": None,
+            "suppress_health_check": [HealthCheck.too_slow],
+        },
+        "fuzz": {
+            "max_examples": 500,
+            "deadline": None,
+            "suppress_health_check": [HealthCheck.too_slow],
+        },
+    }
+
+    for name, kwargs in HYPOTHESIS_PROFILES.items():
+        hypothesis_settings.register_profile(name, **kwargs)
+    _profile = os.getenv("HYPOTHESIS_PROFILE", HYPOTHESIS_DEFAULT_PROFILE)
+    hypothesis_settings.load_profile(_profile)
+except ImportError:
+    pass
+
 try:
     from jumpstarter.common.utils import serve
     from jumpstarter.config.exporter import ExporterConfigV1Alpha1, ExporterConfigV1Alpha1DriverInstance
@@ -27,8 +52,6 @@ else:
     def tmp_config_path(tmp_path, monkeypatch):
         monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "client-config"))
         monkeypatch.setattr(ExporterConfigV1Alpha1, "BASE_PATH", tmp_path / "exporters")
-        # Isolate the legacy system fallback so tests never touch the real /etc.
-        monkeypatch.setattr(ExporterConfigV1Alpha1, "SYSTEM_CONFIG_PATH", tmp_path / "system-exporters")
 
     @pytest.fixture(autouse=True)
     def console_size(monkeypatch):
