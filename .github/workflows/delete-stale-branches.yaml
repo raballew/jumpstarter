@@ -35,6 +35,7 @@ jobs:
           }
 
           deleted=0
+          would_delete=0
           failed=0
           skipped=0
           page=1
@@ -88,7 +89,7 @@ jobs:
                 if [ "$DRY_RUN" = "true" ]; then
                   echo "DRY-RUN DELETE ($local_reason): $branch_name (last commit: ${last_commit_date:-none})"
                   summary_lines="${summary_lines}| \`${safe_name}\` | Dry-run | ${local_reason} | ${last_commit_date:-none} |"$'\n'
-                  deleted=$((deleted + 1))
+                  would_delete=$((would_delete + 1))
                 else
                   echo "DELETE ($local_reason): $branch_name (last commit: ${last_commit_date:-none})"
                   if ! gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${encoded_branch}"; then
@@ -111,7 +112,11 @@ jobs:
           done
 
           echo ""
-          echo "Summary: $deleted deleted, $failed failed, $skipped skipped"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Summary: $would_delete would delete, $skipped skipped"
+          else
+            echo "Summary: $deleted deleted, $failed failed, $skipped skipped"
+          fi
 
           {
             echo "## Delete Stale Branches"
@@ -127,5 +132,9 @@ jobs:
               echo "| - | - | No branches found | - |"
             fi
             echo ""
-            echo "**Total:** ${deleted} deleted, ${failed} failed, ${skipped} skipped"
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "**Total:** ${would_delete} would delete, ${skipped} skipped"
+            else
+              echo "**Total:** ${deleted} deleted, ${failed} failed, ${skipped} skipped"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

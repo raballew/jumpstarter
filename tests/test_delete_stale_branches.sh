@@ -105,7 +105,7 @@ sys.exit(0)
 echo ""
 echo "--- Branch name sanitization ---"
 assert_grep "URL-encodes branch names" "@uri"
-assert_grep "Validates branch names before processing" "invalid name"
+assert_grep "Validates branch names before processing" "invalid data"
 
 echo ""
 echo "--- Step summary ---"
