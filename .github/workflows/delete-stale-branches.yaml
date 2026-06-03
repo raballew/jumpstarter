@@ -63,18 +63,18 @@ jobs:
               last_commit_date=$(gh api "repos/${{ github.repository }}/commits?sha=${branch_name}&per_page=1" \
                 --jq '.[0].commit.committer.date')
 
-              if [ -z "$last_commit_date" ]; then
-                echo "SKIP (no commit data): $branch_name"
-                skipped=$((skipped + 1))
-                continue
-              fi
-
-              if [[ "$last_commit_date" < "$cutoff_date" ]]; then
+              if [ -z "$last_commit_date" ] || [[ "$last_commit_date" < "$cutoff_date" ]]; then
+                local_reason="stale"
+                if [ -z "$last_commit_date" ]; then
+                  local_reason="orphan"
+                fi
                 if [ "$DRY_RUN" = "true" ]; then
-                  echo "DRY-RUN DELETE: $branch_name (last commit: $last_commit_date)"
+                  echo "DRY-RUN DELETE ($local_reason): $branch_name (last commit: ${last_commit_date:-none})"
                 else
-                  echo "DELETE: $branch_name (last commit: $last_commit_date)"
-                  gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${branch_name}"
+                  echo "DELETE ($local_reason): $branch_name (last commit: ${last_commit_date:-none})"
+                  if ! gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${branch_name}"; then
+                    echo "WARN: failed to delete $branch_name"
+                  fi
                 fi
                 deleted=$((deleted + 1))
               else

@@ -70,6 +70,40 @@ echo "--- Dry-run support ---"
 assert_grep "References dry_run in script" "dry_run"
 
 echo ""
+echo "--- Orphan branch handling ---"
+assert "Orphan branches are treated as stale, not skipped" \
+    python3 -c "
+import yaml, sys
+wf = yaml.safe_load(open('$WORKFLOW_FILE'))
+script = wf['jobs']['delete-stale-branches']['steps'][1]['run']
+# The script must NOT skip branches with no commit data.
+# Instead, orphan branches (empty last_commit_date) should be treated as stale.
+if 'SKIP (no commit data)' in script:
+    sys.exit(1)
+"
+
+echo ""
+echo "--- Delete error handling ---"
+assert "Delete failures do not abort remaining branches" \
+    python3 -c "
+import yaml, sys
+wf = yaml.safe_load(open('$WORKFLOW_FILE'))
+script = wf['jobs']['delete-stale-branches']['steps'][1]['run']
+# The gh api DELETE call must be wrapped in error handling so that
+# a single branch delete failure does not abort the entire loop.
+# Check that the delete line is guarded by 'if !' or '|| true' or similar.
+lines = script.splitlines()
+for line in lines:
+    stripped = line.strip()
+    if 'gh api -X DELETE' in stripped:
+        # The raw delete call must NOT be on a bare line.
+        # It should be wrapped in a conditional (if ! ... ; then) or have || to swallow errors.
+        if stripped.startswith('gh api -X DELETE') or stripped.startswith('gh api  -X DELETE'):
+            sys.exit(1)
+sys.exit(0)
+"
+
+echo ""
 echo "--- Delete operation ---"
 assert_grep "Has branch delete command" "gh api.*DELETE\|git push.*--delete\|delete_ref\|DELETE"
 
