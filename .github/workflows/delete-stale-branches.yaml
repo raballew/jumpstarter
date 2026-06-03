@@ -30,7 +30,12 @@ jobs:
           echo "Dry run: $DRY_RUN"
           echo ""
 
+          sanitize_for_markdown() {
+            printf '%s' "$1" | sed 's/|/\\|/g; s/`/\\`/g'
+          }
+
           deleted=0
+          failed=0
           skipped=0
           page=1
           summary_lines=""
@@ -44,9 +49,11 @@ jobs:
             fi
 
             while IFS=$'\t' read -r branch_name is_protected; do
-              if [[ "$branch_name" =~ $'\t' ]] || [[ "$is_protected" != "true" && "$is_protected" != "false" ]]; then
-                echo "SKIP (invalid name): $branch_name"
-                summary_lines="${summary_lines}| \`${branch_name}\` | Skipped | invalid name | - |"$'\n'
+              safe_name=$(sanitize_for_markdown "$branch_name")
+
+              if [ -z "$branch_name" ] || [[ "$is_protected" != "true" && "$is_protected" != "false" ]]; then
+                echo "SKIP (invalid data): $branch_name"
+                summary_lines="${summary_lines}| \`${safe_name}\` | Skipped | invalid data | - |"$'\n'
                 skipped=$((skipped + 1))
                 continue
               fi
@@ -55,7 +62,7 @@ jobs:
 
               if [ "$is_protected" = "true" ]; then
                 echo "SKIP (protected): $branch_name"
-                summary_lines="${summary_lines}| \`${branch_name}\` | Skipped | protected | - |"$'\n'
+                summary_lines="${summary_lines}| \`${safe_name}\` | Skipped | protected | - |"$'\n'
                 skipped=$((skipped + 1))
                 continue
               fi
@@ -65,7 +72,7 @@ jobs:
 
               if [ "$open_pulls" != "0" ]; then
                 echo "SKIP (open PR): $branch_name"
-                summary_lines="${summary_lines}| \`${branch_name}\` | Skipped | open PR | - |"$'\n'
+                summary_lines="${summary_lines}| \`${safe_name}\` | Skipped | open PR | - |"$'\n'
                 skipped=$((skipped + 1))
                 continue
               fi
@@ -80,20 +87,22 @@ jobs:
                 fi
                 if [ "$DRY_RUN" = "true" ]; then
                   echo "DRY-RUN DELETE ($local_reason): $branch_name (last commit: ${last_commit_date:-none})"
-                  summary_lines="${summary_lines}| \`${branch_name}\` | Dry-run | ${local_reason} | ${last_commit_date:-none} |"$'\n'
+                  summary_lines="${summary_lines}| \`${safe_name}\` | Dry-run | ${local_reason} | ${last_commit_date:-none} |"$'\n'
+                  deleted=$((deleted + 1))
                 else
                   echo "DELETE ($local_reason): $branch_name (last commit: ${last_commit_date:-none})"
                   if ! gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${encoded_branch}"; then
                     echo "WARN: failed to delete $branch_name"
-                    summary_lines="${summary_lines}| \`${branch_name}\` | Failed | ${local_reason} | ${last_commit_date:-none} |"$'\n'
+                    summary_lines="${summary_lines}| \`${safe_name}\` | Failed | ${local_reason} | ${last_commit_date:-none} |"$'\n'
+                    failed=$((failed + 1))
                   else
-                    summary_lines="${summary_lines}| \`${branch_name}\` | Deleted | ${local_reason} | ${last_commit_date:-none} |"$'\n'
+                    summary_lines="${summary_lines}| \`${safe_name}\` | Deleted | ${local_reason} | ${last_commit_date:-none} |"$'\n'
+                    deleted=$((deleted + 1))
                   fi
                 fi
-                deleted=$((deleted + 1))
               else
                 echo "SKIP (recent): $branch_name (last commit: $last_commit_date)"
-                summary_lines="${summary_lines}| \`${branch_name}\` | Skipped | recent | ${last_commit_date} |"$'\n'
+                summary_lines="${summary_lines}| \`${safe_name}\` | Skipped | recent | ${last_commit_date} |"$'\n'
                 skipped=$((skipped + 1))
               fi
             done <<< "$branches"
@@ -102,7 +111,7 @@ jobs:
           done
 
           echo ""
-          echo "Summary: $deleted deleted, $skipped skipped"
+          echo "Summary: $deleted deleted, $failed failed, $skipped skipped"
 
           {
             echo "## Delete Stale Branches"
@@ -118,5 +127,5 @@ jobs:
               echo "| - | - | No branches found | - |"
             fi
             echo ""
-            echo "**Total:** ${deleted} deleted, ${skipped} skipped"
+            echo "**Total:** ${deleted} deleted, ${failed} failed, ${skipped} skipped"
           } >> "$GITHUB_STEP_SUMMARY"
