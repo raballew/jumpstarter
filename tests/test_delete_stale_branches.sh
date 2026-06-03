@@ -51,7 +51,6 @@ echo ""
 echo "--- Job structure ---"
 assert_grep "Has jobs section" "jobs:"
 assert_grep "Runs on ubuntu" "ubuntu-"
-assert_grep "Uses actions/checkout" "actions/checkout@"
 
 echo ""
 echo "--- Permissions ---"
@@ -75,7 +74,7 @@ assert "Orphan branches are treated as stale, not skipped" \
     python3 -c "
 import yaml, sys
 wf = yaml.safe_load(open('$WORKFLOW_FILE'))
-script = wf['jobs']['delete-stale-branches']['steps'][1]['run']
+script = wf['jobs']['delete-stale-branches']['steps'][0]['run']
 # The script must NOT skip branches with no commit data.
 # Instead, orphan branches (empty last_commit_date) should be treated as stale.
 if 'SKIP (no commit data)' in script:
@@ -88,7 +87,7 @@ assert "Delete failures do not abort remaining branches" \
     python3 -c "
 import yaml, sys
 wf = yaml.safe_load(open('$WORKFLOW_FILE'))
-script = wf['jobs']['delete-stale-branches']['steps'][1]['run']
+script = wf['jobs']['delete-stale-branches']['steps'][0]['run']
 # The gh api DELETE call must be wrapped in error handling so that
 # a single branch delete failure does not abort the entire loop.
 # Check that the delete line is guarded by 'if !' or '|| true' or similar.
@@ -102,6 +101,20 @@ for line in lines:
             sys.exit(1)
 sys.exit(0)
 "
+
+echo ""
+echo "--- Branch name sanitization ---"
+assert_grep "URL-encodes branch names" "@uri"
+assert_grep "Validates branch names before processing" "invalid name"
+
+echo ""
+echo "--- Step summary ---"
+assert_grep "Writes to GITHUB_STEP_SUMMARY" "GITHUB_STEP_SUMMARY"
+
+echo ""
+echo "--- No unnecessary checkout ---"
+assert "Does not use actions/checkout" \
+    bash -c "! grep -q 'actions/checkout' '$WORKFLOW_FILE'"
 
 echo ""
 echo "--- Delete operation ---"

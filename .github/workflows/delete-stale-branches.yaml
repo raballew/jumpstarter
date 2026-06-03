@@ -20,8 +20,6 @@ jobs:
       contents: write
       pull-requests: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
       - name: Delete branches with no commits in 30 days
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,6 +33,7 @@ jobs:
           deleted=0
           skipped=0
           page=1
+          summary_lines=""
 
           while true; do
             branches=$(gh api "repos/${{ github.repository }}/branches?per_page=100&page=${page}" \
@@ -45,22 +44,33 @@ jobs:
             fi
 
             while IFS=$'\t' read -r branch_name is_protected; do
-              if [ "$is_protected" = "true" ]; then
-                echo "SKIP (protected): $branch_name"
+              if [[ "$branch_name" =~ $'\t' ]] || [[ "$is_protected" != "true" && "$is_protected" != "false" ]]; then
+                echo "SKIP (invalid name): $branch_name"
+                summary_lines="${summary_lines}| \`${branch_name}\` | Skipped | invalid name | - |"$'\n'
                 skipped=$((skipped + 1))
                 continue
               fi
 
-              open_pulls=$(gh api "repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${branch_name}&state=open&per_page=1" \
+              encoded_branch=$(printf '%s' "$branch_name" | jq -sRr '@uri')
+
+              if [ "$is_protected" = "true" ]; then
+                echo "SKIP (protected): $branch_name"
+                summary_lines="${summary_lines}| \`${branch_name}\` | Skipped | protected | - |"$'\n'
+                skipped=$((skipped + 1))
+                continue
+              fi
+
+              open_pulls=$(gh api "repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${encoded_branch}&state=open&per_page=1" \
                 --jq 'length')
 
               if [ "$open_pulls" != "0" ]; then
                 echo "SKIP (open PR): $branch_name"
+                summary_lines="${summary_lines}| \`${branch_name}\` | Skipped | open PR | - |"$'\n'
                 skipped=$((skipped + 1))
                 continue
               fi
 
-              last_commit_date=$(gh api "repos/${{ github.repository }}/commits?sha=${branch_name}&per_page=1" \
+              last_commit_date=$(gh api "repos/${{ github.repository }}/commits?sha=${encoded_branch}&per_page=1" \
                 --jq '.[0].commit.committer.date')
 
               if [ -z "$last_commit_date" ] || [[ "$last_commit_date" < "$cutoff_date" ]]; then
@@ -70,15 +80,20 @@ jobs:
                 fi
                 if [ "$DRY_RUN" = "true" ]; then
                   echo "DRY-RUN DELETE ($local_reason): $branch_name (last commit: ${last_commit_date:-none})"
+                  summary_lines="${summary_lines}| \`${branch_name}\` | Dry-run | ${local_reason} | ${last_commit_date:-none} |"$'\n'
                 else
                   echo "DELETE ($local_reason): $branch_name (last commit: ${last_commit_date:-none})"
-                  if ! gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${branch_name}"; then
+                  if ! gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${encoded_branch}"; then
                     echo "WARN: failed to delete $branch_name"
+                    summary_lines="${summary_lines}| \`${branch_name}\` | Failed | ${local_reason} | ${last_commit_date:-none} |"$'\n'
+                  else
+                    summary_lines="${summary_lines}| \`${branch_name}\` | Deleted | ${local_reason} | ${last_commit_date:-none} |"$'\n'
                   fi
                 fi
                 deleted=$((deleted + 1))
               else
                 echo "SKIP (recent): $branch_name (last commit: $last_commit_date)"
+                summary_lines="${summary_lines}| \`${branch_name}\` | Skipped | recent | ${last_commit_date} |"$'\n'
                 skipped=$((skipped + 1))
               fi
             done <<< "$branches"
@@ -88,3 +103,20 @@ jobs:
 
           echo ""
           echo "Summary: $deleted deleted, $skipped skipped"
+
+          {
+            echo "## Delete Stale Branches"
+            echo ""
+            echo "**Cutoff date:** ${cutoff_date}"
+            echo "**Dry run:** ${DRY_RUN}"
+            echo ""
+            echo "| Branch | Action | Reason | Last Commit |"
+            echo "|--------|--------|--------|-------------|"
+            if [ -n "$summary_lines" ]; then
+              printf '%s' "$summary_lines"
+            else
+              echo "| - | - | No branches found | - |"
+            fi
+            echo ""
+            echo "**Total:** ${deleted} deleted, ${skipped} skipped"
+          } >> "$GITHUB_STEP_SUMMARY"
