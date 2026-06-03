@@ -1,0 +1,90 @@
+name: Delete Stale Branches
+
+on:
+  schedule:
+    - cron: "23 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Log branches that would be deleted without actually deleting them"
+        type: boolean
+        default: false
+
+permissions: {}
+
+jobs:
+  delete-stale-branches:
+    name: Delete stale branches
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Delete branches with no commits in 30 days
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          cutoff_date=$(date -u -d '30 days ago' '+%Y-%m-%dT%H:%M:%SZ')
+          echo "Cutoff date: $cutoff_date"
+          echo "Dry run: $DRY_RUN"
+          echo ""
+
+          deleted=0
+          skipped=0
+          page=1
+
+          while true; do
+            branches=$(gh api "repos/${{ github.repository }}/branches?per_page=100&page=${page}" \
+              --jq '.[] | "\(.name)\t\(.protected)"')
+
+            if [ -z "$branches" ]; then
+              break
+            fi
+
+            while IFS=$'\t' read -r branch_name is_protected; do
+              if [ "$is_protected" = "true" ]; then
+                echo "SKIP (protected): $branch_name"
+                skipped=$((skipped + 1))
+                continue
+              fi
+
+              open_pulls=$(gh api "repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:${branch_name}&state=open&per_page=1" \
+                --jq 'length')
+
+              if [ "$open_pulls" != "0" ]; then
+                echo "SKIP (open PR): $branch_name"
+                skipped=$((skipped + 1))
+                continue
+              fi
+
+              last_commit_date=$(gh api "repos/${{ github.repository }}/commits?sha=${branch_name}&per_page=1" \
+                --jq '.[0].commit.committer.date')
+
+              if [ -z "$last_commit_date" ]; then
+                echo "SKIP (no commit data): $branch_name"
+                skipped=$((skipped + 1))
+                continue
+              fi
+
+              if [[ "$last_commit_date" < "$cutoff_date" ]]; then
+                if [ "$DRY_RUN" = "true" ]; then
+                  echo "DRY-RUN DELETE: $branch_name (last commit: $last_commit_date)"
+                else
+                  echo "DELETE: $branch_name (last commit: $last_commit_date)"
+                  gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/${branch_name}"
+                fi
+                deleted=$((deleted + 1))
+              else
+                echo "SKIP (recent): $branch_name (last commit: $last_commit_date)"
+                skipped=$((skipped + 1))
+              fi
+            done <<< "$branches"
+
+            page=$((page + 1))
+          done
+
+          echo ""
+          echo "Summary: $deleted deleted, $skipped skipped"
