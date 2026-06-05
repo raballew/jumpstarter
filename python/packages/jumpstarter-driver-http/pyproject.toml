@@ -26,6 +26,7 @@ Homepage = "https://jumpstarter.dev"
 source_archive = "https://github.com/jumpstarter-dev/repo/archive/{commit_hash}.zip"
 
 [tool.pytest.ini_options]
+norecursedirs = ["examples"]
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["src"]
