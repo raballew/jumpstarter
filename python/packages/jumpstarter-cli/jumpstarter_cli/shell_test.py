@@ -924,8 +924,9 @@ class TestRunShellWithLeaseAsync:
 
 
 class TestShellWithSignalHandlingLeaseTimeout:
-    async def test_exits_gracefully_when_lease_ended_and_exception_group(self):
-        """BaseExceptionGroup with lease_ended=True should produce exit code 0."""
+    async def test_returns_nonzero_when_lease_ended_and_subprocess_interrupted(self):
+        """BaseExceptionGroup with lease_ended=True and interrupted subprocess
+        must produce a non-zero exit code so callers can detect the failure."""
         lease = Mock()
         lease.release = True
         lease.name = "timeout-lease"
@@ -951,7 +952,7 @@ class TestShellWithSignalHandlingLeaseTimeout:
                 config, None, None, None, timedelta(minutes=1), False, (), None
             )
 
-        assert exit_code == 0
+        assert exit_code == 1
 
     async def test_raises_offline_error_when_lease_not_ended_and_exception_group(self):
         """BaseExceptionGroup with lease_ended=False should raise ExporterOfflineError."""
@@ -981,10 +982,10 @@ class TestShellWithSignalHandlingLeaseTimeout:
 
 
 class TestExitCodePropagation:
-    async def test_nonzero_exit_code_preserved_when_lease_ended_with_exception_group(self):
-        """When the subprocess exits non-zero and the lease teardown raises a
-        BaseExceptionGroup with lease_ended=True, the non-zero exit code must
-        be preserved -- not silently replaced with 0."""
+    async def test_fallback_exit_code_when_subprocess_interrupted_and_lease_ended(self):
+        """When the subprocess is interrupted (raises instead of returning an
+        exit code) and the lease has ended, the fallback exit code must be
+        non-zero (1) to signal the abnormal termination."""
         lease = Mock()
         lease.release = True
         lease.name = "failed-flash-lease"
@@ -1016,8 +1017,9 @@ class TestExitCodePropagation:
         )
 
     async def test_zero_exit_code_when_lease_ended_after_successful_subprocess(self):
-        """When the subprocess exits 0 and then the lease ends gracefully,
-        exit code 0 is correct."""
+        """FR-003: subprocess exits 0, then lease teardown raises
+        BaseExceptionGroup with lease_ended=True. The exit code must
+        remain 0 (graceful end)."""
         lease = Mock()
         lease.release = True
         lease.name = "ok-lease"
@@ -1029,6 +1031,7 @@ class TestExitCodePropagation:
         @asynccontextmanager
         async def lease_async(selector, exporter_name, lease_name, duration, portal, acquisition_timeout):
             yield lease
+            raise BaseExceptionGroup("teardown", [RuntimeError("portal closed")])
 
         config.lease_async = lease_async
 
@@ -1044,6 +1047,38 @@ class TestExitCodePropagation:
             )
 
         assert exit_code == 0
+
+    async def test_nonzero_exit_code_preserved_when_subprocess_returned_then_lease_teardown_raises(self):
+        """FR-002: subprocess exits with a captured non-zero exit code (5),
+        then lease teardown raises BaseExceptionGroup with lease_ended=True.
+        The original exit code must be preserved, not replaced with 0 or 1."""
+        lease = Mock()
+        lease.release = True
+        lease.name = "failed-cmd-lease"
+        lease.lease_ended = True
+        lease.lease_transferred = False
+
+        config = _DummyConfig()
+
+        @asynccontextmanager
+        async def lease_async(selector, exporter_name, lease_name, duration, portal, acquisition_timeout):
+            yield lease
+            raise BaseExceptionGroup("teardown", [RuntimeError("portal closed")])
+
+        config.lease_async = lease_async
+
+        async def fake_run_shell_nonzero(*_args):
+            return 5
+
+        with (
+            patch("jumpstarter_cli.shell._monitor_token_expiry", new_callable=AsyncMock),
+            patch("jumpstarter_cli.shell._run_shell_with_lease_async", side_effect=fake_run_shell_nonzero),
+        ):
+            exit_code = await _shell_with_signal_handling(
+                config, None, None, None, timedelta(minutes=1), False, (), None
+            )
+
+        assert exit_code == 5
 
     def test_exporter_config_propagates_exit_code(self):
         """The ExporterConfigV1Alpha1 code path must call sys.exit with the

@@ -427,7 +427,7 @@ async def _shell_with_signal_handling(  # noqa: C901
     config, selector, exporter_name, lease_name, duration, exporter_logs, command, acquisition_timeout
 ):
     """Handle lease acquisition and shell execution with signal handling."""
-    exit_code = 0
+    exit_code = None
     cancelled_exc_class = get_cancelled_exc_class()
     lease_used = None
     token_state = {"expired_unrecovered": False}
@@ -469,9 +469,8 @@ async def _shell_with_signal_handling(  # noqa: C901
                     raise offline_exc from None
                 if lease_used is not None:
                     if lease_used.lease_ended:
-                        # Lease expired naturally (e.g. during beforeLease hook)
-                        # - exit gracefully instead of showing a scary error
-                        pass
+                        if exit_code is None:
+                            exit_code = 1
                     elif lease_used.lease_transferred:
                         raise ExporterOfflineError(
                             "Lease has been transferred to another client. Session is no longer valid."
@@ -492,7 +491,7 @@ async def _shell_with_signal_handling(  # noqa: C901
             if not tg.cancel_scope.cancel_called:
                 tg.cancel_scope.cancel()
 
-    return exit_code
+    return exit_code if exit_code is not None else 0
 
 
 def _format_lease_display(lease) -> str:
@@ -691,7 +690,7 @@ def shell(
         case ExporterConfigV1Alpha1():
             with config.serve_unix() as path:
                 # SAFETY: the exporter config is local thus considered trusted
-                launch_shell(
+                exit_code = launch_shell(
                     path,
                     "local",
                     allow=[],
@@ -699,3 +698,4 @@ def shell(
                     use_profiles=False,
                     command=command,
                 )
+                sys.exit(exit_code)
