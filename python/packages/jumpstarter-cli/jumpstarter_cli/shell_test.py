@@ -30,6 +30,7 @@ from jumpstarter.common import ExporterStatus
 from jumpstarter.common.exceptions import ExporterOfflineError
 from jumpstarter.config.client import ClientConfigV1Alpha1
 from jumpstarter.config.env import JMP_LEASE
+from jumpstarter.config.exporter import ExporterConfigV1Alpha1
 
 pytestmark = pytest.mark.anyio
 
@@ -977,3 +978,98 @@ class TestShellWithSignalHandlingLeaseTimeout:
         ):
             with pytest.raises((ExporterOfflineError, BaseExceptionGroup)):
                 await _shell_with_signal_handling(config, None, None, None, timedelta(minutes=1), False, (), None)
+
+
+class TestExitCodePropagation:
+    async def test_nonzero_exit_code_preserved_when_lease_ended_with_exception_group(self):
+        """When the subprocess exits non-zero and the lease teardown raises a
+        BaseExceptionGroup with lease_ended=True, the non-zero exit code must
+        be preserved -- not silently replaced with 0."""
+        lease = Mock()
+        lease.release = True
+        lease.name = "failed-flash-lease"
+        lease.lease_ended = True
+        lease.lease_transferred = False
+
+        config = _DummyConfig()
+
+        @asynccontextmanager
+        async def lease_async(selector, exporter_name, lease_name, duration, portal, acquisition_timeout):
+            yield lease
+
+        config.lease_async = lease_async
+
+        async def fake_run_shell_then_crash(*_args):
+            raise BaseExceptionGroup("teardown", [RuntimeError("portal closed")])
+
+        with (
+            patch("jumpstarter_cli.shell._monitor_token_expiry", new_callable=AsyncMock),
+            patch("jumpstarter_cli.shell._run_shell_with_lease_async", side_effect=fake_run_shell_then_crash),
+        ):
+            exit_code = await _shell_with_signal_handling(
+                config, None, None, None, timedelta(minutes=1), False, (), None
+            )
+
+        assert exit_code != 0, (
+            "exit code must be non-zero when the subprocess was interrupted "
+            "by a lease-ended exception group"
+        )
+
+    async def test_zero_exit_code_when_lease_ended_after_successful_subprocess(self):
+        """When the subprocess exits 0 and then the lease ends gracefully,
+        exit code 0 is correct."""
+        lease = Mock()
+        lease.release = True
+        lease.name = "ok-lease"
+        lease.lease_ended = True
+        lease.lease_transferred = False
+
+        config = _DummyConfig()
+
+        @asynccontextmanager
+        async def lease_async(selector, exporter_name, lease_name, duration, portal, acquisition_timeout):
+            yield lease
+
+        config.lease_async = lease_async
+
+        async def fake_run_shell_ok(*_args):
+            return 0
+
+        with (
+            patch("jumpstarter_cli.shell._monitor_token_expiry", new_callable=AsyncMock),
+            patch("jumpstarter_cli.shell._run_shell_with_lease_async", side_effect=fake_run_shell_ok),
+        ):
+            exit_code = await _shell_with_signal_handling(
+                config, None, None, None, timedelta(minutes=1), False, (), None
+            )
+
+        assert exit_code == 0
+
+    def test_exporter_config_propagates_exit_code(self):
+        """The ExporterConfigV1Alpha1 code path must call sys.exit with the
+        exit code returned by launch_shell, not silently exit 0."""
+        config = Mock(spec=ExporterConfigV1Alpha1)
+        config.serve_unix = Mock()
+        config.serve_unix.return_value.__enter__ = Mock(return_value="/tmp/fake.sock")
+        config.serve_unix.return_value.__exit__ = Mock(return_value=False)
+
+        with (
+            patch("jumpstarter_cli.shell.launch_shell", return_value=42) as mock_launch,
+            patch("jumpstarter_cli.shell.sys.exit") as mock_exit,
+        ):
+            inspect.unwrap(shell.callback)(
+                config=config,
+                command=("flash", "--image", "test.bin"),
+                lease_name=None,
+                selector=None,
+                exporter_name=None,
+                duration=timedelta(minutes=1),
+                exporter_logs=False,
+                acquisition_timeout=None,
+                tls_grpc_address=None,
+                tls_grpc_insecure=False,
+                passphrase=None,
+            )
+
+        mock_launch.assert_called_once()
+        mock_exit.assert_called_once_with(42)
